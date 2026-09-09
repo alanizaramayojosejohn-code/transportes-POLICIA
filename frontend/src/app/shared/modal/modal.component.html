@@ -1,0 +1,27 @@
+<div class="fixed inset-0 z-[90] flex items-center justify-center p-6">
+  <button
+    type="button"
+    class="fixed inset-0 z-0 bg-black/45"
+    aria-label="Cerrar"
+    (click)="onBackdropClick()"
+  ></button>
+
+  <div
+    class="relative z-10 max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface shadow-2xl"
+  >
+    <div
+      class="sticky top-0 z-10 flex items-center justify-between border-b border-edge bg-surface px-6 py-4"
+    >
+      <h3 class="font-serif text-[17px] font-semibold text-ink">{{ title() }}</h3>
+      <button
+        type="button"
+        class="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-ink-muted hover:bg-red-bg"
+        (click)="closed.emit()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <ng-content />
+  </div>
+</div>

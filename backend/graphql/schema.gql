@@ -1,0 +1,281 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AssignTransportManagerInput {
+  notes: String
+  officerId: String!
+  referenceDocument: String
+  startDate: String!
+  unitId: String!
+}
+
+input CloseTransportManagerAssignmentInput {
+  endDate: String!
+  unitId: String!
+}
+
+input CloseUnitAssignmentInput {
+  endDate: String!
+  vehicleId: String!
+}
+
+input CreateOfficerInput {
+  ci: String!
+  ciComplement: String
+  currentUnitId: String
+  email: String
+  firstName: String!
+  lastName: String!
+  phone: String
+  rank: String
+}
+
+input CreateUnitAssignmentInput {
+  notes: String
+  reason: String
+  referenceDocument: String
+  startDate: String!
+  unitId: String!
+  vehicleId: String!
+}
+
+input CreateUnitInput {
+  code: String
+  location: String
+  name: String!
+  parentId: String
+  type: String
+}
+
+input CreateVehicleInput {
+  brand: String
+  chassisNumber: String
+  color: String
+  engineNumber: String
+  model: String
+  observations: String
+  origin: String
+  plate: String!
+  plateDnfr: String
+  receptionSource: String
+  type: VehicleType!
+  year: Int
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  assignTransportManager(input: AssignTransportManagerInput!): TransportManagerAssignment!
+  closeTransportManagerAssignment(input: CloseTransportManagerAssignmentInput!): TransportManagerAssignment!
+  closeUnitAssignment(input: CloseUnitAssignmentInput!): UnitAssignment!
+  createOfficer(input: CreateOfficerInput!): Officer!
+  createUnit(input: CreateUnitInput!): Unit!
+  createUnitAssignment(input: CreateUnitAssignmentInput!): UnitAssignment!
+  createVehicle(input: CreateVehicleInput!): Vehicle!
+  deactivateOfficer(id: String!): Officer!
+  deactivateUnit(id: String!): Unit!
+  reactivateUnit(id: String!): Unit!
+  registerVehicleCondition(input: RegisterVehicleConditionInput!, vehicleId: String!): VehicleCondition!
+  updateOfficer(id: String!, input: UpdateOfficerInput!): Officer!
+  updateUnit(id: String!, input: UpdateUnitInput!): Unit!
+  updateUnitAssignmentNotes(input: UpdateUnitAssignmentNotesInput!): UnitAssignment!
+  updateVehicle(id: String!, input: UpdateVehicleInput!): Vehicle!
+}
+
+type Officer {
+  ci: String!
+  ciComplement: String!
+  createdAt: DateTime!
+  currentUnit: Unit
+  currentUnitId: String
+  email: String
+  firstName: String!
+  id: String!
+  isActive: Boolean!
+  lastName: String!
+  phone: String
+  rank: String
+  updatedAt: DateTime!
+}
+
+type OfficerPage {
+  items: [Officer!]!
+  total: Int!
+}
+
+type Query {
+  officer(id: String!): Officer!
+  officers(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): OfficerPage!
+  unit(id: String!): Unit!
+  unitAssignments(current: Boolean, fromDate: String, search: String, skip: Int = 0, take: Int = 20, toDate: String, unitId: String): UnitAssignmentPage!
+  units(isActive: Boolean, parentId: String, search: String, skip: Int = 0, take: Int = 20, type: String): UnitPage!
+  vehicle(id: String!): Vehicle!
+  vehicles(condition: VehicleConditionCode, search: String, skip: Int = 0, take: Int = 20, type: VehicleType, unitId: String): VehiclePage!
+}
+
+input RegisterVehicleConditionInput {
+  code: VehicleConditionCode!
+  reason: String
+}
+
+type TransportManagerAssignment {
+  createdAt: DateTime!
+  endDate: DateTime
+  id: String!
+  notes: String
+  officer: Officer!
+  officerId: String!
+  referenceDocument: String
+  startDate: DateTime!
+  unit: Unit!
+  unitId: String!
+}
+
+type Unit {
+  activeVehicleCount: Int!
+  children: [Unit!]!
+  code: String
+  createdAt: DateTime!
+  currentManager: TransportManagerAssignment
+  id: String!
+  isActive: Boolean!
+  location: String
+  managerHistory: [TransportManagerAssignment!]!
+  name: String!
+  parent: Unit
+  parentId: String
+  type: String
+  updatedAt: DateTime!
+}
+
+type UnitAssignment {
+  createdAt: DateTime!
+  endDate: DateTime
+  id: String!
+  notes: String
+  reason: String
+  referenceDocument: String
+  startDate: DateTime!
+  unit: Unit!
+  unitId: String!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type UnitAssignmentPage {
+  items: [UnitAssignment!]!
+  total: Int!
+}
+
+type UnitPage {
+  items: [Unit!]!
+  total: Int!
+}
+
+input UpdateOfficerInput {
+  ci: String
+  ciComplement: String
+  currentUnitId: String
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
+  rank: String
+}
+
+input UpdateUnitAssignmentNotesInput {
+  notes: String
+  reason: String
+  referenceDocument: String
+  vehicleId: String!
+}
+
+input UpdateUnitInput {
+  code: String
+  location: String
+  name: String
+  parentId: String
+  type: String
+}
+
+input UpdateVehicleInput {
+  brand: String
+  chassisNumber: String
+  color: String
+  engineNumber: String
+  model: String
+  observations: String
+  origin: String
+  plate: String
+  plateDnfr: String
+  receptionSource: String
+  type: VehicleType
+  year: Int
+}
+
+type Vehicle {
+  brand: String
+  chassisNumber: String
+  color: String
+  conditionHistory: [VehicleCondition!]!
+  createdAt: DateTime!
+  currentCondition: VehicleCondition
+  currentUnit: Unit
+  departmentId: String
+  engineNumber: String
+  id: String!
+  isActive: Boolean!
+  model: String
+  observations: String
+  origin: String
+  plate: String!
+  plateDnfr: String
+  receptionSource: String
+  type: VehicleType!
+  unitAssignmentHistory: [UnitAssignment!]!
+  updatedAt: DateTime!
+  year: Int
+}
+
+type VehicleCondition {
+  changedAt: DateTime!
+  code: VehicleConditionCode!
+  id: String!
+  reason: String
+  registeredByRole: String
+  vehicleId: String!
+}
+
+"""
+Condición física del vehículo. No incluye "En mantenimiento" ni "Separado por incidente": esos valores sólo los registran los módulos de Mantenimiento e Incidentes (spec 001, RF-06).
+"""
+enum VehicleConditionCode {
+  BAJA
+  BUENO
+  DETERIORADO
+  DEVUELTO
+  EXTRAVIADO
+  FUERA_DE_USO
+  INOPERABLE
+  REGULAR
+}
+
+type VehiclePage {
+  items: [Vehicle!]!
+  total: Int!
+}
+
+"""Categoría del vehículo dentro del parque automotor."""
+enum VehicleType {
+  AMBULANCIA
+  AUTOMOVIL
+  CAMION
+  CAMIONETA
+  MINIBUS
+  MOTOCICLETA
+  OTRO
+}

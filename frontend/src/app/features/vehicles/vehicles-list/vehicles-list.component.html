@@ -1,0 +1,114 @@
+<div class="mb-5 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h2 class="font-serif text-[23px] font-semibold text-ink">Vehículos</h2>
+    <p class="text-[13.5px] text-ink-muted">
+      Registro y consulta centralizada del parque automotor.
+    </p>
+  </div>
+  @if (currentRole.canWrite()) {
+    <button
+      type="button"
+      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent"
+      (click)="showCreateForm.set(true)"
+    >
+      + Nuevo vehículo
+    </button>
+  }
+</div>
+
+<div class="rounded-2xl border border-edge bg-surface p-5 shadow-sm">
+  <div class="mb-4 flex flex-wrap gap-2.5">
+    <input
+      class="min-w-56 flex-[2] rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      placeholder="Buscar por placa, marca, modelo, chasis..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select
+      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      [value]="condition()"
+      (change)="condition.set($any($event.target).value)"
+    >
+      <option value="">Todas las condiciones</option>
+      @for (code of conditionOptions; track code) {
+        <option [value]="code">{{ conditionLabels[code] }}</option>
+      }
+    </select>
+    <select
+      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      [value]="type()"
+      (change)="type.set($any($event.target).value)"
+    >
+      <option value="">Todos los tipos</option>
+      @for (opt of typeOptions; track opt) {
+        <option [value]="opt">{{ typeLabels[opt] }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-[13px]">
+      <thead>
+        <tr
+          class="border-b border-edge text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
+        >
+          <th class="pb-2.5">Placa</th>
+          <th class="pb-2.5">Marca / Modelo</th>
+          <th class="pb-2.5">Unidad</th>
+          <th class="pb-2.5">Condición</th>
+          <th class="pb-2.5"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (vehicle of page().items; track vehicle.id) {
+          <tr class="border-b border-edge hover:bg-surface-2">
+            <td class="py-3 font-medium">{{ vehicle.plate }}</td>
+            <td class="py-3">{{ vehicle.brand || '—' }} {{ vehicle.model || '' }}</td>
+            <td class="py-3">{{ vehicle.currentUnit?.name || 'Sin unidad asignada' }}</td>
+            <td class="py-3">
+              @if (vehicle.currentCondition; as c) {
+                <app-badge [tone]="conditionBadge[c.code]">{{ conditionLabels[c.code] }}</app-badge>
+              } @else {
+                <app-badge tone="gray">Sin evaluar</app-badge>
+              }
+            </td>
+            <td class="py-3 text-right">
+              <button
+                type="button"
+                class="rounded-md bg-green-bg px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
+                (click)="openDetail(vehicle.id)"
+              >
+                Ver ficha
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="py-8 text-center text-ink-muted">
+              Sin vehículos registrados todavía.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="mt-3 text-[12px] text-ink-faint">{{ page().total }} vehículo(s) en total.</p>
+</div>
+
+@if (showCreateForm()) {
+  <app-vehicle-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingVehicleId()) {
+  <app-vehicle-form [vehicle]="editingVehicle" (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailVehicleId(); as id) {
+  <app-vehicle-detail
+    [vehicleId]="id"
+    [canWrite]="currentRole.canWrite()"
+    (closed)="closeDetail()"
+    (editRequested)="editFromDetail()"
+  />
+}

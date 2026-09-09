@@ -1,0 +1,917 @@
+// Sistema de Información para Gestionar la Información Vehicular
+// del Comando Policial de Oruro.
+//
+// Convenciones:
+//   - Identificadores en inglés (Prisma / GraphQL), etiquetas y comentarios en español.
+//   - Tablas y columnas en snake_case vía @@map / @map.
+//   - Todas las fechas se guardan en UTC (timestamptz); el cliente las localiza.
+//   - Los importes monetarios usan Decimal, nunca Float: en bolivianos un
+//     redondeo binario se convierte en descuadre contable.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// RF-13  Seguridad, usuarios, roles y auditoría
+// =============================================================================
+
+model User {
+  id           String    @id @default(uuid(7))
+  username     String    @unique
+  email        String?   @unique
+  passwordHash String    @map("password_hash")
+  fullName     String    @map("full_name")
+  /// Grado policial: Sgto., Sbtte., Cnl., o vacío para personal civil.
+  rank         String?
+  phone        String?
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  roleId       String      @map("role_id")
+  role         Role        @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  departmentId String?     @map("department_id")
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  driver               Driver?
+  auditLogs            AuditLog[]
+  requestsMade         VehicleRequest[]   @relation("RequestRequester")
+  requestsReviewed     VehicleRequest[]   @relation("RequestReviewer")
+  assignmentsMade      Assignment[]       @relation("AssignmentAssigner")
+  departuresRegistered Trip[]             @relation("TripDepartureRegistrar")
+  returnsRegistered    Trip[]             @relation("TripReturnRegistrar")
+  odometerReadings     OdometerReading[]
+  fuelRecords          FuelRecord[]
+  maintenanceOrders    MaintenanceOrder[]
+  incidents            Incident[]
+  stockMovements       StockMovement[]
+
+  @@index([roleId])
+  @@index([departmentId])
+  @@map("user")
+}
+
+model Role {
+  id          String   @id @default(uuid(7))
+  /// Código estable para comparar en guards: ADMIN, SUPERVISOR, OPERADOR, CONDUCTOR.
+  code        String   @unique
+  name        String
+  description String?
+  /// Los roles del sistema no se pueden borrar desde la interfaz.
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String  @id @default(uuid(7))
+  /// Notación recurso.acción: vehicle.create, fuel.read, inventory.adjust.
+  code        String  @unique
+  description String?
+  /// Agrupa los permisos en la pantalla de roles: Vehículos, Combustible, ...
+  module      String
+
+  roles RolePermission[]
+
+  @@index([module])
+  @@map("permission")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permission")
+}
+
+/// Bitácora de auditoría (RF-13). Guarda el antes y el después como JSON
+/// porque el valor de la bitácora es poder reconstruir qué cambió, no sólo que
+/// alguien tocó el registro.
+model AuditLog {
+  id        String      @id @default(uuid(7))
+  action    AuditAction
+  /// Nombre del modelo afectado: Vehicle, FuelRecord, ...
+  entity    String
+  entityId  String?     @map("entity_id")
+  before    Json?
+  after     Json?
+  ipAddress String?     @map("ip_address")
+  userAgent String?     @map("user_agent")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String? @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  APPROVE
+  REJECT
+
+  @@map("audit_action")
+}
+
+/// Dependencia u unidad del Comando (Tránsito, FELCC, Radio Patrullas...).
+/// Se modela con jerarquía propia porque las unidades cuelgan unas de otras y
+/// los reportes se piden tanto por unidad como por la dependencia superior.
+model Department {
+  id          String   @id @default(uuid(7))
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  parentId String?      @map("parent_id")
+  parent   Department?  @relation("DepartmentTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Department[] @relation("DepartmentTree")
+
+  users    User[]
+  drivers  Driver[]
+  vehicles Vehicle[]
+
+  @@index([parentId])
+  @@map("department")
+}
+
+// =============================================================================
+// RF-01  Gestión integral de vehículos
+// =============================================================================
+
+model Vehicle {
+  id              String      @id @default(uuid(7))
+  /// Placa de circulación. Única y en mayúsculas; el servicio la normaliza.
+  plate           String      @unique
+  /// Placa DNFR, cuando difiere de la placa de circulación.
+  plateDnfr       String?     @map("plate_dnfr")
+  type            VehicleType
+  brand           String?
+  model           String?
+  year            Int?
+  color           String?
+  chassisNumber   String?     @unique @map("chassis_number")
+  /// Sin unicidad propia: el spec 001 sólo exige unicidad de placa y chasis.
+  engineNumber    String?     @map("engine_number")
+  origin          String?
+  receptionSource String?     @map("reception_source")
+  observations    String?
+  isActive        Boolean     @default(true) @map("is_active")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  departmentId String?     @map("department_id")
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  conditions        VehicleCondition[]
+  unitAssignments   UnitAssignment[]
+  assignments       Assignment[]
+  odometerReadings  OdometerReading[]
+  maintenanceOrders MaintenanceOrder[]
+  maintenancePlans  MaintenancePlan[]
+  fuelRecords       FuelRecord[]
+  documents         VehicleDocument[]
+  incidents         Incident[]
+
+  @@index([departmentId])
+  @@index([plate])
+  @@map("vehicle")
+}
+
+// =============================================================================
+// Spec 001 (revisión 2) — Historial de condición del vehículo
+// =============================================================================
+
+/// Valores que este módulo puede escribir (RF-06 del spec 001). "En
+/// mantenimiento" y "Separado por incidente" se agregan en una migración
+/// futura, cuando existan los specs de Mantenimiento e Incidentes: al no
+/// existir hoy en el enum, este módulo no puede escribirlos aunque quisiera.
+enum VehicleConditionCode {
+  BUENO
+  REGULAR
+  DETERIORADO
+  FUERA_DE_USO
+  INOPERABLE
+  EXTRAVIADO
+  DEVUELTO
+  BAJA
+
+  @@map("vehicle_condition_code")
+}
+
+/// Historial append-only de condición física (RF-05). La condición vigente
+/// nunca se guarda como campo mutable del vehículo: siempre se deriva de la
+/// entrada más reciente aquí (VehiclesService.getCurrentCondition).
+model VehicleCondition {
+  id               String               @id @default(uuid(7))
+  code             VehicleConditionCode
+  reason           String?
+  /// Rol simulado de quien lo registró (no hay autenticación real todavía).
+  registeredByRole String?              @map("registered_by_role")
+  changedAt        DateTime             @default(now()) @map("changed_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, changedAt])
+  @@map("vehicle_condition")
+}
+
+enum VehicleType {
+  AUTOMOVIL
+  CAMIONETA
+  MOTOCICLETA
+  MINIBUS
+  CAMION
+  AMBULANCIA
+  OTRO
+
+  @@map("vehicle_type")
+}
+
+enum FuelType {
+  GASOLINA
+  DIESEL
+  GNV
+  ELECTRICO
+
+  @@map("fuel_type")
+}
+
+// =============================================================================
+// RF-02  Padrón de conductores
+// =============================================================================
+
+model Driver {
+  id               String   @id @default(uuid(7))
+  firstName        String   @map("first_name")
+  lastName         String   @map("last_name")
+  /// Cédula de identidad, con extensión incluida: "1234567 OR".
+  ci               String   @unique
+  rank             String?
+  licenseNumber    String   @unique @map("license_number")
+  /// Categoría de la licencia boliviana: A, B, C, P, T.
+  licenseCategory  String   @map("license_category")
+  licenseExpiresAt DateTime @map("license_expires_at") @db.Date
+  phone            String?
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  /// Un conductor puede tener cuenta en el sistema, o no tenerla.
+  userId       String?     @unique @map("user_id")
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  departmentId String?     @map("department_id")
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  assignments Assignment[]
+  fuelRecords FuelRecord[]
+  incidents   Incident[]
+
+  @@index([departmentId])
+  @@index([isActive])
+  @@map("driver")
+}
+
+// =============================================================================
+// RF-03  Flujo de solicitud y asignación
+// =============================================================================
+
+model VehicleRequest {
+  id            String        @id @default(uuid(7))
+  /// Correlativo legible para oficios: SOL-2026-000123.
+  code          String        @unique
+  reason        String
+  destination   String
+  requestedFrom DateTime      @map("requested_from") @db.Timestamptz(3)
+  requestedTo   DateTime      @map("requested_to") @db.Timestamptz(3)
+  passengers    Int           @default(1)
+  status        RequestStatus @default(PENDING)
+  reviewNotes   String?       @map("review_notes")
+  reviewedAt    DateTime?     @map("reviewed_at") @db.Timestamptz(3)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  requesterId  String  @map("requester_id")
+  requester    User    @relation("RequestRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  reviewedById String? @map("reviewed_by_id")
+  reviewedBy   User?   @relation("RequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  assignment Assignment?
+
+  @@index([status])
+  @@index([requesterId])
+  @@index([requestedFrom])
+  @@map("vehicle_request")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@map("request_status")
+}
+
+model Assignment {
+  id         String           @id @default(uuid(7))
+  assignedAt DateTime         @default(now()) @map("assigned_at") @db.Timestamptz(3)
+  status     AssignmentStatus @default(ACTIVE)
+  notes      String?
+  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  /// Una solicitud aprobada se materializa en una sola asignación.
+  requestId    String         @unique @map("request_id")
+  request      VehicleRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  vehicleId    String         @map("vehicle_id")
+  vehicle      Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId     String         @map("driver_id")
+  driver       Driver         @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  assignedById String         @map("assigned_by_id")
+  assignedBy   User           @relation("AssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  trip Trip?
+
+  @@index([vehicleId])
+  @@index([driverId])
+  @@index([status])
+  @@map("assignment")
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+
+  @@map("assignment_status")
+}
+
+// =============================================================================
+// RF-04 / RF-05  Salidas, retornos y kilometraje
+// =============================================================================
+
+/// Salida y retorno del vehículo. Es un único registro con dos mitades porque
+/// un retorno sin su salida no existe como hecho: lo que interesa medir —
+/// distancia, duración, diferencia de combustible— sólo aparece al cerrar.
+model Trip {
+  id                      String   @id @default(uuid(7))
+  departureAt             DateTime @map("departure_at") @db.Timestamptz(3)
+  departureOdometer       Int      @map("departure_odometer")
+  /// Nivel de combustible en la salida, de 0 a 100 por ciento.
+  departureFuelLevel      Int?     @map("departure_fuel_level")
+  departureConditionNotes String?  @map("departure_condition_notes")
+
+  returnAt             DateTime? @map("return_at") @db.Timestamptz(3)
+  returnOdometer       Int?      @map("return_odometer")
+  returnFuelLevel      Int?      @map("return_fuel_level")
+  returnConditionNotes String?   @map("return_condition_notes")
+  /// Daños encontrados al retorno (RF-04).
+  damagesFound         String?   @map("damages_found")
+  /// Incidentes u observaciones declarados por el conductor al retornar.
+  incidentNotes        String?   @map("incident_notes")
+
+  /// Distancia recorrida, calculada al cerrar el viaje. Se guarda en vez de
+  /// derivarse en cada consulta porque los reportes por periodo la suman y
+  /// recalcularla obligaría a arrastrar los dos odómetros a cada agregación.
+  distanceKm Int? @map("distance_km")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  assignmentId            String     @unique @map("assignment_id")
+  assignment              Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  departureRegisteredById String     @map("departure_registered_by_id")
+  departureRegisteredBy   User       @relation("TripDepartureRegistrar", fields: [departureRegisteredById], references: [id], onDelete: Restrict)
+  returnRegisteredById    String?    @map("return_registered_by_id")
+  returnRegisteredBy      User?      @relation("TripReturnRegistrar", fields: [returnRegisteredById], references: [id], onDelete: SetNull)
+
+  fuelRecords FuelRecord[]
+  incidents   Incident[]
+
+  @@index([departureAt])
+  @@index([returnAt])
+  @@map("trip")
+}
+
+/// Historial de kilometraje (RF-05). Cada lectura queda registrada con su
+/// origen para poder auditar de dónde salió un salto de kilometraje.
+model OdometerReading {
+  id        String         @id @default(uuid(7))
+  value     Int
+  readingAt DateTime       @default(now()) @map("reading_at") @db.Timestamptz(3)
+  source    OdometerSource
+  notes     String?
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  vehicleId      String  @map("vehicle_id")
+  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  registeredById String  @map("registered_by_id")
+  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, readingAt])
+  @@map("odometer_reading")
+}
+
+enum OdometerSource {
+  TRIP_DEPARTURE
+  TRIP_RETURN
+  FUEL
+  MAINTENANCE
+  MANUAL
+
+  @@map("odometer_source")
+}
+
+// =============================================================================
+// RF-06  Mantenimiento preventivo y correctivo
+// =============================================================================
+
+model MaintenanceOrder {
+  id            String            @id @default(uuid(7))
+  code          String            @unique
+  type          MaintenanceType
+  status        MaintenanceStatus @default(SCHEDULED)
+  description   String
+  workshopName  String?           @map("workshop_name")
+  /// Kilometraje del vehículo al entrar al taller.
+  odometer      Int
+  scheduledFor  DateTime?         @map("scheduled_for") @db.Timestamptz(3)
+  startedAt     DateTime?         @map("started_at") @db.Timestamptz(3)
+  finishedAt    DateTime?         @map("finished_at") @db.Timestamptz(3)
+  laborCost     Decimal           @default(0) @map("labor_cost") @db.Decimal(12, 2)
+  /// Suma de los ítems más la mano de obra; la calcula el servicio al cerrar.
+  totalCost     Decimal           @default(0) @map("total_cost") @db.Decimal(12, 2)
+  invoiceNumber String?           @map("invoice_number")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId      String  @map("vehicle_id")
+  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  registeredById String  @map("registered_by_id")
+  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  items MaintenanceItem[]
+
+  @@index([vehicleId, finishedAt])
+  @@index([status])
+  @@map("maintenance_order")
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+
+  @@map("maintenance_type")
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("maintenance_status")
+}
+
+/// Detalle de la orden: repuestos usados y trabajos realizados.
+model MaintenanceItem {
+  id          String  @id @default(uuid(7))
+  description String
+  quantity    Decimal @default(1) @db.Decimal(10, 2)
+  unitCost    Decimal @default(0) @map("unit_cost") @db.Decimal(12, 2)
+  subtotal    Decimal @default(0) @db.Decimal(12, 2)
+
+  orderId     String           @map("order_id")
+  order       MaintenanceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// Si el repuesto sale del almacén queda enlazado; si se compró suelto, no.
+  sparePartId String?          @map("spare_part_id")
+  sparePart   SparePart?       @relation(fields: [sparePartId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([sparePartId])
+  @@map("maintenance_item")
+}
+
+/// Plan de mantenimiento por kilometraje. De aquí salen las alertas de
+/// "próximo servicio" del RF-06.
+model MaintenancePlan {
+  id                  String    @id @default(uuid(7))
+  taskName            String    @map("task_name")
+  /// Cada cuántos kilómetros toca: cambio de aceite 5000, frenos 20000...
+  intervalKm          Int       @map("interval_km")
+  lastServiceOdometer Int?      @map("last_service_odometer")
+  lastServiceAt       DateTime? @map("last_service_at") @db.Timestamptz(3)
+  /// Kilometraje objetivo del próximo servicio. Se recalcula al cerrar una
+  /// orden de mantenimiento que cubra esta tarea.
+  nextDueOdometer     Int       @map("next_due_odometer")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, taskName])
+  @@index([nextDueOdometer])
+  @@map("maintenance_plan")
+}
+
+// =============================================================================
+// RF-07  Control de combustible
+// =============================================================================
+
+model FuelRecord {
+  id                  String   @id @default(uuid(7))
+  suppliedAt          DateTime @map("supplied_at") @db.Timestamptz(3)
+  fuelType            FuelType @map("fuel_type")
+  /// Litros cargados (o metros cúbicos si es GNV).
+  quantity            Decimal  @db.Decimal(10, 2)
+  unitPrice           Decimal  @map("unit_price") @db.Decimal(10, 2)
+  totalCost           Decimal  @map("total_cost") @db.Decimal(12, 2)
+  station             String?
+  ticketNumber        String?  @map("ticket_number")
+  /// Kilometraje al momento de cargar: es el cruce con RF-05 que permite
+  /// calcular el rendimiento km/l.
+  odometer            Int
+  /// Rendimiento calculado contra la carga anterior del mismo vehículo.
+  /// Nulo en la primera carga registrada, que no tiene contra qué compararse.
+  efficiencyKmPerUnit Decimal? @map("efficiency_km_per_unit") @db.Decimal(8, 2)
+  notes               String?
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId      String  @map("vehicle_id")
+  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String? @map("driver_id")
+  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String? @map("trip_id")
+  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String  @map("registered_by_id")
+  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, suppliedAt])
+  @@index([suppliedAt])
+  @@map("fuel_record")
+}
+
+// =============================================================================
+// RF-08  Documentación del vehículo y vencimientos
+// =============================================================================
+
+model VehicleDocument {
+  id             String       @id @default(uuid(7))
+  type           DocumentType
+  documentNumber String?      @map("document_number")
+  issuedAt       DateTime?    @map("issued_at") @db.Date
+  expiresAt      DateTime     @map("expires_at") @db.Date
+  fileUrl        String?      @map("file_url")
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([expiresAt])
+  @@map("vehicle_document")
+}
+
+enum DocumentType {
+  SOAT
+  INSPECCION_TECNICA
+  RUAT
+  POLIZA_SEGURO
+  CERTIFICADO_GNV
+  OTRO
+
+  @@map("document_type")
+}
+
+// =============================================================================
+// RF-09  Incidentes y accidentes
+// =============================================================================
+
+model Incident {
+  id                 String           @id @default(uuid(7))
+  code               String           @unique
+  type               IncidentType
+  severity           IncidentSeverity @default(MINOR)
+  occurredAt         DateTime         @map("occurred_at") @db.Timestamptz(3)
+  place              String
+  description        String
+  damages            String?
+  /// Personas involucradas: lista de { nombre, ci, rol, contacto }.
+  /// Va como JSON porque son terceros ajenos al padrón y no tienen ficha propia.
+  peopleInvolved     Json?            @map("people_involved")
+  policeReportNumber String?          @map("police_report_number")
+  estimatedCost      Decimal?         @map("estimated_cost") @db.Decimal(12, 2)
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId      String  @map("vehicle_id")
+  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String? @map("driver_id")
+  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String? @map("trip_id")
+  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String  @map("registered_by_id")
+  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  attachments IncidentAttachment[]
+
+  @@index([vehicleId, occurredAt])
+  @@index([occurredAt])
+  @@map("incident")
+}
+
+enum IncidentType {
+  ACCIDENTE
+  AVERIA
+  ROBO
+  INFRACCION
+  OTRO
+
+  @@map("incident_type")
+}
+
+enum IncidentSeverity {
+  MINOR
+  MODERATE
+  SEVERE
+
+  @@map("incident_severity")
+}
+
+model IncidentAttachment {
+  id        String   @id @default(uuid(7))
+  fileUrl   String   @map("file_url")
+  fileName  String   @map("file_name")
+  mimeType  String   @map("mime_type")
+  sizeBytes Int      @map("size_bytes")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  incidentId String   @map("incident_id")
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@map("incident_attachment")
+}
+
+// =============================================================================
+// RF-14 / RF-15  Inventario de repuestos y movimientos de stock
+// =============================================================================
+
+model SparePartCategory {
+  id          String   @id @default(uuid(7))
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  parts SparePart[]
+
+  @@map("spare_part_category")
+}
+
+model SparePart {
+  id           String   @id @default(uuid(7))
+  code         String   @unique
+  name         String
+  description  String?
+  /// Unidad de medida: unidad, litro, juego, metro.
+  unit         String   @default("unidad")
+  /// Umbral que dispara la alerta de stock mínimo (RF-14, RF-15).
+  minStock     Decimal  @default(0) @map("min_stock") @db.Decimal(10, 2)
+  /// Existencia actual. La escribe únicamente InventoryService, dentro de la
+  /// misma transacción que inserta el StockMovement, para que no puedan
+  /// separarse el movimiento y el saldo.
+  currentStock Decimal  @default(0) @map("current_stock") @db.Decimal(10, 2)
+  /// Costo unitario de la última entrada, para valorizar el inventario.
+  lastUnitCost Decimal? @map("last_unit_cost") @db.Decimal(12, 2)
+  location     String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  categoryId String?            @map("category_id")
+  category   SparePartCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  movements        StockMovement[]
+  maintenanceItems MaintenanceItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("spare_part")
+}
+
+model StockMovement {
+  id           String            @id @default(uuid(7))
+  type         StockMovementType
+  quantity     Decimal           @db.Decimal(10, 2)
+  unitCost     Decimal?          @map("unit_cost") @db.Decimal(12, 2)
+  /// Saldo resultante después de aplicar el movimiento. Se guarda para que el
+  /// kardex sea auditable sin tener que reproducir toda la historia.
+  balanceAfter Decimal           @map("balance_after") @db.Decimal(10, 2)
+  reason       String?
+  supplier     String?
+  /// Documento de respaldo: factura, nota de entrega, orden de mantenimiento.
+  reference    String?
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sparePartId    String    @map("spare_part_id")
+  sparePart      SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
+  registeredById String    @map("registered_by_id")
+  registeredBy   User      @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  @@index([sparePartId, createdAt])
+  @@index([createdAt])
+  @@map("stock_movement")
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+
+  @@map("stock_movement_type")
+}
+
+// =============================================================================
+// Alertas — transversal a RF-06, RF-08, RF-11 y RF-14
+// =============================================================================
+
+/// Alerta materializada. Se guarda en vez de calcularse en cada consulta
+/// porque el dashboard (RF-11) las pide en cada carga y porque una alerta
+/// necesita estado propio: quién la vio y cuándo se resolvió.
+model Alert {
+  id         String        @id @default(uuid(7))
+  type       AlertType
+  severity   AlertSeverity @default(INFO)
+  title      String
+  message    String
+  /// Modelo y clave del registro que originó la alerta, sin relación formal:
+  /// una alerta puede apuntar a un vehículo, un documento o un repuesto.
+  entityType String        @map("entity_type")
+  entityId   String        @map("entity_id")
+  isRead     Boolean       @default(false) @map("is_read")
+  resolvedAt DateTime?     @map("resolved_at") @db.Timestamptz(3)
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  /// Evita duplicar la misma alerta en cada pasada del generador.
+  @@unique([type, entityType, entityId, resolvedAt])
+  @@index([isRead, createdAt])
+  @@map("alert")
+}
+
+enum AlertType {
+  MAINTENANCE_DUE
+  DOCUMENT_EXPIRING
+  LICENSE_EXPIRING
+  LOW_STOCK
+  ODOMETER_INCONSISTENCY
+
+  @@map("alert_type")
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+
+  @@map("alert_severity")
+}
+
+// =============================================================================
+// Spec 002 — Unidades, personal policial y encargados de transportes
+// =============================================================================
+
+/// Dependencia del Comando (EPI 3, UTOP, FELCC...), con jerarquía propia.
+/// Nombre distinto de `Department` a propósito: son modelos separados por
+/// decisión explícita (no se toca el scaffold existente); `Department` queda
+/// dormido hasta que tenga su propio spec.
+model Unit {
+  id        String   @id @default(uuid(7))
+  code      String?  @unique
+  name      String
+  type      String?
+  location  String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  parentId String? @map("parent_id")
+  parent   Unit?   @relation("UnitTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Unit[]  @relation("UnitTree")
+
+  officers           Officer[]
+  managerAssignments TransportManagerAssignment[]
+  vehicleAssignments UnitAssignment[]
+
+  @@index([parentId])
+  @@map("unit")
+}
+
+/// Personal policial mínimo para poder designarlo encargado de transportes
+/// (spec 002). No es el padrón de conductores: eso es un módulo aparte.
+model Officer {
+  id           String   @id @default(uuid(7))
+  ci           String
+  /// Normalizado a cadena vacía (nunca null) cuando no hay complemento, para
+  /// que el índice único (ci, ciComplement) trate "sin complemento" y
+  /// "complemento vacío" como la misma persona.
+  ciComplement String   @default("") @map("ci_complement")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  rank         String?
+  phone        String?
+  email        String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  currentUnitId String? @map("current_unit_id")
+  currentUnit   Unit?   @relation(fields: [currentUnitId], references: [id], onDelete: SetNull)
+
+  managerAssignments TransportManagerAssignment[]
+
+  @@unique([ci, ciComplement])
+  @@index([currentUnitId])
+  @@map("officer")
+}
+
+/// Historial de encargados de transportes por unidad (RF-18 a RF-25). Una
+/// fila con `endDate` nulo es la designación vigente; el índice único parcial
+/// que garantiza "a lo sumo una vigente por unidad" se agrega a mano en la
+/// migración (Prisma no expresa índices únicos parciales en el DSL).
+model TransportManagerAssignment {
+  id                String    @id @default(uuid(7))
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  referenceDocument String?   @map("reference_document")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  unitId    String  @map("unit_id")
+  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  officerId String  @map("officer_id")
+  officer   Officer @relation(fields: [officerId], references: [id], onDelete: Restrict)
+
+  @@index([unitId, startDate])
+  @@map("transport_manager_assignment")
+}
+
+// =============================================================================
+// Spec 003 — Asignación de vehículos a unidades
+// =============================================================================
+
+/// Historial de a qué unidad perteneció cada vehículo (RF-01 a RF-17). Una
+/// fila con `endDate` nulo es la asignación vigente; mismo patrón de índice
+/// único parcial agregado a mano en la migración que TransportManagerAssignment.
+model UnitAssignment {
+  id                String    @id @default(uuid(7))
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  reason            String?
+  referenceDocument String?   @map("reference_document")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  unitId    String  @map("unit_id")
+  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, startDate])
+  @@index([unitId])
+  @@map("unit_assignment")
+}

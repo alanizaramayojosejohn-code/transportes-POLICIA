@@ -1,0 +1,156 @@
+@if (unit(); as u) {
+  <app-drawer eyebrow="UNIDAD" [title]="u.name" (closed)="closed.emit()">
+    <div class="mb-5 grid grid-cols-2 gap-3">
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Código</span>
+        <strong class="text-[13.5px] font-semibold">{{ u.code || '—' }}</strong>
+      </div>
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Estado</span>
+        <app-badge [tone]="u.isActive ? 'green' : 'gray'">{{
+          u.isActive ? 'Activa' : 'Inactiva'
+        }}</app-badge>
+      </div>
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Tipo</span>
+        <strong class="text-[13.5px] font-semibold">{{ u.type || '—' }}</strong>
+      </div>
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Ubicación</span>
+        <strong class="text-[13.5px] font-semibold">{{ u.location || '—' }}</strong>
+      </div>
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Unidad superior</span>
+        <strong class="text-[13.5px] font-semibold">{{ u.parent?.name || 'Sin superior' }}</strong>
+      </div>
+      <div class="rounded-md border border-edge bg-surface-2 p-3">
+        <span class="block text-[11px] text-ink-faint">Vehículos asignados</span>
+        <strong class="text-[13.5px] font-semibold">{{ u.activeVehicleCount }}</strong>
+      </div>
+    </div>
+
+    @if (canWrite()) {
+      <div class="mb-5 flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
+          (click)="editRequested.emit()"
+        >
+          Editar unidad
+        </button>
+        <button
+          type="button"
+          class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
+          (click)="toggleActive()"
+        >
+          {{ u.isActive ? 'Dar de baja' : 'Reactivar' }}
+        </button>
+        @if (!u.currentManager) {
+          <button
+            type="button"
+            class="rounded-md bg-accent-strong px-3.5 py-2 text-[12.5px] font-semibold text-on-accent"
+            (click)="showAssignForm.set(true)"
+          >
+            Designar encargado
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
+            (click)="closingAssignment.set(!closingAssignment())"
+          >
+            Cerrar designación
+          </button>
+        }
+      </div>
+    }
+
+    @if (actionError()) {
+      <p class="mb-4 text-[13px] text-red">{{ actionError() }}</p>
+    }
+
+    @if (closingAssignment()) {
+      <div class="mb-5 rounded-md border border-edge bg-surface-2 p-4">
+        <label class="mb-3 flex flex-col gap-1.5">
+          <span class="text-xs font-semibold text-ink-muted">Fecha de fin *</span>
+          <input
+            type="date"
+            class="rounded-md border border-edge bg-surface px-3 py-2 text-[13.5px]"
+            [value]="closeDate()"
+            (input)="closeDate.set($any($event.target).value)"
+          />
+        </label>
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class="rounded-md border border-edge-strong px-3.5 py-1.5 text-[12.5px] font-semibold"
+            (click)="closingAssignment.set(false)"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="rounded-md bg-accent-strong px-3.5 py-1.5 text-[12.5px] font-semibold text-on-accent"
+            (click)="closeAssignment()"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    }
+
+    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Encargado vigente</h4>
+    @if (u.currentManager; as m) {
+      <div class="mb-5 rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
+        <strong>{{ m.officer.rank }} {{ m.officer.firstName }} {{ m.officer.lastName }}</strong>
+        <p class="text-ink-faint">Desde {{ formatDate(m.startDate) }}</p>
+      </div>
+    } @else {
+      <p class="mb-5 text-[12.5px] text-ink-muted">Sin encargado.</p>
+    }
+
+    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Historial de encargados</h4>
+    @if (u.managerHistory.length === 0) {
+      <p class="mb-5 text-[12.5px] text-ink-muted">Sin designaciones registradas.</p>
+    } @else {
+      <div class="mb-5 flex flex-col gap-2">
+        @for (entry of u.managerHistory; track entry.id) {
+          <div class="rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
+            <strong
+              >{{ entry.officer.rank }} {{ entry.officer.firstName }}
+              {{ entry.officer.lastName }}</strong
+            >
+            <p class="text-ink-faint">
+              {{ formatDate(entry.startDate) }} –
+              {{ entry.endDate ? formatDate(entry.endDate) : 'vigente' }}
+            </p>
+          </div>
+        }
+      </div>
+    }
+
+    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Sub-unidades</h4>
+    @if (u.children.length === 0) {
+      <p class="text-[12.5px] text-ink-muted">No tiene sub-unidades.</p>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (child of u.children; track child.id) {
+          <div class="rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
+            <strong>{{ child.name }}</strong>
+            <app-badge [tone]="child.isActive ? 'green' : 'gray'">
+              {{ child.isActive ? 'Activa' : 'Inactiva' }}
+            </app-badge>
+          </div>
+        }
+      </div>
+    }
+  </app-drawer>
+
+  @if (showAssignForm()) {
+    <app-manager-assignment-form
+      [unitId]="unitId()"
+      (saved)="showAssignForm.set(false)"
+      (cancelled)="showAssignForm.set(false)"
+    />
+  }
+}

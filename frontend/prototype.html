@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0E3B2C" />
+<meta name="description" content="Sistema de Información Vehicular · Comando Departamental de Policía Oruro" />
+<title>Sistema de Información Vehicular · Policía Boliviana</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%230E3B2C' d='M32 3 58 12v18c0 18-11 27-26 31C17 57 6 48 6 30V12Z'/%3E%3Cpath fill='%23F7F9F6' d='M32 10 52 17v13c0 14-8.5 21-20 24.4C20.5 51 12 44 12 30V17Z' opacity='.15'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --serif:'Source Serif 4', ui-serif, Georgia, serif;
+  --sans:'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --green-900:#08251A;
+  --green-800:#0E3B2C;
+  --green-700:#14503D;
+  --green-600:#1C6B4D;
+  --green-500:#237F5C;
+  --green-400:#2E9C71;
+  --green-300:#7BC4A0;
+  --green-100:#E4F1E9;
+
+  --amber:#B8752C;
+  --amber-bg:#FBF0E1;
+  --red:#A83A32;
+  --red-bg:#FBEAE8;
+  --gray:#5B6660;
+  --gray-bg:#EEF1EF;
+
+  --radius-sm:6px;
+  --radius-md:10px;
+  --radius-lg:16px;
+  --shadow-1:0 1px 2px rgba(8,20,15,.06);
+  --shadow-2:0 8px 24px -12px rgba(8,20,15,.28);
+}
+
+html[data-theme="light"]{
+  --bg:#F6F8F5;
+  --surface:#FFFFFF;
+  --surface-2:#EFF3F0;
+  --surface-3:#E5EBE6;
+  --border:#DBE3DC;
+  --border-strong:#C4D0C7;
+  --text:#0E1A15;
+  --text-muted:#57665D;
+  --text-faint:#8C978F;
+  --sidebar-bg:var(--green-800);
+  --sidebar-text:#DCEBE2;
+  --sidebar-text-dim:#9FBDAC;
+  --sidebar-active:rgba(255,255,255,.10);
+  --sidebar-border:rgba(255,255,255,.10);
+  --accent:var(--green-700);
+  --accent-strong:var(--green-800);
+  --on-accent:#FDFEFD;
+  --overlay:rgba(9,20,15,.45);
+}
+html[data-theme="dark"]{
+  --bg:#0A0F0C;
+  --surface:#111813;
+  --surface-2:#161F19;
+  --surface-3:#1C2620;
+  --border:#243029;
+  --border-strong:#324237;
+  --text:#EAF1EC;
+  --text-muted:#9FB2A6;
+  --text-faint:#6E8378;
+  --sidebar-bg:#0C1512;
+  --sidebar-text:#DCEBE2;
+  --sidebar-text-dim:#7E9689;
+  --sidebar-active:rgba(46,156,113,.14);
+  --sidebar-border:rgba(255,255,255,.06);
+  --accent:var(--green-400);
+  --accent-strong:var(--green-300);
+  --on-accent:#08251A;
+  --overlay:rgba(0,0,0,.6);
+  --green-100:#132B21;
+  --amber-bg:#2C2013;
+  --red-bg:#2C1715;
+  --gray-bg:#1A211D;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s ease, color .25s ease;
+}
+h1,h2,h3{font-family:var(--serif); margin:0; letter-spacing:-0.01em;}
+p{margin:0;}
+button{font-family:inherit;}
+::selection{background:var(--green-300); color:var(--green-900);}
+:focus-visible{outline:2px solid var(--green-400); outline-offset:2px; border-radius:4px;}
+
+/* guilloché watermark — very faint concentric arcs, institutional-document texture */
+.watermark{
+  position:absolute; inset:0; pointer-events:none; opacity:.06;
+  background-image:repeating-radial-gradient(circle at 0% 0%, transparent 0 6px, currentColor 6px 7px);
+}
+
+/* ============ LAYOUT ============ */
+.app{display:grid; grid-template-columns:260px 1fr; min-height:100vh;}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  background:var(--sidebar-bg); color:var(--sidebar-text);
+  display:flex; flex-direction:column; position:relative; overflow:hidden;
+  border-right:1px solid var(--sidebar-border);
+}
+.sidebar .watermark{color:#fff;}
+.brand{display:flex; align-items:center; gap:12px; padding:24px 20px 20px; position:relative; z-index:1;}
+.shield{width:38px; height:38px; flex:none;}
+.brand h1{font-size:15.5px; font-weight:600; color:#fff; line-height:1.25;}
+.brand small{font-size:11.5px; color:var(--sidebar-text-dim); letter-spacing:.02em;}
+
+.nav{display:flex; flex-direction:column; gap:2px; padding:8px 12px; position:relative; z-index:1; flex:1; overflow-y:auto;}
+.nav button{
+  display:flex; align-items:center; gap:11px; text-align:left;
+  background:transparent; border:none; color:var(--sidebar-text-dim);
+  padding:9px 12px; border-radius:var(--radius-sm); cursor:pointer;
+  font-size:13.5px; font-weight:500; position:relative;
+}
+.nav button .ico{
+  width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; letter-spacing:.02em;
+  background:rgba(255,255,255,.06); color:var(--sidebar-text-dim); flex:none;
+}
+.nav button:hover{color:#fff; background:rgba(255,255,255,.05);}
+.nav button.active{color:#fff; background:var(--sidebar-active);}
+.nav button.active::before{
+  content:""; position:absolute; left:-12px; top:8px; bottom:8px; width:3px;
+  background:var(--green-400); border-radius:0 3px 3px 0;
+}
+.nav button.active .ico{background:var(--green-500); color:#fff;}
+.alert-count{
+  margin-left:auto; background:var(--amber); color:#fff; font-size:10.5px; font-weight:700;
+  padding:1px 6px; border-radius:999px;
+}
+
+.sidebar-foot{
+  padding:16px 20px 22px; font-size:11px; line-height:1.5; color:var(--sidebar-text-dim);
+  border-top:1px solid var(--sidebar-border); position:relative; z-index:1;
+}
+
+/* ---- Main ---- */
+.main{display:flex; flex-direction:column; min-width:0;}
+.topbar{
+  display:flex; align-items:center; gap:14px; padding:12px 28px;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:20;
+}
+.menu-btn{
+  display:none; border:1px solid var(--border-strong); background:var(--surface);
+  color:var(--text); font-size:11px; font-weight:600; letter-spacing:.04em;
+  padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer;
+}
+.search{
+  flex:1; max-width:420px; display:flex; align-items:center; gap:8px;
+  background:var(--surface-2); border:1px solid var(--border); border-radius:999px;
+  padding:8px 14px; color:var(--text-faint); transition:border-color .15s;
+}
+.search:focus-within{border-color:var(--green-500);}
+.search span{font-size:14px;}
+.search input{border:none; background:transparent; outline:none; font-size:13.5px; color:var(--text); flex:1;}
+.top-actions{margin-left:auto; display:flex; align-items:center; gap:12px;}
+
+.status-pill{
+  display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  padding:6px 12px; border-radius:999px; background:var(--green-100); color:var(--green-700);
+}
+html[data-theme="dark"] .status-pill{color:var(--green-300);}
+.status-pill::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--green-500);}
+.status-pill.offline{background:var(--red-bg); color:var(--red);}
+.status-pill.offline::before{background:var(--red);}
+
+.theme-toggle{
+  display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border);
+  border-radius:999px; padding:3px; cursor:pointer;
+}
+.theme-toggle span{
+  width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%;
+  font-size:13px; color:var(--text-faint);
+}
+.theme-toggle span.active{background:var(--green-700); color:#fff;}
+html[data-theme="dark"] .theme-toggle span.active{background:var(--green-400); color:var(--green-900);}
+
+.profile{display:flex; align-items:center; gap:10px; padding-left:12px; border-left:1px solid var(--border);}
+.avatar{
+  width:34px; height:34px; border-radius:50%; background:var(--green-700); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700;
+}
+.name strong{font-size:13px; display:block; line-height:1.3;}
+.profile-subtitle{font-size:11px; color:var(--text-faint);}
+
+.btn{
+  border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+  font-size:13px; font-weight:600; padding:9px 16px; border-radius:var(--radius-sm);
+  cursor:pointer; transition:.15s border-color, .15s background, .15s transform;
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--green-500); color:var(--green-700);}
+html[data-theme="dark"] .btn:hover{color:var(--green-300);}
+.btn:active{transform:translateY(1px);}
+.btn.primary{background:var(--green-700); border-color:var(--green-700); color:#fff;}
+.btn.primary:hover{background:var(--green-800); border-color:var(--green-800); color:#fff;}
+html[data-theme="dark"] .btn.primary{background:var(--green-400); border-color:var(--green-400); color:var(--green-900);}
+html[data-theme="dark"] .btn.primary:hover{background:var(--green-300); border-color:var(--green-300);}
+.btn.soft{background:var(--green-100); border-color:transparent; color:var(--green-700);}
+html[data-theme="dark"] .btn.soft{color:var(--green-300);}
+
+.content{padding:26px 28px 60px; max-width:1360px; width:100%; margin:0 auto;}
+
+.offline-box{
+  display:none; background:var(--red-bg); color:var(--red); font-size:13px; font-weight:600;
+  text-align:center; padding:9px; border-bottom:1px solid var(--border);
+}
+.offline-box.show{display:block;}
+
+.install-banner{
+  display:none; align-items:center; justify-content:space-between; gap:16px;
+  background:var(--green-800); color:#fff; border-radius:var(--radius-lg);
+  padding:16px 22px; margin-bottom:22px; position:relative; overflow:hidden;
+}
+.install-banner.show{display:flex;}
+.install-banner .watermark{color:#fff;}
+.install-title{font-family:var(--serif); font-size:16px; font-weight:600; position:relative; z-index:1;}
+.install-subtitle{font-size:12.5px; color:var(--sidebar-text-dim); margin-top:2px; position:relative; z-index:1;}
+.install-banner .btn{position:relative; z-index:1; background:#fff; border-color:#fff; color:var(--green-800);}
+.install-banner .btn:hover{background:var(--green-100);}
+
+/* ---- Page switching ---- */
+.page{display:none;}
+.page.active{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.page-head h2{font-size:23px; font-weight:600; margin-bottom:4px;}
+.page-head p{color:var(--text-muted); font-size:13.5px;}
+.actions{display:flex; gap:10px;}
+
+.toolbar-note, .notice{
+  background:var(--surface-2); border:1px solid var(--border); border-left:3px solid var(--green-500);
+  border-radius:var(--radius-sm); padding:11px 14px; font-size:12.5px; color:var(--text-muted); line-height:1.5;
+}
+.mb-14{margin-bottom:14px;} .mb-16{margin-bottom:16px;}
+
+/* ---- Cards / grids ---- */
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:20px 22px; box-shadow:var(--shadow-1);
+}
+.card h3{font-size:14.5px; font-weight:600; margin-bottom:14px; color:var(--text);}
+.grid{display:grid; gap:16px;}
+.metrics{grid-template-columns:repeat(4,1fr);}
+.metrics-three{grid-template-columns:repeat(3,1fr);}
+.dash-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:16px; margin-bottom:16px;}
+.recent-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:16px;}
+.report-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+.grid-12-8{display:grid; grid-template-columns:1.4fr 1fr; gap:16px;}
+
+.metric{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:16px 18px; display:flex; align-items:center; gap:14px;
+}
+.metric .icon{
+  width:40px; height:40px; border-radius:10px; background:var(--green-100); color:var(--green-700);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:none;
+}
+html[data-theme="dark"] .metric .icon{color:var(--green-300);}
+.metric .value{font-family:var(--serif); font-size:24px; font-weight:600; line-height:1;}
+.metric .label{font-size:12px; color:var(--text-muted); margin-top:4px;}
+
+/* bar chart */
+.bars{display:flex; align-items:flex-end; gap:8px; height:170px; padding-top:10px;}
+.bar{
+  flex:1; background:linear-gradient(180deg,var(--green-500),var(--green-700)); border-radius:4px 4px 0 0;
+  position:relative; min-height:6px;
+}
+html[data-theme="dark"] .bar{background:linear-gradient(180deg,var(--green-300),var(--green-500));}
+.bar::after{
+  content:attr(data-m); position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
+  font-size:10px; color:var(--text-faint);
+}
+.bar-h42{height:42%;} .bar-h49{height:49%;} .bar-h62{height:62%;} .bar-h52{height:52%;}
+.bar-h68{height:68%;} .bar-h76{height:76%;} .bar-h73{height:73%;} .bar-h90{height:90%;}
+.bar-h82{height:82%;} .bar-h66{height:66%;} .bar-h79{height:79%;} .bar-h94{height:94%;}
+
+/* donut */
+.donut-wrap{display:flex; align-items:center; gap:22px;}
+.donut{
+  width:120px; height:120px; border-radius:50%; flex:none;
+  background:conic-gradient(var(--green-600) 0 85%, var(--amber) 85% 90%, var(--red) 90% 97%, var(--text-faint) 97% 100%);
+  position:relative;
+}
+.donut::after{content:""; position:absolute; inset:16px; border-radius:50%; background:var(--surface);}
+.legend{display:flex; flex-direction:column; gap:9px; font-size:12.5px; color:var(--text-muted);}
+.legend i{width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:8px;}
+.legend-green{background:var(--green-600);} .legend-orange{background:var(--amber);}
+.legend-red{background:var(--red);} .legend-gray{background:var(--text-faint);}
+
+.mini-card{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:12px 14px; font-size:12.5px; color:var(--text-muted); margin-bottom:10px;
+}
+.mini-card:last-child{margin-bottom:0;}
+.mini-card strong, .mini-card b{color:var(--text); font-family:var(--serif); font-size:17px;}
+.followup-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px;}
+.followup-grid .mini-card{margin:0; text-align:center;}
+
+/* ---- Tables ---- */
+.table-wrap{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{
+  text-align:left; font-size:11px; font-weight:600; color:var(--text-faint); letter-spacing:.03em;
+  padding:0 12px 10px; border-bottom:1px solid var(--border);
+}
+tbody td{padding:12px; border-bottom:1px solid var(--border); color:var(--text);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+
+.badge{
+  display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600;
+  padding:3px 9px; border-radius:999px;
+}
+.badge.green{background:var(--green-100); color:var(--green-700);}
+html[data-theme="dark"] .badge.green{color:var(--green-300);}
+.badge.orange{background:var(--amber-bg); color:var(--amber);}
+.badge.red{background:var(--red-bg); color:var(--red);}
+.badge.blue{background:var(--surface-3); color:var(--text-muted);}
+.badge.gray{background:var(--gray-bg); color:var(--gray);}
+
+.filter-row{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+.filter-row input, .filter-row select{
+  border:1px solid var(--border); background:var(--surface-2); border-radius:var(--radius-sm);
+  padding:9px 12px; font-size:13px; color:var(--text); min-width:170px; flex:1;
+}
+.filter-row input:first-child{flex:2;}
+
+/* ---- Audit / recent ---- */
+.audit-row{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border);}
+.audit-row:last-child{border-bottom:none;}
+.audit-row b{font-size:13px; font-weight:600;}
+.audit-meta{font-size:11.5px; color:var(--text-muted); margin-top:1px;}
+.audit-row small{margin-left:auto; color:var(--text-faint); font-size:11.5px;}
+
+.report-card{display:flex; flex-direction:column; gap:10px;}
+.report-card p{margin-bottom:2px;}
+.text-muted{color:var(--text-muted); font-size:12.5px; line-height:1.5;}
+.text-danger{color:var(--red);}
+.w-full{width:100%;}
+
+/* ---- Info grid (detail) ---- */
+.info-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+.info{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px;}
+.info span{display:block; font-size:11px; color:var(--text-faint); margin-bottom:3px;}
+.info strong{font-size:13.5px; font-weight:600;}
+
+/* ============ Modals ============ */
+.overlay-global{position:fixed; inset:0; background:var(--overlay); display:none; z-index:80;}
+.overlay-global.show{display:block;}
+.modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:90; padding:24px;}
+.modal.show{display:flex;}
+.modal-box{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+  width:100%; max-width:680px; max-height:88vh; overflow-y:auto; box-shadow:var(--shadow-2);
+  animation:pop .18s ease;
+}
+@keyframes pop{from{opacity:0; transform:scale(.97) translateY(6px);} to{opacity:1; transform:none;}}
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between; padding:18px 22px;
+  border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--surface); z-index:2;
+}
+.modal-head h3{font-size:17px; font-weight:600;}
+.modal-head .close{
+  border:none; background:var(--surface-2); color:var(--text-muted); width:28px; height:28px;
+  border-radius:50%; cursor:pointer; font-size:12px; font-weight:700;
+}
+.modal-head .close:hover{background:var(--red-bg); color:var(--red);}
+
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:20px 22px;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:12px; font-weight:600; color:var(--text-muted);}
+.field input, .field select, .field textarea{
+  border:1px solid var(--border); background:var(--surface-2); border-radius:var(--radius-sm);
+  padding:9px 11px; font-size:13.5px; color:var(--text); font-family:inherit;
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--green-500);}
+.field textarea{min-height:64px; resize:vertical;}
+.salida-only{display:none;}
+.salida-only.show{display:flex;}
+
+.form-actions{
+  display:flex; justify-content:flex-end; gap:10px; padding:16px 22px;
+  border-top:1px solid var(--border); position:sticky; bottom:0; background:var(--surface);
+}
+
+.detail-head{display:flex; align-items:center; gap:16px; padding:0 22px 18px;}
+.vehicle-pic{
+  width:60px; height:60px; border-radius:var(--radius-md); background:var(--green-700); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+}
+.vehicle-detail-heading{font-size:19px; display:flex; align-items:center; gap:10px;}
+.vehicle-detail-subtitle{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
+
+.tabs{display:flex; gap:4px; padding:0 22px 16px; border-bottom:1px solid var(--border); overflow-x:auto;}
+.tab{
+  border:none; background:transparent; color:var(--text-muted); font-size:13px; font-weight:600;
+  padding:8px 12px; border-radius:var(--radius-sm) var(--radius-sm) 0 0; cursor:pointer; white-space:nowrap;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--green-700); background:var(--green-100);}
+html[data-theme="dark"] .tab.active{color:var(--green-300);}
+#vehiculoDetalleModal .info-grid{padding:20px 22px;}
+
+/* ---- Drawer ---- */
+.detail-drawer{
+  position:fixed; top:0; right:0; bottom:0; width:min(480px,92vw); background:var(--surface);
+  border-left:1px solid var(--border); box-shadow:var(--shadow-2); z-index:95;
+  transform:translateX(100%); transition:transform .25s ease; overflow-y:auto;
+}
+.detail-drawer.show{transform:translateX(0);}
+.drawer-head{
+  background:var(--green-800); color:#fff; padding:22px; position:relative; overflow:hidden;
+}
+.drawer-head .watermark{color:#fff;}
+.drawer-head small{position:relative; z-index:1; color:var(--sidebar-text-dim); font-size:11px; letter-spacing:.04em; font-weight:600;}
+.drawer-head h2{position:relative; z-index:1; font-size:20px; margin:6px 0 4px; display:flex; align-items:center; gap:10px;}
+.drawer-head p{position:relative; z-index:1; font-size:12.5px; color:var(--sidebar-text-dim);}
+.drawer-close{
+  position:absolute; top:18px; right:18px; z-index:2; border:none; background:rgba(255,255,255,.12);
+  color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:12px; font-weight:700;
+}
+.drawer-close:hover{background:rgba(255,255,255,.22);}
+.drawer-tabs{display:flex; gap:2px; padding:10px 14px; border-bottom:1px solid var(--border); overflow-x:auto;}
+.drawer-tab{
+  border:none; background:transparent; color:var(--text-muted); font-size:12.5px; font-weight:600;
+  padding:7px 11px; border-radius:999px; cursor:pointer; white-space:nowrap;
+}
+.drawer-tab:hover{color:var(--text); background:var(--surface-2);}
+.drawer-tab.active{color:#fff; background:var(--green-700);}
+html[data-theme="dark"] .drawer-tab.active{color:var(--green-900); background:var(--green-400);}
+.drawer-body{padding:20px 22px;}
+.drawer-body h4{font-family:var(--serif); font-size:14.5px; font-weight:600; margin:0 0 10px;}
+
+/* ============ PWA preview ============ */
+.mobile-preview{display:flex; gap:20px; flex-wrap:wrap; justify-content:center;}
+.phone{width:220px; flex:none;}
+.phone-screen{
+  background:var(--surface); border:8px solid var(--green-800); border-radius:28px; overflow:hidden;
+  box-shadow:var(--shadow-2);
+}
+html[data-theme="dark"] .phone-screen{border-color:var(--surface-3);}
+.phone-top{height:18px; background:var(--green-800);}
+html[data-theme="dark"] .phone-top{background:var(--surface-3);}
+.phone-appbar{
+  background:var(--green-800); color:#fff; font-size:12.5px; font-weight:600;
+  padding:12px 14px; font-family:var(--serif);
+}
+.phone-body{padding:12px; min-height:260px; background:var(--bg);}
+.mini-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+.mobile-search-input{
+  width:100%; border:1px solid var(--border); background:var(--surface); border-radius:8px;
+  padding:8px 10px; font-size:12px; margin-bottom:8px; color:var(--text);
+}
+
+/* ============ Toast ============ */
+.toast-stack{position:fixed; bottom:22px; right:22px; z-index:200; display:flex; flex-direction:column; gap:8px;}
+.toast{
+  background:var(--green-800); color:#fff; padding:12px 18px; border-radius:var(--radius-sm);
+  font-size:13px; font-weight:600; box-shadow:var(--shadow-2); animation:toastin .2s ease;
+  display:flex; align-items:center; gap:8px;
+}
+html[data-theme="dark"] .toast{background:var(--green-400); color:var(--green-900);}
+@keyframes toastin{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+
+/* ============ Responsive ============ */
+@media (max-width:1080px){
+  .metrics{grid-template-columns:repeat(2,1fr);}
+  .metrics-three{grid-template-columns:repeat(2,1fr);}
+  .dash-grid, .recent-grid, .grid-12-8{grid-template-columns:1fr;}
+  .report-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{
+    position:fixed; inset:0 auto 0 0; width:260px; z-index:100;
+    transform:translateX(-100%); transition:transform .2s ease;
+  }
+  .sidebar.show{transform:translateX(0);}
+  .menu-btn{display:inline-flex;}
+  .form-grid{grid-template-columns:1fr;}
+  .info-grid{grid-template-columns:1fr;}
+  .report-grid{grid-template-columns:1fr;}
+  .search{display:none;}
+  .name{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="offline-box" id="offlineBox">Modo sin conexión — puedes seguir consultando las pantallas cargadas. Los cambios se sincronizarán cuando vuelva la conexión.</div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="watermark"></div>
+    <div class="brand">
+      <svg class="shield" viewBox="0 0 64 64" fill="none">
+        <path d="M32 4 57 12v17c0 17-10.5 26-25 30C17.5 55 7 46 7 29V12Z" fill="#fff" opacity=".95"/>
+        <path d="M32 8 53 15v14c0 15-9 22.5-21 26C10 51.5 11 44.5 11 29.5V15Z" fill="var(--green-700)"/>
+        <path d="M32 15 22 30l7 0 0 12 6 0 0-12 7 0Z" fill="#fff"/>
+      </svg>
+      <div>
+        <h1>Sistema de Información<br>Vehicular</h1>
+        <small>Comando Departamental · Oruro</small>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="active" data-page="dashboard"><span class="ico">IN</span> Inicio</button>
+      <button data-page="vehiculos"><span class="ico">VH</span> Vehículos</button>
+      <button data-page="asignaciones"><span class="ico">AS</span> Asignaciones</button>
+      <button data-page="conductores"><span class="ico">CD</span> Conductores</button>
+      <button data-page="unidades"><span class="ico">UN</span> Unidades</button>
+      <button data-page="recorridos"><span class="ico">RC</span> Recorridos</button>
+      <button data-page="combustible"><span class="ico">CB</span> Combustible</button>
+      <button data-page="mantenimiento"><span class="ico">MT</span> Mantenimiento</button>
+      <button data-page="inventario"><span class="ico">IV</span> Inventario <span class="alert-count">5</span></button>
+      <button data-page="documentacion"><span class="ico">DC</span> Documentación</button>
+      <button data-page="incidentes"><span class="ico">IC</span> Incidentes</button>
+      <button data-page="reportes"><span class="ico">RP</span> Reportes</button>
+      <button data-page="usuarios"><span class="ico">AU</span> Usuarios y auditoría</button>
+      <button data-page="pwa"><span class="ico">PW</span> PWA / Móvil</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      Sistema de información vehicular<br>Prototipo funcional de interfaz
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn">MENÚ</button>
+      <div class="search">
+        <span>⌕</span>
+        <input id="globalSearch" placeholder="Buscar por placa, vehículo, conductor o unidad..." />
+      </div>
+      <div class="top-actions">
+        <span class="status-pill" id="netStatus">En línea</span>
+        <div class="theme-toggle" id="themeToggle" title="Cambiar tema">
+          <span data-theme-btn="light">☀</span>
+          <span data-theme-btn="dark">☾</span>
+        </div>
+        <button class="btn soft" id="installTopBtn">Instalar PWA</button>
+        <div class="profile">
+          <div class="avatar">AT</div>
+          <div class="name">
+            <strong>Administrador</strong>
+            <div class="profile-subtitle">Demo</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="install-banner" id="installBanner">
+        <div class="watermark"></div>
+        <div>
+          <strong class="install-title">Instalar aplicación en el dispositivo</strong>
+          <div class="install-subtitle">Acceso rápido, diseño responsivo y soporte offline básico.</div>
+        </div>
+        <button class="btn" id="installBannerBtn">Instalar PWA</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div>
+            <h2>Panel principal</h2>
+            <p>Vista general de la información vehicular.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" data-toast="Preparando resumen para exportar...">Exportar resumen</button>
+            <button class="btn primary" data-open="recorridoModal">+ Registrar recorrido</button>
+          </div>
+        </div>
+
+        <div class="grid metrics mb-16">
+          <div class="metric"><div class="icon">V</div><div><div class="value">511</div><div class="label">Vehículos registrados</div></div></div>
+          <div class="metric"><div class="icon">✓</div><div><div class="value">438</div><div class="label">Vehículos operativos</div></div></div>
+          <div class="metric"><div class="icon">C</div><div><div class="value">85</div><div class="label">Conductores activos</div></div></div>
+          <div class="metric"><div class="icon">KM</div><div><div class="value">320</div><div class="label">Recorridos este mes</div></div></div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card">
+            <h3>Recorridos por mes</h3>
+            <div class="bars">
+              <div class="bar bar-h42" data-m="Ene"></div>
+              <div class="bar bar-h49" data-m="Feb"></div>
+              <div class="bar bar-h62" data-m="Mar"></div>
+              <div class="bar bar-h52" data-m="Abr"></div>
+              <div class="bar bar-h68" data-m="May"></div>
+              <div class="bar bar-h76" data-m="Jun"></div>
+              <div class="bar bar-h73" data-m="Jul"></div>
+              <div class="bar bar-h90" data-m="Ago"></div>
+              <div class="bar bar-h82" data-m="Sep"></div>
+              <div class="bar bar-h66" data-m="Oct"></div>
+              <div class="bar bar-h79" data-m="Nov"></div>
+              <div class="bar bar-h94" data-m="Dic"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Estado del parque automotor</h3>
+            <div class="donut-wrap">
+              <div class="donut"></div>
+              <div class="legend">
+                <div><i class="legend-green"></i>Operativos 85%</div>
+                <div><i class="legend-orange"></i>Mantenimiento 5%</div>
+                <div><i class="legend-red"></i>Inoperables 7%</div>
+                <div><i class="legend-gray"></i>Otros 3%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-grid">
+          <div class="card">
+            <h3>Últimos registros</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Vehículo</th><th>Descripción</th></tr></thead>
+                <tbody>
+                  <tr><td>09/09/2026</td><td>Recorrido</td><td>4021-LIG</td><td>La Paz · 126 km</td></tr>
+                  <tr><td>09/09/2026</td><td>Combustible</td><td>6417-PAP</td><td>60 L · YPFB</td></tr>
+                  <tr><td>08/09/2026</td><td>Mantenimiento</td><td>3280-XYZ</td><td>Cambio de aceite y filtros</td></tr>
+                  <tr><td>08/09/2026</td><td>Inventario</td><td>4021-LIG</td><td>Salida filtro aceite · 2 un.</td></tr>
+                  <tr><td>07/09/2026</td><td>Documentación</td><td>7711-ABC</td><td>RUAT entregado a DIPROVE</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Seguimiento</h3>
+            <div class="notice">El sistema centraliza información. Los procesos administrativos continúan fuera del sistema.</div>
+            <div class="followup-grid">
+              <div class="mini-card"><strong>5</strong> artículos bajo stock mínimo</div>
+              <div class="mini-card"><strong>2</strong> mantenimientos próximos</div>
+              <div class="mini-card"><strong>7</strong> recorridos abiertos</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VEHICULOS -->
+      <section class="page" id="page-vehiculos">
+        <div class="page-head">
+          <div><h2>Vehículos</h2><p>Registro y consulta centralizada del parque automotor.</p></div>
+          <button class="btn primary" data-open="vehiculoModal">+ Nuevo vehículo</button>
+        </div>
+
+        <div class="card">
+          <div class="filter-row">
+            <input id="vehicleSearch" placeholder="Buscar por placa, marca, modelo, chasis..." />
+            <select id="vehicleUnitFilter"><option value="">Todas las unidades</option><option>EPI 3</option><option>UTOP</option><option>FELCC</option><option>Radio Patrullas 110</option></select>
+            <select id="vehicleStateFilter"><option value="">Todos los estados</option><option>Bueno</option><option>Regular</option><option>En mantenimiento</option><option>Inoperable</option></select>
+          </div>
+          <div class="table-wrap">
+            <table id="vehicleTable">
+              <thead><tr><th>Placa</th><th>Marca</th><th>Modelo</th><th>Unidad</th><th>Estado</th><th>Último KM</th><th>Acciones</th></tr></thead>
+              <tbody>
+                <tr data-unit="EPI 3" data-state="Bueno"><td>6417-PBT</td><td>Nissan</td><td>Frontier</td><td>EPI 3</td><td><span class="badge green">Bueno</span></td><td>85.700</td><td><button class="btn soft vehicle-detail-btn" data-plate="6417-PBT">Ver ficha</button></td></tr>
+                <tr data-unit="UTOP" data-state="Bueno"><td>3821-ABC</td><td>Toyota</td><td>Hilux</td><td>UTOP</td><td><span class="badge green">Bueno</span></td><td>61.157</td><td><button class="btn soft vehicle-detail-btn" data-plate="3821-ABC">Ver ficha</button></td></tr>
+                <tr data-unit="FELCC" data-state="En mantenimiento"><td>5510-XRT</td><td>Suzuki</td><td>Grand Vitara</td><td>FELCC</td><td><span class="badge orange">En mantenimiento</span></td><td>112.511</td><td><button class="btn soft vehicle-detail-btn" data-plate="5510-XRT">Ver ficha</button></td></tr>
+                <tr data-unit="Radio Patrullas 110" data-state="Regular"><td>2298-KLM</td><td>Nissan</td><td>Patrol</td><td>Radio Patrullas 110</td><td><span class="badge orange">Regular</span></td><td>97.042</td><td><button class="btn soft vehicle-detail-btn" data-plate="2298-KLM">Ver ficha</button></td></tr>
+                <tr data-unit="Radio Patrullas 110" data-state="Inoperable"><td>7741-KZA</td><td>Toyota</td><td>Corolla</td><td>Radio Patrullas 110</td><td><span class="badge red">Inoperable</span></td><td>143.880</td><td><button class="btn soft vehicle-detail-btn" data-plate="7741-KZA">Ver ficha</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ASIGNACIONES -->
+      <section class="page" id="page-asignaciones">
+        <div class="page-head">
+          <div><h2>Asignaciones de unidad</h2><p>Historial de las unidades a las que estuvo asignado cada vehículo.</p></div>
+          <button class="btn primary" data-open="asignacionModal">+ Nueva asignación</button>
+        </div>
+        <div class="toolbar-note mb-14">Este módulo registra el resultado de una asignación y su periodo de vigencia. No gestiona solicitudes ni trámites administrativos previos.</div>
+        <div class="card">
+          <div class="filter-row"><input id="assignmentSearch" placeholder="Buscar placa, unidad o referencia..." /><select id="assignmentStatus"><option value="">Todas</option><option value="ACTUAL">Actuales</option><option value="HISTORICA">Históricas</option></select></div>
+          <div class="table-wrap"><table id="assignmentTable"><thead><tr><th>Vehículo</th><th>Unidad</th><th>Inicio</th><th>Fin</th><th>Motivo</th><th>Documento</th><th>Estado</th></tr></thead><tbody>
+            <tr data-status="ACTUAL"><td>6417-PBT</td><td>EPI 3</td><td>01/06/2026</td><td>—</td><td>Necesidad operativa</td><td>ACT-041/2026</td><td><span class="badge green">Actual</span></td></tr>
+            <tr data-status="ACTUAL"><td>3821-ABC</td><td>UTOP</td><td>12/01/2026</td><td>—</td><td>Patrullaje preventivo</td><td>ACT-008/2026</td><td><span class="badge green">Actual</span></td></tr>
+            <tr data-status="HISTORICA"><td>5510-XRT</td><td>EPI 2</td><td>05/03/2025</td><td>31/05/2026</td><td>Reasignación</td><td>ACT-119/2025</td><td><span class="badge orange">Histórica</span></td></tr>
+          </tbody></table></div>
+        </div>
+      </section>
+
+      <!-- CONDUCTORES -->
+      <section class="page" id="page-conductores">
+        <div class="page-head">
+          <div><h2>Conductores</h2><p>Padrón de conductores y relación histórica con vehículos.</p></div>
+          <button class="btn primary" data-open="conductorModal">+ Nuevo conductor</button>
+        </div>
+        <div class="card">
+          <div class="filter-row"><input placeholder="Buscar por nombre, CI o unidad..." /><select><option>Todas las unidades</option><option>UTOP</option><option>Rural</option></select></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>CI</th><th>Nombre</th><th>Grado</th><th>Unidad</th><th>Vehículos asociados</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>1234567</td><td>Juan Pérez</td><td>Sgto.</td><td>UTOP</td><td>4021-LIG · 6417-PAP</td><td><span class="badge green">Activo</span></td></tr>
+                <tr><td>2345678</td><td>Carlos Mamani</td><td>Sgto.</td><td>Rural</td><td>6417-PAP</td><td><span class="badge green">Activo</span></td></tr>
+                <tr><td>3456789</td><td>Pedro López</td><td>Tte.</td><td>Tránsito</td><td>3280-XYZ</td><td><span class="badge green">Activo</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECORRIDOS -->
+      <section class="page" id="page-recorridos">
+        <div class="page-head">
+          <div><h2>Recorridos</h2><p>Control de salida, llegada y kilometraje.</p></div>
+          <button class="btn primary" data-open="recorridoModal">+ Nuevo recorrido</button>
+        </div>
+        <div class="card">
+          <div class="filter-row"><input placeholder="Buscar por vehículo, conductor o destino..." /><input type="date" /><select><option>Todos</option><option>Abierto</option><option>Cerrado</option></select></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Vehículo</th><th>Conductor</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>KM</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>10/09/2026</td><td>4021-LIG</td><td>Juan Pérez</td><td>La Paz</td><td>08:00</td><td>14:30</td><td>125</td><td><span class="badge green">Cerrado</span></td></tr>
+                <tr><td>10/09/2026</td><td>6417-PAP</td><td>Carlos Mamani</td><td>Oruro</td><td>09:15</td><td>—</td><td>—</td><td><span class="badge orange">Abierto</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMBUSTIBLE -->
+      <section class="page" id="page-combustible">
+        <div class="page-head">
+          <div><h2>Combustible</h2><p>Abastecimientos relacionados con vehículo y kilometraje.</p></div>
+          <button class="btn primary" data-open="combustibleModal">+ Registrar abastecimiento</button>
+        </div>
+        <div class="grid metrics metrics-three mb-16">
+          <div class="metric"><div class="icon">L</div><div><div class="value">1.250</div><div class="label">Litros este mes</div></div></div>
+          <div class="metric"><div class="icon">Bs</div><div><div class="value">4.675</div><div class="label">Importe mensual</div></div></div>
+          <div class="metric"><div class="icon">V</div><div><div class="value">38</div><div class="label">Vehículos abastecidos</div></div></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>Fecha</th><th>Vehículo</th><th>KM</th><th>Tipo</th><th>Litros</th><th>Estación</th><th>Vale</th></tr></thead>
+              <tbody>
+                <tr><td>09/09/2026 10:15</td><td>4021-LIG</td><td>12.630</td><td>Diésel</td><td>60</td><td>YPFB</td><td>458721</td></tr>
+                <tr><td>08/09/2026 16:20</td><td>6417-PAP</td><td>45.410</td><td>Diésel</td><td>55</td><td>YPFB</td><td>458699</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MANTENIMIENTO -->
+      <section class="page" id="page-mantenimiento">
+        <div class="page-head">
+          <div><h2>Mantenimiento</h2><p>Historial de mantenimientos realizados a las movilidades.</p></div>
+          <button class="btn primary" data-open="mantenimientoModal">+ Registrar mantenimiento</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>Fecha</th><th>Vehículo</th><th>Tipo</th><th>Taller</th><th>KM ingreso</th><th>Trabajo</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>15/08/2026</td><td>6417-PAP</td><td>Preventivo</td><td>Taller Central</td><td>45.800</td><td>Cambio de aceite y filtros</td><td><span class="badge green">Finalizado</span></td></tr>
+                <tr><td>08/09/2026</td><td>3280-XYZ</td><td>Correctivo</td><td>Taller Mecánico</td><td>87.650</td><td>Revisión de frenos</td><td><span class="badge orange">En proceso</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- INVENTARIO -->
+      <section class="page" id="page-inventario">
+        <div class="page-head">
+          <div><h2>Inventario</h2><p>Repuestos, lubricantes, filtros y materiales. Entradas y salidas simples.</p></div>
+          <div class="actions"><button class="btn" data-open="articuloModal">+ Artículo</button><button class="btn primary" data-open="inventarioModal">+ Movimiento</button></div>
+        </div>
+        <div class="grid metrics metrics-three mb-16">
+          <div class="metric"><div class="icon">A</div><div><div class="value">64</div><div class="label">Artículos activos</div></div></div>
+          <div class="metric"><div class="icon">↓</div><div><div class="value">138</div><div class="label">Entradas del mes</div></div></div>
+          <div class="metric"><div class="icon">!</div><div><div class="value">5</div><div class="label">Bajo stock mínimo</div></div></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>Código</th><th>Artículo</th><th>Categoría</th><th>Unidad</th><th>Stock</th><th>Mínimo</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>LUB-001</td><td>Aceite 15W40</td><td>Lubricante</td><td>Galón</td><td>22</td><td>5</td><td><span class="badge green">Disponible</span></td></tr>
+                <tr><td>FIL-004</td><td>Filtro de aceite</td><td>Filtro</td><td>Unidad</td><td>14</td><td>10</td><td><span class="badge green">Disponible</span></td></tr>
+                <tr><td>REP-019</td><td>Pastillas de freno</td><td>Repuesto</td><td>Juego</td><td>3</td><td>4</td><td><span class="badge red">Bajo stock</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- INCIDENTES -->
+      <section class="page" id="page-incidentes">
+        <div class="page-head">
+          <div><h2>Incidentes</h2><p>Trazabilidad de hechos relacionados con vehículos y conductor vigente en la fecha del evento.</p></div>
+          <button class="btn primary" data-open="incidenteModal">+ Registrar incidente</button>
+        </div>
+        <div class="toolbar-note mb-14">Este módulo registra el incidente y sus antecedentes vehiculares. No contempla ni administra procesos disciplinarios.</div>
+        <div class="card"><div class="filter-row"><input id="incidentSearch" placeholder="Buscar por placa, conductor, unidad o lugar..." /></div><div class="table-wrap"><table id="incidentTable"><thead><tr><th>Fecha</th><th>Vehículo</th><th>Conductor</th><th>Unidad</th><th>Tipo</th><th>Lugar</th><th>Estado posterior</th><th>Referencia</th></tr></thead><tbody>
+          <tr><td>22/07/2026</td><td>7741-KZA</td><td>Sgto. J. Flores</td><td>Radio Patrullas 110</td><td>Accidente de tránsito</td><td>Av. 6 de Agosto</td><td><span class="badge red">Separado</span></td><td>INF-INC-021</td></tr>
+          <tr><td>11/05/2026</td><td>5510-XRT</td><td>Sgto. C. Mamani</td><td>FELCC</td><td>Daño</td><td>Zona Central</td><td><span class="badge orange">Regular</span></td><td>INF-INC-013</td></tr>
+        </tbody></table></div></div>
+      </section>
+
+      <!-- DOCUMENTACION -->
+      <section class="page" id="page-documentacion">
+        <div class="page-head">
+          <div><h2>Documentación vehicular</h2><p>Expediente documental y registro de entrega o recepción de documentación física.</p></div>
+          <div class="actions"><button class="btn" data-open="documentoModal">+ Registrar documento</button><button class="btn primary" data-open="documentacionModal">+ Registrar entrega</button></div>
+        </div>
+        <div class="toolbar-note mb-14">El sistema conserva metadatos, referencias y trazabilidad. La validez institucional sigue dependiendo del documento y procedimiento oficial correspondiente.</div>
+        <div class="grid grid-12-8 mb-16">
+          <div class="card"><h3>Expediente documental</h3><div class="table-wrap"><table><thead><tr><th>Vehículo</th><th>Tipo</th><th>Número</th><th>Fecha</th><th>Referencia</th></tr></thead><tbody>
+            <tr><td>6417-PBT</td><td>Ficha Kardex</td><td>KDX-6417</td><td>03/01/2026</td><td>Registro técnico</td></tr>
+            <tr><td>6417-PBT</td><td>Acta de entrega</td><td>ACT-041/2026</td><td>01/06/2026</td><td>Asignación EPI 3</td></tr>
+            <tr><td>3821-ABC</td><td>Informe técnico</td><td>INF-088/2026</td><td>05/09/2026</td><td>Mantenimiento</td></tr>
+          </tbody></table></div></div>
+          <div class="card"><h3>Seguimiento documental</h3><div class="mini-card"><b>511</b><br><small>expedientes vehiculares</small></div><div class="mini-card"><b>5</b><br><small>registros pendientes de revisión</small></div><div class="mini-card"><b>2</b><br><small>entregas registradas esta semana</small></div></div>
+        </div>
+        <div class="card"><h3>Entregas y recepciones</h3><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Vehículo</th><th>Documento</th><th>Referencia</th><th>Unidad receptora</th><th>Recibió</th></tr></thead><tbody>
+          <tr><td>09/09/2026</td><td>6417-PBT</td><td>RUAT</td><td>123456</td><td>DIPROVE</td><td>Carlos Mamani · Sgto.</td></tr>
+          <tr><td>02/09/2026</td><td>3821-ABC</td><td>SOAT</td><td>SOAT-2026-889</td><td>UTOP</td><td>Pedro Quispe · Tte.</td></tr>
+        </tbody></table></div></div>
+      </section>
+
+      <!-- UNIDADES -->
+      <section class="page" id="page-unidades">
+        <div class="page-head">
+          <div><h2>Unidades y encargados de transportes</h2><p>Dependencias y responsable vigente de transportes.</p></div>
+          <div class="actions"><button class="btn" data-open="unidadModal">+ Unidad</button><button class="btn primary" data-open="encargadoModal">+ Registrar encargado</button></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>Unidad</th><th>Distrito</th><th>Encargado actual</th><th>Grado</th><th>Desde</th><th>Vehículos</th></tr></thead>
+              <tbody>
+                <tr><td>UTOP</td><td>Oruro</td><td>Juan Pérez</td><td>Sargento</td><td>01/01/2026</td><td>18</td></tr>
+                <tr><td>Policía Rural</td><td>Rural</td><td>Carlos Mamani</td><td>Sargento</td><td>15/02/2026</td><td>25</td></tr>
+                <tr><td>FELCC</td><td>Oruro</td><td>Pedro López</td><td>Teniente</td><td>05/03/2026</td><td>12</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTES -->
+      <section class="page" id="page-reportes">
+        <div class="page-head"><div><h2>Reportes</h2><p>Consultas para seguimiento, control interno y toma de decisiones.</p></div><button class="btn" data-report="resumen">Exportar resumen general</button></div>
+        <div class="report-grid">
+          <div class="card report-card"><h3>Vehículos por unidad</h3><p class="text-muted">Cantidad total, operativos, en mantenimiento e inoperables por dependencia.</p><button class="btn primary" data-report="vehiculos-unidad">Generar</button></div>
+          <div class="card report-card"><h3>Historial de asignaciones</h3><p class="text-muted">Unidades por las que pasó cada vehículo y periodos de permanencia.</p><button class="btn primary" data-report="asignaciones">Generar</button></div>
+          <div class="card report-card"><h3>Historial de kilometraje</h3><p class="text-muted">Lecturas de recorridos, combustible y mantenimiento.</p><button class="btn primary" data-report="kilometraje">Generar</button></div>
+          <div class="card report-card"><h3>Consumo de combustible</h3><p class="text-muted">Litros y abastecimientos por vehículo, entidad y periodo.</p><button class="btn primary" data-report="combustible">Generar</button></div>
+          <div class="card report-card"><h3>Mantenimientos</h3><p class="text-muted">Historial preventivo, correctivo, taller y próximos servicios.</p><button class="btn primary" data-report="mantenimiento">Generar</button></div>
+          <div class="card report-card"><h3>Kardex / stock</h3><p class="text-muted">Entradas, salidas, dotaciones, existencias y productos bajo mínimo.</p><button class="btn primary" data-report="inventario">Generar</button></div>
+          <div class="card report-card"><h3>Historial integral del vehículo</h3><p class="text-muted">Ficha técnica, conductores, unidad, recorridos, combustible, mantenimiento, documentos e incidentes.</p><button class="btn primary" data-report="historial">Generar</button></div>
+          <div class="card report-card"><h3>Conductores por vehículo</h3><p class="text-muted">Historial de responsables asignados y periodos de vigencia.</p><button class="btn primary" data-report="conductores">Generar</button></div>
+          <div class="card report-card"><h3>Incidentes vehiculares</h3><p class="text-muted">Hechos registrados por vehículo, conductor, unidad y fecha.</p><button class="btn primary" data-report="incidentes">Generar</button></div>
+        </div>
+      </section>
+
+      <!-- USUARIOS Y AUDITORIA -->
+      <section class="page" id="page-usuarios">
+        <div class="page-head"><div><h2>Usuarios y auditoría</h2><p>Acceso por roles y trazabilidad de las operaciones realizadas en el sistema.</p></div><button class="btn primary" data-open="usuarioModal">+ Nuevo usuario</button></div>
+        <div class="dash-grid">
+          <div class="card"><h3>Usuarios del sistema</h3><div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Área / personal</th><th>Rol</th><th>Estado</th><th>Último acceso</th></tr></thead><tbody>
+            <tr><td>transportes.admin</td><td>Área de Transportes</td><td>Administrador</td><td><span class="badge green">Activo</span></td><td>08/09/2026 10:12</td></tr>
+            <tr><td>combustible.01</td><td>Combustible</td><td>Operador</td><td><span class="badge green">Activo</span></td><td>08/09/2026 09:51</td></tr>
+            <tr><td>mantenimiento.01</td><td>Mantenimiento</td><td>Operador</td><td><span class="badge green">Activo</span></td><td>08/09/2026 09:20</td></tr>
+            <tr><td>almacen.01</td><td>Almacén</td><td>Operador</td><td><span class="badge green">Activo</span></td><td>08/09/2026 09:18</td></tr>
+          </tbody></table></div></div>
+          <div class="card"><h3>Auditoría reciente</h3>
+            <div class="audit-row"><span class="badge blue">UPDATE</span><div><b>Vehículo 6417-PBT</b><div class="audit-meta">Actualización de información técnica</div></div><small>09:42</small></div>
+            <div class="audit-row"><span class="badge orange">INSERT</span><div><b>Movimiento de inventario</b><div class="audit-meta">Salida de aceite 15W40</div></div><small>09:18</small></div>
+            <div class="audit-row"><span class="badge blue">INSERT</span><div><b>Abastecimiento</b><div class="audit-meta">Vale V-00841 · 60 L</div></div><small>08:54</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PWA -->
+      <section class="page" id="page-pwa">
+        <div class="page-head"><div><h2>PWA / Vista móvil</h2><p>Diseño pensado para registrar información en campo desde celular.</p></div><button class="btn primary" id="installPageBtn">Instalar aplicación</button></div>
+        <div class="card mb-16">
+          <h3>Comportamiento esperado</h3>
+          <div class="info-grid">
+            <div class="info"><span>Instalación</span><strong>Agregar a pantalla de inicio</strong></div>
+            <div class="info"><span>Responsive</span><strong>Celular, tablet y escritorio</strong></div>
+            <div class="info"><span>Offline</span><strong>Consulta de interfaz cacheada</strong></div>
+            <div class="info"><span>Campo</span><strong>Recorridos, KM, combustible e inventario</strong></div>
+            <div class="info"><span>Sincronización</span><strong>Preparado para API</strong></div>
+            <div class="info"><span>Objetivo</span><strong>Información siempre a la mano</strong></div>
+          </div>
+        </div>
+
+        <div class="mobile-preview">
+          <div class="phone"><div class="phone-screen"><div class="phone-top"></div><div class="phone-appbar">Inicio</div><div class="phone-body"><div class="mini-grid"><div class="mini-card"><b>120</b><br><small>Vehículos</small></div><div class="mini-card"><b>98</b><br><small>Operativos</small></div><div class="mini-card"><b>85</b><br><small>Conductores</small></div><div class="mini-card"><b>320</b><br><small>Recorridos</small></div></div><div class="mini-card"><b>Últimos registros</b><p>4021-LIG · recorrido</p><p>6417-PAP · combustible</p></div></div></div></div>
+
+          <div class="phone"><div class="phone-screen"><div class="phone-top"></div><div class="phone-appbar">Vehículos</div><div class="phone-body"><input class="mobile-search-input" placeholder="Buscar..." /><div class="mini-card"><b>4021-LIG</b><br><small>Toyota Hilux · UTOP</small><br><span class="badge green">Operativo</span></div><div class="mini-card"><b>6417-PAP</b><br><small>Nissan Frontier · Rural</small><br><span class="badge green">Operativo</span></div><button class="btn primary w-full">+ Nuevo</button></div></div></div>
+
+          <div class="phone"><div class="phone-screen"><div class="phone-top"></div><div class="phone-appbar">Nuevo recorrido</div><div class="phone-body"><div class="field"><label>Vehículo</label><select><option>4021-LIG</option></select></div><br><div class="field"><label>Conductor</label><select><option>Juan Pérez</option></select></div><br><div class="field"><label>Destino</label><input value="La Paz"></div><br><div class="mini-grid"><div class="field"><label>KM inicio</label><input value="12500"></div><div class="field"><label>KM fin</label><input value="12625"></div></div><br><button class="btn primary w-full">Guardar</button></div></div></div>
+
+          <div class="phone"><div class="phone-screen"><div class="phone-top"></div><div class="phone-appbar">Inventario</div><div class="phone-body"><div class="mini-card"><b>Aceite 15W40</b><br><small>22 galones</small></div><div class="mini-card"><b>Filtro de aceite</b><br><small>14 unidades</small></div><div class="mini-card"><b>Pastillas de freno</b><br><small class="text-danger">3 juegos · bajo stock</small></div><button class="btn primary w-full">+ Movimiento</button></div></div></div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="vehiculoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registro de vehículo</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Placa *</label><input value="4021-LIG"></div>
+      <div class="field"><label>Placa DNFR</label><input value="4021-LIG"></div>
+      <div class="field"><label>Tipo de vehículo *</label><select><option>Camioneta</option><option>Automóvil</option><option>Motocicleta</option></select></div>
+      <div class="field"><label>Marca</label><select><option>Toyota</option><option>Nissan</option><option>Chevrolet</option></select></div>
+      <div class="field"><label>Modelo</label><input value="Hilux"></div>
+      <div class="field"><label>Año</label><input type="number" value="2020"></div>
+      <div class="field"><label>Número de chasis</label><input value="8AJFZ22G0L1234567"></div>
+      <div class="field"><label>Número de motor</label><input value="1KDFTV1234567"></div>
+      <div class="field"><label>Color</label><input value="Blanco"></div>
+      <div class="field"><label>País de origen</label><input value="Japón"></div>
+      <div class="field"><label>Fuente de recepción</label><input value="Donación"></div>
+      <div class="field"><label>Unidad actual</label><select><option>UTOP</option><option>Rural</option><option>FELCC</option></select></div>
+      <div class="field"><label>Estado</label><select><option>BUENO</option><option>REGULAR</option><option>EN MANTENIMIENTO</option></select></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Vehículo guardado correctamente">Guardar vehículo</button></div>
+  </div>
+</div>
+
+<div class="modal" id="vehiculoDetalleModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Detalle de vehículo</h3><button class="close">✕</button></div>
+    <div class="detail-head">
+      <div class="vehicle-pic">VH</div>
+      <div><h2 class="vehicle-detail-heading">4021-LIG <span class="badge green">Operativo</span></h2><p class="vehicle-detail-subtitle">Toyota Hilux · 2020 · UTOP</p></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active">Información</button><button class="tab">Historial</button><button class="tab">Conductores</button><button class="tab">Documentación</button><button class="tab">Mantenimiento</button><button class="tab">Combustible</button><button class="tab">Recorridos</button>
+    </div>
+    <div class="info-grid">
+      <div class="info"><span>Placa</span><strong>4021-LIG</strong></div>
+      <div class="info"><span>Chasis</span><strong>8AJFZ22G0L1234567</strong></div>
+      <div class="info"><span>Motor</span><strong>1KDFTV1234567</strong></div>
+      <div class="info"><span>Marca</span><strong>Toyota</strong></div>
+      <div class="info"><span>Modelo</span><strong>Hilux</strong></div>
+      <div class="info"><span>Unidad actual</span><strong>UTOP</strong></div>
+      <div class="info"><span>Último KM</span><strong>12.625</strong></div>
+      <div class="info"><span>Conductor asociado</span><strong>Juan Pérez</strong></div>
+      <div class="info"><span>Estado</span><strong>BUENO</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="conductorModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registro de conductor</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>CI *</label><input></div><div class="field"><label>Grado</label><input></div>
+      <div class="field"><label>Nombres *</label><input></div><div class="field"><label>Apellidos *</label><input></div>
+      <div class="field"><label>Número de licencia</label><input></div><div class="field"><label>Categoría</label><input></div>
+      <div class="field"><label>Vencimiento licencia</label><input type="date"></div><div class="field"><label>Unidad</label><select><option>UTOP</option><option>Rural</option></select></div>
+      <div class="field"><label>Teléfono</label><input></div><div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Conductor guardado correctamente">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal" id="recorridoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registro de recorrido</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Vehículo *</label><select><option>4021-LIG</option><option>6417-PAP</option></select></div>
+      <div class="field"><label>Conductor *</label><select><option>Juan Pérez</option><option>Carlos Mamani</option></select></div>
+      <div class="field"><label>Unidad</label><select><option>UTOP</option><option>Rural</option></select></div>
+      <div class="field"><label>Destino *</label><input value="La Paz"></div>
+      <div class="field"><label>Fecha/hora salida *</label><input type="datetime-local"></div>
+      <div class="field"><label>Fecha/hora llegada</label><input type="datetime-local"></div>
+      <div class="field"><label>KM inicio *</label><input type="number" value="12500"></div>
+      <div class="field"><label>KM fin</label><input type="number" value="12625"></div>
+      <div class="field"><label>Nivel combustible salida (%)</label><input type="number" value="75"></div>
+      <div class="field"><label>Nivel combustible llegada (%)</label><input type="number" value="50"></div>
+      <div class="field"><label>Estado del vehículo en salida</label><input value="Bueno"></div>
+      <div class="field"><label>Estado del vehículo en llegada</label><input value="Bueno"></div>
+      <div class="field full"><label>Daños observados</label><textarea></textarea></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Recorrido guardado correctamente">Guardar recorrido</button></div>
+  </div>
+</div>
+
+<div class="modal" id="combustibleModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registro de abastecimiento</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Vehículo *</label><select><option>4021-LIG</option></select></div>
+      <div class="field"><label>Conductor</label><select><option>Juan Pérez</option></select></div>
+      <div class="field"><label>Fecha/hora *</label><input type="datetime-local"></div>
+      <div class="field"><label>Kilometraje *</label><input value="12630"></div>
+      <div class="field"><label>Tipo combustible *</label><select><option>DIÉSEL</option><option>GASOLINA</option></select></div>
+      <div class="field"><label>Estación</label><input value="YPFB - La Paz"></div>
+      <div class="field"><label>Cantidad (litros) *</label><input value="60"></div>
+      <div class="field"><label>Precio unitario</label><input value="3.74"></div>
+      <div class="field"><label>Número de vale</label><input value="458721"></div>
+      <div class="field"><label>Número de factura</label><input></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Abastecimiento guardado correctamente">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mantenimientoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registro de mantenimiento</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Vehículo *</label><select><option>6417-PAP</option></select></div>
+      <div class="field"><label>Tipo *</label><select><option>PREVENTIVO</option><option>CORRECTIVO</option></select></div>
+      <div class="field"><label>Taller</label><input value="Taller Central"></div>
+      <div class="field"><label>KM ingreso *</label><input value="45800"></div>
+      <div class="field"><label>Fecha ingreso *</label><input type="datetime-local"></div>
+      <div class="field"><label>Fecha salida</label><input type="datetime-local"></div>
+      <div class="field full"><label>Diagnóstico</label><textarea>Cambio de aceite</textarea></div>
+      <div class="field full"><label>Trabajo realizado</label><textarea>Cambio de aceite y filtros</textarea></div>
+      <div class="field"><label>Costo total (Bs.)</label><input value="850"></div>
+      <div class="field"><label>Próximo mantenimiento KM</label><input value="50000"></div>
+      <div class="field"><label>Próximo mantenimiento fecha</label><input type="date"></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Mantenimiento guardado correctamente">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal" id="articuloModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Nuevo artículo de inventario</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Código</label><input value="LUB-001"></div>
+      <div class="field"><label>Nombre *</label><input value="Aceite 15W40"></div>
+      <div class="field"><label>Categoría *</label><select><option>LUBRICANTE</option><option>REPUESTO</option><option>FILTRO</option><option>FLUIDO</option><option>MATERIAL</option><option>OTRO</option></select></div>
+      <div class="field"><label>Unidad de medida *</label><input value="GALÓN"></div>
+      <div class="field"><label>Stock mínimo</label><input value="5"></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Artículo guardado correctamente">Guardar artículo</button></div>
+  </div>
+</div>
+
+<div class="modal" id="inventarioModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Movimiento de inventario</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Tipo *</label><select id="movTipo"><option>ENTRADA</option><option>SALIDA</option></select></div>
+      <div class="field"><label>Artículo *</label><select><option>Aceite 15W40</option><option>Filtro de aceite</option><option>Pastillas de freno</option></select></div>
+      <div class="field"><label>Cantidad *</label><input value="2"></div>
+      <div class="field"><label>Fecha/hora *</label><input type="datetime-local"></div>
+      <div class="field salida-only"><label>Unidad destino</label><select><option>UTOP</option><option>Rural</option></select></div>
+      <div class="field salida-only"><label>Destino</label><input placeholder="Ej. Taller / Unidad / Vehículo"></div>
+      <div class="field salida-only"><label>Vehículo relacionado</label><select><option>4021-LIG</option><option>6417-PAP</option></select></div>
+      <div class="field salida-only"><label>Para qué *</label><input value="Cambio de aceite"></div>
+      <div class="field"><label>Documento / referencia</label><input value="ACTA 0240/2026"></div>
+      <div class="field"><label>Precio unitario</label><input></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Movimiento guardado correctamente">Guardar movimiento</button></div>
+  </div>
+</div>
+
+<div class="modal" id="documentacionModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registrar entrega de documentación</h3><button class="close">✕</button></div>
+    <div class="notice mb-14" style="margin:18px 22px 0;">Solo se registra la entrega y recepción. No se almacena el documento digital.</div>
+    <div class="form-grid">
+      <div class="field"><label>Vehículo *</label><select><option>4021-LIG</option><option>6417-PAP</option></select></div>
+      <div class="field"><label>Tipo de documento *</label><input value="RUAT"></div>
+      <div class="field"><label>Número / referencia</label><input value="123456"></div>
+      <div class="field"><label>Fecha de entrega *</label><input type="datetime-local"></div>
+      <div class="field"><label>Unidad receptora</label><select><option>DIPROVE</option><option>UTOP</option><option>Rural</option></select></div>
+      <div class="field"><label>Recibido por *</label><input value="Carlos Mamani"></div>
+      <div class="field"><label>Cargo / grado receptor</label><input value="Sgto."></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Entrega registrada correctamente">Guardar entrega</button></div>
+  </div>
+</div>
+
+<div class="modal" id="encargadoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Registrar encargado de transportes</h3><button class="close">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>Unidad *</label><select><option>UTOP</option><option>Rural</option><option>FELCC</option></select></div>
+      <div class="field"><label>CI</label><input value="1234567"></div>
+      <div class="field"><label>Nombres *</label><input value="Juan"></div>
+      <div class="field"><label>Apellidos *</label><input value="Pérez"></div>
+      <div class="field"><label>Grado</label><input value="Sargento"></div>
+      <div class="field"><label>Teléfono</label><input value="71234567"></div>
+      <div class="field"><label>Fecha desde *</label><input type="date"></div>
+      <div class="field"><label>Fecha hasta</label><input type="date"></div>
+      <div class="field full"><label>Observaciones</label><textarea></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Encargado guardado correctamente">Guardar encargado</button></div>
+  </div>
+</div>
+
+<div class="modal" id="asignacionModal">
+  <div class="modal-box"><div class="modal-head"><h3>Nueva asignación de unidad</h3><button class="close">✕</button></div>
+    <div class="notice mb-14" style="margin:18px 22px 0;">Registra la asignación ya determinada por el proceso institucional; no administra solicitudes.</div>
+    <div class="form-grid"><div class="field"><label>Vehículo *</label><select><option>6417-PBT · Nissan Frontier</option><option>3821-ABC · Toyota Hilux</option></select></div><div class="field"><label>Unidad *</label><select><option>EPI 3</option><option>UTOP</option><option>FELCC</option><option>Radio Patrullas 110</option></select></div><div class="field"><label>Fecha inicio *</label><input type="date"></div><div class="field"><label>Fecha fin</label><input type="date"></div><div class="field"><label>Documento / referencia</label><input placeholder="ACT-000/2026"></div><div class="field full"><label>Motivo</label><textarea>Necesidad operativa</textarea></div><div class="field full"><label>Observaciones</label><textarea></textarea></div></div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Asignación guardada correctamente">Guardar asignación</button></div>
+  </div>
+</div>
+
+<div class="modal" id="unidadModal">
+  <div class="modal-box"><div class="modal-head"><h3>Registro de unidad</h3><button class="close">✕</button></div>
+    <div class="form-grid"><div class="field"><label>Código</label><input placeholder="EPI-03"></div><div class="field"><label>Nombre *</label><input placeholder="EPI 3"></div><div class="field"><label>Tipo</label><input placeholder="Unidad operativa"></div><div class="field"><label>Unidad superior</label><select><option>Comando Departamental</option><option>Sin superior</option></select></div><div class="field"><label>Ubicación</label><input value="Oruro"></div><div class="field"><label>Estado</label><select><option>Activa</option><option>Inactiva</option></select></div></div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Unidad guardada correctamente">Guardar unidad</button></div>
+  </div>
+</div>
+
+<div class="modal" id="documentoModal">
+  <div class="modal-box"><div class="modal-head"><h3>Registrar documento en expediente</h3><button class="close">✕</button></div>
+    <div class="form-grid"><div class="field"><label>Vehículo *</label><select><option>6417-PBT</option><option>3821-ABC</option></select></div><div class="field"><label>Tipo *</label><select><option>Ficha Kardex</option><option>Acta de entrega</option><option>Informe técnico</option><option>Otro</option></select></div><div class="field"><label>Número</label><input></div><div class="field"><label>Fecha</label><input type="date"></div><div class="field full"><label>Título / referencia</label><input></div><div class="field full"><label>Observaciones</label><textarea></textarea></div></div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Documento guardado correctamente">Guardar documento</button></div>
+  </div>
+</div>
+
+<div class="modal" id="incidenteModal">
+  <div class="modal-box"><div class="modal-head"><h3>Registrar incidente vehicular</h3><button class="close">✕</button></div>
+    <div class="notice mb-14" style="margin:18px 22px 0;">El registro conserva trazabilidad del hecho. No inicia ni administra procesos disciplinarios.</div>
+    <div class="form-grid"><div class="field"><label>Vehículo *</label><select><option>6417-PBT</option><option>3821-ABC</option><option>5510-XRT</option></select></div><div class="field"><label>Conductor</label><select><option>Sgto. M. Quispe</option><option>Sof. L. Vargas</option></select></div><div class="field"><label>Unidad</label><select><option>EPI 3</option><option>UTOP</option><option>FELCC</option></select></div><div class="field"><label>Fecha y hora *</label><input type="datetime-local"></div><div class="field"><label>Tipo</label><select><option>Accidente de tránsito</option><option>Incidente mecánico</option><option>Daño</option><option>Otro</option></select></div><div class="field"><label>Lugar</label><input></div><div class="field full"><label>Descripción *</label><textarea></textarea></div><div class="field full"><label>Daños</label><textarea></textarea></div><div class="field"><label>Estado posterior</label><select><option>Bueno</option><option>Regular</option><option>Separado por incidente</option><option>Inoperable</option></select></div><div class="field"><label>Documento / referencia</label><input></div></div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Incidente registrado correctamente">Guardar incidente</button></div>
+  </div>
+</div>
+
+<div class="modal" id="usuarioModal">
+  <div class="modal-box"><div class="modal-head"><h3>Crear usuario</h3><button class="close">✕</button></div>
+    <div class="form-grid"><div class="field"><label>Usuario *</label><input placeholder="transportes.usuario"></div><div class="field"><label>Personal / área</label><input placeholder="Área de Transportes"></div><div class="field"><label>Rol *</label><select><option>Administrador</option><option>Transportes</option><option>Combustible</option><option>Mantenimiento</option><option>Almacén</option><option>Consulta</option></select></div><div class="field"><label>Estado</label><select><option>Activo</option><option>Inactivo</option></select></div><div class="field full"><label>Contraseña temporal</label><input type="password" value="Temporal2026"></div></div>
+    <div class="form-actions"><button class="btn close-action">Cancelar</button><button class="btn primary demo-save" data-toast="Usuario creado correctamente">Crear usuario</button></div>
+  </div>
+</div>
+
+<div class="overlay-global" id="globalOverlay"></div>
+
+<aside class="detail-drawer" id="vehicleDrawer">
+  <div class="drawer-head">
+    <div class="watermark"></div>
+    <button class="drawer-close" id="drawerClose">✕</button>
+    <small>EXPEDIENTE VEHICULAR</small>
+    <h2 id="drawerTitle">6417-PBT · Nissan Frontier</h2>
+    <p id="drawerSubtitle">Información centralizada e historial de la movilidad</p>
+  </div>
+  <div class="drawer-tabs">
+    <button class="drawer-tab active" data-drawer-tab="general">General</button>
+    <button class="drawer-tab" data-drawer-tab="asignaciones">Asignaciones</button>
+    <button class="drawer-tab" data-drawer-tab="conductores">Conductores</button>
+    <button class="drawer-tab" data-drawer-tab="recorridos">Recorridos</button>
+    <button class="drawer-tab" data-drawer-tab="combustible">Combustible</button>
+    <button class="drawer-tab" data-drawer-tab="mantenimiento">Mantenimiento</button>
+    <button class="drawer-tab" data-drawer-tab="documentos">Documentos</button>
+    <button class="drawer-tab" data-drawer-tab="incidentes">Incidentes</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  /* ---------- Theme ---------- */
+  function applyTheme(mode){
+    root.setAttribute('data-theme', mode);
+    document.querySelectorAll('[data-theme-btn]').forEach(function(b){
+      b.classList.toggle('active', b.dataset.themeBtn === mode);
+    });
+  }
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(prefersDark ? 'dark' : 'light');
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    applyTheme(current === 'light' ? 'dark' : 'light');
+  });
+
+  /* ---------- Toast ---------- */
+  function toast(msg){
+    var stack = document.getElementById('toastStack');
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(function(){
+      el.style.opacity = '0';
+      el.style.transition = 'opacity .25s';
+      setTimeout(function(){ el.remove(); }, 250);
+    }, 2600);
+  }
+
+  /* ---------- Sidebar nav / pages ---------- */
+  document.querySelectorAll('.nav button[data-page]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.nav button[data-page]').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var target = btn.dataset.page;
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      var page = document.getElementById('page-' + target);
+      if(page){ page.classList.add('active'); }
+      document.querySelector('.content').scrollTop = 0;
+      window.scrollTo({top:0, behavior:'smooth'});
+      document.getElementById('sidebar').classList.remove('show');
+    });
+  });
+
+  document.getElementById('menuBtn').addEventListener('click', function(){
+    document.getElementById('sidebar').classList.toggle('show');
+  });
+
+  /* ---------- Modals ---------- */
+  var overlay = document.getElementById('globalOverlay');
+  function openModal(id){
+    var m = document.getElementById(id);
+    if(!m) return;
+    m.classList.add('show');
+    overlay.classList.add('show');
+  }
+  function closeAllModals(){
+    document.querySelectorAll('.modal.show').forEach(function(m){ m.classList.remove('show'); });
+    overlay.classList.remove('show');
+  }
+  document.querySelectorAll('[data-open]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openModal(btn.dataset.open); });
+  });
+  document.querySelectorAll('.modal .close, .modal .close-action').forEach(function(btn){
+    btn.addEventListener('click', closeAllModals);
+  });
+  overlay.addEventListener('click', function(){ closeAllModals(); closeDrawer(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ closeAllModals(); closeDrawer(); } });
+
+  document.querySelectorAll('.demo-save').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      closeAllModals();
+      toast(btn.dataset.toast || 'Guardado correctamente');
+    });
+  });
+
+  /* salida-only fields on inventory modal */
+  var movTipo = document.getElementById('movTipo');
+  function syncSalida(){
+    var show = movTipo.value === 'SALIDA';
+    document.querySelectorAll('.salida-only').forEach(function(f){ f.classList.toggle('show', show); });
+  }
+  if(movTipo){ movTipo.addEventListener('change', syncSalida); syncSalida(); }
+
+  /* ---------- Modal tabs (vehicle detail) ---------- */
+  document.querySelectorAll('.tabs').forEach(function(tabs){
+    tabs.querySelectorAll('.tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        tabs.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+      });
+    });
+  });
+
+  /* ---------- Vehicle drawer ---------- */
+  var drawer = document.getElementById('vehicleDrawer');
+  var drawerData = {
+    general: function(p){ return '<h4>Información general</h4><div class="info-grid" style="grid-template-columns:1fr 1fr;"><div class="info"><span>Placa</span><strong>'+p+'</strong></div><div class="info"><span>Estado</span><strong>Operativo</strong></div><div class="info"><span>Último KM</span><strong>85.700</strong></div><div class="info"><span>Unidad</span><strong>EPI 3</strong></div></div>'; },
+    asignaciones: function(){ return '<h4>Asignaciones</h4><div class="mini-card">EPI 3 · desde 01/06/2026 · vigente</div><div class="mini-card">EPI 2 · 05/03/2025 – 31/05/2026</div>'; },
+    conductores: function(){ return '<h4>Conductores asociados</h4><div class="mini-card">Sgto. J. Flores · desde 01/06/2026</div>'; },
+    recorridos: function(){ return '<h4>Últimos recorridos</h4><div class="mini-card">10/09/2026 · La Paz · 125 km</div><div class="mini-card">08/09/2026 · Challapata · 98 km</div>'; },
+    combustible: function(){ return '<h4>Abastecimientos</h4><div class="mini-card">09/09/2026 · 60 L · YPFB</div><div class="mini-card">28/08/2026 · 58 L · YPFB</div>'; },
+    mantenimiento: function(){ return '<h4>Mantenimientos</h4><div class="mini-card">15/08/2026 · Preventivo · Taller Central</div>'; },
+    documentos: function(){ return '<h4>Documentación</h4><div class="mini-card">RUAT · entregado a DIPROVE · 09/09/2026</div><div class="mini-card">SOAT vigente · SOAT-2026-889</div>'; },
+    incidentes: function(){ return '<h4>Incidentes</h4><div class="mini-card">Sin incidentes registrados</div>'; }
+  };
+  function renderDrawerTab(tab, plate){
+    document.getElementById('drawerBody').innerHTML = drawerData[tab] ? drawerData[tab](plate) : '';
+  }
+  function closeDrawer(){ drawer.classList.remove('show'); overlay.classList.remove('show'); }
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+
+  document.querySelectorAll('.vehicle-detail-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var row = btn.closest('tr');
+      var plate = btn.dataset.plate;
+      var marca = row.children[1] ? row.children[1].textContent : '';
+      var modelo = row.children[2] ? row.children[2].textContent : '';
+      document.getElementById('drawerTitle').textContent = plate + ' · ' + marca + ' ' + modelo;
+      document.getElementById('drawerSubtitle').textContent = 'Información centralizada e historial de la movilidad';
+      drawer.querySelectorAll('.drawer-tab').forEach(function(t){ t.classList.remove('active'); });
+      drawer.querySelector('.drawer-tab[data-drawer-tab="general"]').classList.add('active');
+      renderDrawerTab('general', plate);
+      drawer.classList.add('show');
+      overlay.classList.add('show');
+    });
+  });
+  drawer.querySelectorAll('.drawer-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      drawer.querySelectorAll('.drawer-tab').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var plate = document.getElementById('drawerTitle').textContent.split(' ')[0];
+      renderDrawerTab(tab.dataset.drawerTab, plate);
+    });
+  });
+
+  /* ---------- Filters ---------- */
+  function filterTable(input, table, matcher){
+    if(!input || !table) return;
+    input.addEventListener('input', function(){ apply(); });
+    return apply;
+    function apply(){
+      var q = input.value.trim().toLowerCase();
+      table.querySelectorAll('tbody tr').forEach(function(row){
+        row.style.display = matcher(row, q) ? '' : 'none';
+      });
+    }
+  }
+
+  var vehicleTable = document.getElementById('vehicleTable');
+  var vSearch = document.getElementById('vehicleSearch');
+  var vUnit = document.getElementById('vehicleUnitFilter');
+  var vState = document.getElementById('vehicleStateFilter');
+  function applyVehicleFilters(){
+    var q = (vSearch.value || '').trim().toLowerCase();
+    var unit = vUnit.value;
+    var state = vState.value;
+    vehicleTable.querySelectorAll('tbody tr').forEach(function(row){
+      var text = row.textContent.toLowerCase();
+      var okQ = !q || text.indexOf(q) !== -1;
+      var okUnit = !unit || row.dataset.unit === unit;
+      var okState = !state || row.dataset.state === state;
+      row.style.display = (okQ && okUnit && okState) ? '' : 'none';
+    });
+  }
+  if(vSearch){ [vSearch, vUnit, vState].forEach(function(el){ el.addEventListener('input', applyVehicleFilters); el.addEventListener('change', applyVehicleFilters); }); }
+
+  var assignmentTable = document.getElementById('assignmentTable');
+  var aSearch = document.getElementById('assignmentSearch');
+  var aStatus = document.getElementById('assignmentStatus');
+  function applyAssignmentFilters(){
+    var q = (aSearch.value || '').trim().toLowerCase();
+    var status = aStatus.value;
+    assignmentTable.querySelectorAll('tbody tr').forEach(function(row){
+      var okQ = !q || row.textContent.toLowerCase().indexOf(q) !== -1;
+      var okStatus = !status || row.dataset.status === status;
+      row.style.display = (okQ && okStatus) ? '' : 'none';
+    });
+  }
+  if(aSearch){ [aSearch, aStatus].forEach(function(el){ el.addEventListener('input', applyAssignmentFilters); el.addEventListener('change', applyAssignmentFilters); }); }
+
+  var incidentTable = document.getElementById('incidentTable');
+  var iSearch = document.getElementById('incidentSearch');
+  if(iSearch){
+    iSearch.addEventListener('input', function(){
+      var q = iSearch.value.trim().toLowerCase();
+      incidentTable.querySelectorAll('tbody tr').forEach(function(row){
+        row.style.display = row.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+      });
+    });
+  }
+
+  /* ---------- Report / export buttons ---------- */
+  document.querySelectorAll('[data-report]').forEach(function(btn){
+    btn.addEventListener('click', function(){ toast('Generando reporte...'); });
+  });
+  document.querySelectorAll('[data-toast]:not(.demo-save)').forEach(function(btn){
+    btn.addEventListener('click', function(){ toast(btn.dataset.toast); });
+  });
+
+  /* ---------- Install banner / PWA ---------- */
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').classList.add('show');
+  });
+  function tryInstall(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt = null;
+    } else {
+      toast('Usa el menú del navegador para instalar la aplicación');
+    }
+  }
+  ['installTopBtn','installBannerBtn','installPageBtn'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('click', tryInstall);
+  });
+
+  /* ---------- Online / offline ---------- */
+  function syncNet(){
+    var pill = document.getElementById('netStatus');
+    var box = document.getElementById('offlineBox');
+    if(navigator.onLine){
+      pill.textContent = 'En línea';
+      pill.classList.remove('offline');
+      box.classList.remove('show');
+    } else {
+      pill.textContent = 'Sin conexión';
+      pill.classList.add('offline');
+      box.classList.add('show');
+    }
+  }
+  window.addEventListener('online', syncNet);
+  window.addEventListener('offline', syncNet);
+  syncNet();
+
+  /* ---------- Global search (dashboard convenience) ---------- */
+  document.getElementById('globalSearch').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && this.value.trim()){
+      document.querySelector('.nav button[data-page="vehiculos"]').click();
+      var vs = document.getElementById('vehicleSearch');
+      vs.value = this.value;
+      vs.dispatchEvent(new Event('input'));
+    }
+  });
+})();
+</script>
+</body>
+</html>

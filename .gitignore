@@ -1,0 +1,55 @@
+# ─── Dependencias ─────────────────────────────────────────────────────────────
+.bun/
+
+# ─── Variables de entorno / secretos ─────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Build / dist ─────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+*.tsbuildinfo
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# ─── Cache / temporales ───────────────────────────────────────────────────────
+.cache/
+.eslintcache
+.parcel-cache/
+coverage/
+*.local
+*.timestamp-*-*.mjs
+
+# ─── Editores ─────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Sistema operativo ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Cypress / Vitest ─────────────────────────────────────────────────────────
+/cypress/videos/
+/cypress/screenshots/
+__screenshots__/
+
+# ─── Carpetas sobrantes ───────────────────────────────────────────────────────
+sistema_informacion_vehicular_frontend (3)/

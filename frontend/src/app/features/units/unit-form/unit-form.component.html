@@ -1,0 +1,80 @@
+<app-modal [title]="isEdit ? 'Editar unidad' : 'Registro de unidad'" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-semibold text-ink-muted">Código</span>
+      <input
+        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        placeholder="EPI-03"
+        [value]="form().code ?? ''"
+        (input)="patch({ code: $any($event.target).value })"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-semibold text-ink-muted">Nombre *</span>
+      <input
+        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        placeholder="EPI 3"
+        [value]="form().name"
+        (input)="patch({ name: $any($event.target).value })"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-semibold text-ink-muted">Tipo</span>
+      <input
+        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        placeholder="Unidad operativa"
+        [value]="form().type ?? ''"
+        (input)="patch({ type: $any($event.target).value })"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-semibold text-ink-muted">Ubicación</span>
+      <input
+        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        placeholder="Oruro"
+        [value]="form().location ?? ''"
+        (input)="patch({ location: $any($event.target).value })"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1.5 sm:col-span-2">
+      <span class="text-xs font-semibold text-ink-muted">Unidad superior</span>
+      <select
+        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        (change)="patch({ parentId: $any($event.target).value || undefined })"
+      >
+        <option value="" [selected]="!form().parentId">Sin superior</option>
+        @for (option of parentOptions; track option.id) {
+          <option [value]="option.id" [selected]="option.id === form().parentId">
+            {{ option.name }}
+          </option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-[13px] text-red">{{ errorMessage() }}</p>
+  }
+
+  <div class="sticky bottom-0 flex justify-end gap-2.5 border-t border-edge bg-surface px-6 py-4">
+    <button
+      type="button"
+      class="rounded-md border border-edge-strong px-4 py-2 text-[13px] font-semibold text-ink"
+      (click)="cancelled.emit()"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent disabled:opacity-60"
+      [disabled]="submitting()"
+      (click)="submit()"
+    >
+      {{ isEdit ? 'Guardar cambios' : 'Guardar unidad' }}
+    </button>
+  </div>
+</app-modal>
