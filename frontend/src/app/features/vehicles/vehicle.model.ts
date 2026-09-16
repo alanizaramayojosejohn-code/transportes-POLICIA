@@ -19,7 +19,8 @@ export type VehicleConditionCode =
   | 'INOPERABLE'
   | 'EXTRAVIADO'
   | 'DEVUELTO'
-  | 'BAJA';
+  | 'BAJA'
+  | 'SEPARADO_POR_INCIDENTE';
 
 export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   BUENO: 'Bueno',
@@ -30,6 +31,7 @@ export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   EXTRAVIADO: 'Extraviado',
   DEVUELTO: 'Devuelto',
   BAJA: 'Dado de baja',
+  SEPARADO_POR_INCIDENTE: 'Separado por incidente',
 };
 
 /** Colores de badge por condición, siguiendo la paleta del diseño (spec 001). */
@@ -42,6 +44,7 @@ export const VEHICLE_CONDITION_BADGE: Record<VehicleConditionCode, 'green' | 'am
   EXTRAVIADO: 'red',
   DEVUELTO: 'amber',
   BAJA: 'red',
+  SEPARADO_POR_INCIDENTE: 'red',
 };
 
 export interface VehicleCondition {

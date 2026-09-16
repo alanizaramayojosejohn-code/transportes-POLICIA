@@ -1,40 +1,25 @@
-<div class="mb-5 flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <h2 class="font-serif text-[23px] font-semibold text-ink">
-      Unidades y encargados de transportes
-    </h2>
-    <p class="text-[13.5px] text-ink-muted">Dependencias y responsable vigente de transportes.</p>
-  </div>
+<app-page-head
+  title="Unidades y encargados de transportes"
+  description="Dependencias y responsable vigente de transportes."
+>
   @if (currentRole.canWrite()) {
-    <div class="flex gap-2.5">
-      <button
-        type="button"
-        class="rounded-md border border-edge-strong px-4 py-2 text-[13px] font-semibold text-ink"
-        (click)="showOfficerForm.set(true)"
-      >
-        + Personal
-      </button>
-      <button
-        type="button"
-        class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent"
-        (click)="showUnitForm.set(true)"
-      >
-        + Unidad
-      </button>
-    </div>
+    <button type="button" appButton (click)="showOfficerForm.set(true)">+ Personal</button>
+    <button type="button" appButton variant="primary" (click)="showUnitForm.set(true)">
+      + Unidad
+    </button>
   }
-</div>
+</app-page-head>
 
-<div class="rounded-2xl border border-edge bg-surface p-5 shadow-sm">
-  <div class="mb-4 flex flex-wrap gap-2.5">
+<app-card>
+  <app-filter-bar>
     <input
-      class="min-w-56 flex-[2] rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      appFilterControl
       placeholder="Buscar por código, nombre o ubicación..."
       [value]="search()"
       (input)="search.set($any($event.target).value)"
     />
     <select
-      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      appFilterControl
       [value]="isActive()"
       (change)="isActive.set($any($event.target).value)"
     >
@@ -42,63 +27,51 @@
       <option value="true">Activas</option>
       <option value="false">Inactivas</option>
     </select>
-  </div>
+  </app-filter-bar>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-[13px]">
-      <thead>
-        <tr
-          class="border-b border-edge text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
-        >
-          <th class="pb-2.5">Unidad</th>
-          <th class="pb-2.5">Ubicación</th>
-          <th class="pb-2.5">Encargado actual</th>
-          <th class="pb-2.5">Vehículos</th>
-          <th class="pb-2.5">Estado</th>
-          <th class="pb-2.5"></th>
+  <app-table [footer]="page().total + ' unidad(es) en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Ubicación</th>
+        <th appTableHeadCell>Encargado actual</th>
+        <th appTableHeadCell>Vehículos</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (unit of page().items; track unit.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ unit.name }}</td>
+          <td appTableCell>{{ unit.location || '—' }}</td>
+          <td appTableCell>
+            @if (unit.currentManager; as m) {
+              {{ m.officer.rank }} {{ m.officer.firstName }} {{ m.officer.lastName }}
+            } @else {
+              <span class="text-ink-faint">Sin encargado</span>
+            }
+          </td>
+          <td appTableCell>{{ unit.activeVehicleCount }}</td>
+          <td appTableCell>
+            <app-badge [tone]="unit.isActive ? 'green' : 'gray'">
+              {{ unit.isActive ? 'Activa' : 'Inactiva' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <button type="button" appButton size="sm" variant="soft" (click)="openDetail(unit.id)">
+              Ver ficha
+            </button>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        @for (unit of page().items; track unit.id) {
-          <tr class="border-b border-edge hover:bg-surface-2">
-            <td class="py-3 font-medium">{{ unit.name }}</td>
-            <td class="py-3">{{ unit.location || '—' }}</td>
-            <td class="py-3">
-              @if (unit.currentManager; as m) {
-                {{ m.officer.rank }} {{ m.officer.firstName }} {{ m.officer.lastName }}
-              } @else {
-                <span class="text-ink-faint">Sin encargado</span>
-              }
-            </td>
-            <td class="py-3">{{ unit.activeVehicleCount }}</td>
-            <td class="py-3">
-              <app-badge [tone]="unit.isActive ? 'green' : 'gray'">
-                {{ unit.isActive ? 'Activa' : 'Inactiva' }}
-              </app-badge>
-            </td>
-            <td class="py-3 text-right">
-              <button
-                type="button"
-                class="rounded-md bg-green-bg px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
-                (click)="openDetail(unit.id)"
-              >
-                Ver ficha
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="py-8 text-center text-ink-muted">
-              Sin unidades registradas todavía.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <p class="mt-3 text-[12px] text-ink-faint">{{ page().total }} unidad(es) en total.</p>
-</div>
+      } @empty {
+        <tr appTableEmpty [colspan]="6">
+          Sin unidades registradas todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
 
 @if (showUnitForm()) {
   <app-unit-form (saved)="closeForm()" (cancelled)="closeForm()" />

@@ -6,11 +6,11 @@ import { UnitFilter } from '../unit.model';
 import { UnitFormComponent } from '../unit-form/unit-form.component';
 import { UnitDetailComponent } from '../unit-detail/unit-detail.component';
 import { OfficerFormComponent } from '../officer-form/officer-form.component';
-import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
+import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
 
 @Component({
-  imports: [UnitFormComponent, UnitDetailComponent, OfficerFormComponent, BadgeComponent],
+  imports: [...LIST_PAGE_IMPORTS, UnitFormComponent, UnitDetailComponent, OfficerFormComponent],
   selector: 'app-units-list',
   templateUrl: './units-list.component.html',
 })

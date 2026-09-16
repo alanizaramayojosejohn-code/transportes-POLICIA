@@ -1,0 +1,8 @@
+<label
+  class="flex flex-col gap-1.5"
+  [class]="full() ? 'min-[860px]:col-span-2' : ''"
+  [attr.for]="for()"
+>
+  <span class="text-12 font-semibold text-ink-muted">{{ label() }}</span>
+  <ng-content />
+</label>

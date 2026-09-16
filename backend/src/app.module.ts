@@ -5,9 +5,19 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'node:path';
 import configuration from './config/configuration.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { UnitsModule } from './modules/units/units.module.js';
 import { UnitAssignmentsModule } from './modules/unit-assignments/unit-assignments.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { DriversModule } from './modules/drivers/drivers.module.js';
+import { TripsModule } from './modules/trips/trips.module.js';
+import { FuelRecordsModule } from './modules/fuel-records/fuel-records.module.js';
+import { MaintenanceOrdersModule } from './modules/maintenance-orders/maintenance-orders.module.js';
+import { InventoryModule } from './modules/inventory/inventory.module.js';
+import { VehicleDocumentsModule } from './modules/vehicle-documents/vehicle-documents.module.js';
+import { IncidentsModule } from './modules/incidents/incidents.module.js';
+import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 
 @Module({
   imports: [
@@ -27,8 +37,8 @@ import { UnitAssignmentsModule } from './modules/unit-assignments/unit-assignmen
         sortSchema: true,
         playground: config.get<boolean>('graphqlPlayground'),
         introspection: true,
-        // Expone `req` a los resolvers/guards. Hoy sólo lo usa RolesGuard
-        // para leer el header `x-user-role` (rol simulado sin login real).
+        // Expone `req` a los resolvers/guards: JwtAuthGuard, RolesGuard y
+        // @CurrentUser() lo usan para leer el usuario autenticado (spec 013).
         context: ({ req }: { req: unknown }) => ({ req }),
         // No conviene filtrar el stack de un error interno a un cliente; el
         // mensaje sigue viajando, la traza no.
@@ -41,9 +51,19 @@ import { UnitAssignmentsModule } from './modules/unit-assignments/unit-assignmen
     }),
 
     PrismaModule,
+    AuthModule,
     VehiclesModule,
     UnitsModule,
     UnitAssignmentsModule,
+    UsersModule,
+    DriversModule,
+    TripsModule,
+    FuelRecordsModule,
+    MaintenanceOrdersModule,
+    InventoryModule,
+    VehicleDocumentsModule,
+    IncidentsModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

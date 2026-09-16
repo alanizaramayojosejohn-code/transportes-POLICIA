@@ -210,10 +210,11 @@ model Vehicle {
 // Spec 001 (revisión 2) — Historial de condición del vehículo
 // =============================================================================
 
-/// Valores que este módulo puede escribir (RF-06 del spec 001). "En
-/// mantenimiento" y "Separado por incidente" se agregan en una migración
-/// futura, cuando existan los specs de Mantenimiento e Incidentes: al no
-/// existir hoy en el enum, este módulo no puede escribirlos aunque quisiera.
+/// Valores que este módulo puede escribir (RF-06 del spec 001).
+/// `SEPARADO_POR_INCIDENTE` se agregó con el spec 011 (Incidentes): antes no
+/// existía en el enum y ese módulo no podía escribirlo aunque quisiera. El
+/// spec 008 (Mantenimiento) no llegó a necesitar un valor "en mantenimiento"
+/// aquí: usa `MaintenanceOrder.status` en su lugar, no este historial.
 enum VehicleConditionCode {
   BUENO
   REGULAR
@@ -223,6 +224,7 @@ enum VehicleConditionCode {
   EXTRAVIADO
   DEVUELTO
   BAJA
+  SEPARADO_POR_INCIDENTE
 
   @@map("vehicle_condition_code")
 }
@@ -234,7 +236,7 @@ model VehicleCondition {
   id               String               @id @default(uuid(7))
   code             VehicleConditionCode
   reason           String?
-  /// Rol simulado de quien lo registró (no hay autenticación real todavía).
+  /// Código del rol de quien lo registró (usuario autenticado, spec 013).
   registeredByRole String?              @map("registered_by_role")
   changedAt        DateTime             @default(now()) @map("changed_at") @db.Timestamptz(3)
 
@@ -291,12 +293,17 @@ model Driver {
   user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   departmentId String?     @map("department_id")
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  /// Unidad operativa (spec 002/Unit), no `department` (dormant). Un
+  /// conductor puede no tener unidad asignada todavía.
+  unitId       String?     @map("unit_id")
+  unit         Unit?       @relation(fields: [unitId], references: [id], onDelete: SetNull)
 
   assignments Assignment[]
   fuelRecords FuelRecord[]
   incidents   Incident[]
 
   @@index([departmentId])
+  @@index([unitId])
   @@index([isActive])
   @@map("driver")
 }
@@ -836,6 +843,7 @@ model Unit {
   officers           Officer[]
   managerAssignments TransportManagerAssignment[]
   vehicleAssignments UnitAssignment[]
+  drivers            Driver[]
 
   @@index([parentId])
   @@map("unit")

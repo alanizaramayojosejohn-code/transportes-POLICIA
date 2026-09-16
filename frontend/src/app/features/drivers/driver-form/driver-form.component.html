@@ -1,0 +1,100 @@
+<app-modal [title]="isEdit ? 'Editar conductor' : 'Nuevo conductor'" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="CI *">
+      <input
+        appFieldControl
+        [value]="form().ci"
+        (input)="patch({ ci: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Grado">
+      <input
+        appFieldControl
+        placeholder="Sgto."
+        [value]="form().rank"
+        (input)="patch({ rank: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Nombres *">
+      <input
+        appFieldControl
+        [value]="form().firstName"
+        (input)="patch({ firstName: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Apellidos *">
+      <input
+        appFieldControl
+        [value]="form().lastName"
+        (input)="patch({ lastName: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Número de licencia *">
+      <input
+        appFieldControl
+        [value]="form().licenseNumber"
+        (input)="patch({ licenseNumber: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Categoría *">
+      <select
+        appFieldControl
+        [value]="form().licenseCategory"
+        (change)="patch({ licenseCategory: $any($event.target).value })"
+      >
+        <option value="">Seleccionar...</option>
+        <option>A</option>
+        <option>B</option>
+        <option>C</option>
+        <option>M</option>
+        <option>P</option>
+      </select>
+    </app-field>
+
+    <app-field label="Vencimiento de licencia *">
+      <input
+        appFieldControl
+        type="date"
+        [value]="form().licenseExpiresAt"
+        (input)="patch({ licenseExpiresAt: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Unidad">
+      <select
+        appFieldControl
+        [value]="form().unitId"
+        (change)="patch({ unitId: $any($event.target).value })"
+      >
+        <option value="">Sin asignar</option>
+        @for (unit of units(); track unit.id) {
+          <option [value]="unit.id">{{ unit.name }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Teléfono">
+      <input
+        appFieldControl
+        [value]="form().phone"
+        (input)="patch({ phone: $any($event.target).value })"
+      />
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      {{ isEdit ? 'Guardar cambios' : 'Guardar conductor' }}
+    </button>
+  </app-form-actions>
+</app-modal>

@@ -1,13 +1,13 @@
 import { Component, effect, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { OfficersService } from '../officers.service';
 import { UnitsService } from '../units.service';
 import { CreateOfficerInput, Officer, UnitOption } from '../unit.model';
 
 /** Alta y edición de personal policial (spec 002, RF-13/RF-15). */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS],
   selector: 'app-officer-form',
   templateUrl: './officer-form.component.html',
 })

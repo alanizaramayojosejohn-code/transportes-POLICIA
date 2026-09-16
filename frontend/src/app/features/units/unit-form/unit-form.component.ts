@@ -1,12 +1,12 @@
 import { Component, effect, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { UnitsService } from '../units.service';
 import { CreateUnitInput, Unit, UnitOption } from '../unit.model';
 
 /** Alta y edición de unidad (spec 002, RF-01/RF-04). Sólo el nombre es obligatorio. */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS],
   selector: 'app-unit-form',
   templateUrl: './unit-form.component.html',
 })

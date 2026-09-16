@@ -1,0 +1,8 @@
+<div
+  class="rounded-[15px] border border-edge bg-surface px-[22px] py-5 shadow-1 transition-[border-color,box-shadow] duration-[180ms] hover:border-edge-strong hover:shadow-[0_10px_30px_-26px_rgba(8,20,15,.42)] max-[560px]:p-4"
+>
+  @if (heading(); as h) {
+    <h3 class="mb-3.5 font-serif text-14-5 font-semibold text-ink">{{ h }}</h3>
+  }
+  <ng-content />
+</div>

@@ -4,12 +4,21 @@ import { switchMap } from 'rxjs';
 import { UnitAssignmentsService } from '../unit-assignments.service';
 import { UnitAssignmentFilter } from '../unit-assignment.model';
 import { UnitAssignmentFormComponent } from '../unit-assignment-form/unit-assignment-form.component';
-import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
+import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { FieldComponent } from '../../../shared/field/field.component';
+import { FieldControlDirective } from '../../../shared/field/field-control.directive';
+import { NoticeComponent } from '../../../shared/notice/notice.component';
 
 @Component({
-  imports: [UnitAssignmentFormComponent, BadgeComponent],
+  imports: [
+    ...LIST_PAGE_IMPORTS,
+    UnitAssignmentFormComponent,
+    FieldComponent,
+    FieldControlDirective,
+    NoticeComponent,
+  ],
   selector: 'app-unit-assignments-list',
   templateUrl: './unit-assignments-list.component.html',
 })

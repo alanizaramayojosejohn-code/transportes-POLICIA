@@ -1,6 +1,5 @@
 import {
   Args,
-  Context,
   Mutation,
   Parent,
   Query,
@@ -18,10 +17,8 @@ import { VehicleFilterArgs } from './dto/vehicle-filter.args.js';
 import { RegisterVehicleConditionInput } from './dto/register-vehicle-condition.input.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
-
-interface GqlContext {
-  req?: { headers: Record<string, string | string[] | undefined> };
-}
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 /**
  * No decide nada: valida la forma de la entrada (ValidationPipe global) y
@@ -75,13 +72,8 @@ export class VehiclesResolver {
   registerVehicleCondition(
     @Args('vehicleId') vehicleId: string,
     @Args('input') input: RegisterVehicleConditionInput,
-    @Context() context: GqlContext,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const role = context.req?.headers['x-user-role'];
-    return this.vehiclesService.registerCondition(
-      vehicleId,
-      input,
-      (Array.isArray(role) ? role[0] : role) ?? null,
-    );
+    return this.vehiclesService.registerCondition(vehicleId, input, user.role);
   }
 }

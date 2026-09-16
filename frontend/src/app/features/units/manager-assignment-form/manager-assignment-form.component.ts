@@ -1,12 +1,12 @@
 import { Component, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { UnitsService } from '../units.service';
 import { OfficerOption, OfficersService } from '../officers.service';
 
 /** Designa al encargado de transportes de una unidad (spec 002, RF-18 a RF-22). */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS],
   selector: 'app-manager-assignment-form',
   templateUrl: './manager-assignment-form.component.html',
 })

@@ -1,25 +1,45 @@
-<div class="fixed inset-0 z-[90] flex items-center justify-center p-6">
+<div
+  class="fixed inset-0 z-[110] flex items-center justify-center p-6"
+  (keydown)="onKeydown($event)"
+>
   <button
     type="button"
-    class="fixed inset-0 z-0 bg-black/45"
+    class="fixed inset-0 z-0 bg-overlay"
     aria-label="Cerrar"
     (click)="onBackdropClick()"
   ></button>
 
   <div
-    class="relative z-10 max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface shadow-2xl"
+    #panel
+    class="animate-pop relative z-10 max-h-[88vh] w-full overflow-y-auto rounded-lg bg-surface shadow-2"
+    [class]="wide() ? 'max-w-[980px]' : small() ? 'max-w-[620px]' : 'max-w-[680px]'"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title()"
+    tabindex="-1"
   >
-    <div
-      class="sticky top-0 z-10 flex items-center justify-between border-b border-edge bg-surface px-6 py-4"
-    >
-      <h3 class="font-serif text-[17px] font-semibold text-ink">{{ title() }}</h3>
-      <button
-        type="button"
-        class="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-ink-muted hover:bg-red-bg"
-        (click)="closed.emit()"
-      >
-        ✕
-      </button>
+    <div class="sticky top-0 z-10 border-b border-edge bg-surface px-6 py-[18px]">
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          @if (eyebrow()) {
+            <span class="mb-1 block text-[9.5px] font-extrabold tracking-[.14em] text-accent">{{
+              eyebrow()
+            }}</span>
+          }
+          <h3 class="font-serif text-17 font-semibold text-ink">{{ title() }}</h3>
+        </div>
+        <button
+          type="button"
+          class="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-ink-muted hover:bg-red-bg hover:text-red"
+          aria-label="Cerrar"
+          (click)="closed.emit()"
+        >
+          ✕
+        </button>
+      </div>
+      @if (description()) {
+        <p class="mt-1 text-11 leading-relaxed text-ink-muted">{{ description() }}</p>
+      }
     </div>
 
     <ng-content />

@@ -1,0 +1,100 @@
+<app-modal title="Registrar incidente vehicular" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Vehículo *">
+      <select
+        appFieldControl
+        [value]="vehicleId()"
+        (change)="vehicleId.set($any($event.target).value)"
+      >
+        <option value="">Seleccionar...</option>
+        @for (vehicle of vehicles(); track vehicle.id) {
+          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Conductor">
+      <select
+        appFieldControl
+        [value]="driverId()"
+        (change)="driverId.set($any($event.target).value)"
+      >
+        <option value="">Sin especificar</option>
+        @for (driver of drivers(); track driver.id) {
+          <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Fecha y hora *">
+      <input
+        appFieldControl
+        type="datetime-local"
+        [value]="occurredAt()"
+        (input)="occurredAt.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Tipo">
+      <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
+        @for (t of types; track t) {
+          <option [value]="t">{{ typeLabel[t] }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Lugar *">
+      <input appFieldControl [value]="place()" (input)="place.set($any($event.target).value)" />
+    </app-field>
+
+    <app-field label="Estado posterior del vehículo">
+      <select
+        appFieldControl
+        [value]="postCondition()"
+        (change)="postCondition.set($any($event.target).value)"
+      >
+        <option value="">Sin cambio</option>
+        @for (code of postConditionOptions; track code) {
+          <option [value]="code">{{ conditionLabel[code] }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Descripción *" full>
+      <textarea
+        appFieldControl
+        rows="3"
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+      ></textarea>
+    </app-field>
+
+    <app-field label="Daños" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="damages()"
+        (input)="damages.set($any($event.target).value)"
+      ></textarea>
+    </app-field>
+
+    <app-field label="Documento / referencia">
+      <input
+        appFieldControl
+        [value]="policeReportNumber()"
+        (input)="policeReportNumber.set($any($event.target).value)"
+      />
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar incidente
+    </button>
+  </app-form-actions>
+</app-modal>

@@ -1,0 +1,81 @@
+<app-modal
+  [title]="isEdit ? 'Editar artículo' : 'Nuevo artículo de inventario'"
+  (closed)="cancelled.emit()"
+>
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Código *">
+      <input
+        appFieldControl
+        [value]="form().code"
+        (input)="patch({ code: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Nombre *">
+      <input
+        appFieldControl
+        [value]="form().name"
+        (input)="patch({ name: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Categoría *">
+      <select
+        appFieldControl
+        [value]="form().categoryId"
+        (change)="patch({ categoryId: $any($event.target).value })"
+      >
+        <option value="">Seleccionar...</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Unidad de medida *">
+      <input
+        appFieldControl
+        placeholder="Galón, unidad, juego..."
+        [value]="form().unit"
+        (input)="patch({ unit: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Stock mínimo">
+      <input
+        appFieldControl
+        type="number"
+        [value]="form().minStock"
+        (input)="patch({ minStock: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Ubicación">
+      <input
+        appFieldControl
+        [value]="form().location"
+        (input)="patch({ location: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="form().description"
+        (input)="patch({ description: $any($event.target).value })"
+      ></textarea>
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      {{ isEdit ? 'Guardar cambios' : 'Guardar artículo' }}
+    </button>
+  </app-form-actions>
+</app-modal>

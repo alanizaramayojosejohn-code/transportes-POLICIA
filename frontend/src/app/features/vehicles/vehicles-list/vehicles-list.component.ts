@@ -12,11 +12,12 @@ import {
 } from '../vehicle.model';
 import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleDetailComponent } from '../vehicle-detail/vehicle-detail.component';
-import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
+import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({
-  imports: [VehicleFormComponent, VehicleDetailComponent, BadgeComponent],
+  imports: [...LIST_PAGE_IMPORTS, VehicleFormComponent, VehicleDetailComponent],
   selector: 'app-vehicles-list',
   templateUrl: './vehicles-list.component.html',
 })
@@ -69,7 +70,15 @@ export class VehiclesListComponent {
   constructor(
     private readonly vehiclesService: VehiclesService,
     protected readonly currentRole: CurrentRoleService,
+    private readonly toast: ToastService,
   ) {}
+
+  /// El spec 001 no incluye baja física de vehículos (sólo condición "Dado de baja", que se
+  /// registra desde la ficha) y el backend no expone una mutación de borrado: el botón reproduce
+  /// la posición y estilo del prototipo, pero todavía no elimina nada.
+  protected deleteVehicle(): void {
+    this.toast.show('Eliminación de vehículos aún no disponible.');
+  }
 
   protected openDetail(id: string): void {
     this.detailVehicleId.set(id);
@@ -77,12 +86,6 @@ export class VehiclesListComponent {
 
   protected closeDetail(): void {
     this.detailVehicleId.set(null);
-  }
-
-  protected editFromDetail(): void {
-    const id = this.detailVehicleId();
-    this.detailVehicleId.set(null);
-    this.editingVehicleId.set(id);
   }
 
   protected closeForm(): void {

@@ -1,15 +1,29 @@
 import { Component, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
-import { DrawerComponent } from '../../../shared/drawer/drawer.component';
+import { ModalComponent } from '../../../shared/modal/modal.component';
 import { BadgeComponent } from '../../../shared/badge/badge.component';
+import { ButtonDirective } from '../../../shared/button/button.directive';
+import { DataCellComponent } from '../../../shared/data-cell/data-cell.component';
+import { TimelineItemComponent } from '../../../shared/timeline-item/timeline-item.component';
+import { FieldComponent } from '../../../shared/field/field.component';
+import { FieldControlDirective } from '../../../shared/field/field-control.directive';
 import { ManagerAssignmentFormComponent } from '../manager-assignment-form/manager-assignment-form.component';
 import { UnitsService } from '../units.service';
 import { formatDateEs } from '../../../shared/date-format';
 
 /** Ficha de la unidad (spec 002, RF-11): jerarquía, encargado vigente e historial. */
 @Component({
-  imports: [DrawerComponent, BadgeComponent, ManagerAssignmentFormComponent],
+  imports: [
+    ModalComponent,
+    BadgeComponent,
+    ButtonDirective,
+    DataCellComponent,
+    TimelineItemComponent,
+    FieldComponent,
+    FieldControlDirective,
+    ManagerAssignmentFormComponent,
+  ],
   selector: 'app-unit-detail',
   templateUrl: './unit-detail.component.html',
 })

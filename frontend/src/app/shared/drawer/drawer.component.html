@@ -1,25 +1,39 @@
-<div class="fixed inset-0 z-[95] flex justify-end">
+<div class="fixed inset-0 z-[105] flex justify-end" (keydown)="onKeydown($event)">
   <button
     type="button"
-    class="fixed inset-0 z-0 bg-black/45"
+    class="fixed inset-0 z-0 bg-overlay"
     aria-label="Cerrar"
     (click)="closed.emit()"
   ></button>
 
-  <aside class="relative z-10 h-full w-full max-w-[480px] overflow-y-auto bg-surface shadow-2xl">
-    <div class="relative bg-accent-strong px-6 py-6 text-white">
+  <aside
+    #panel
+    class="animate-drawer-in relative z-10 h-full w-full max-w-[min(480px,92vw)] overflow-y-auto bg-surface shadow-2"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title()"
+    tabindex="-1"
+  >
+    <div class="relative overflow-hidden bg-green-800 p-[22px] text-white">
+      <div class="watermark text-white"></div>
       <button
         type="button"
-        class="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs font-bold hover:bg-white/20"
+        class="absolute right-[18px] top-[18px] z-[2] flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs font-bold hover:bg-white/20"
+        aria-label="Cerrar"
         (click)="closed.emit()"
       >
         ✕
       </button>
-      <small class="text-[11px] font-semibold tracking-wide text-white/70">{{ eyebrow() }}</small>
-      <h2 class="mt-1 font-serif text-xl font-semibold">{{ title() }}</h2>
+      <small class="relative z-[1] text-[11px] font-semibold tracking-wide text-white/70">{{
+        eyebrow()
+      }}</small>
+      <h2 class="relative z-[1] mt-1 font-serif text-20 font-semibold">{{ title() }}</h2>
+      @if (subtitle()) {
+        <p class="relative z-[1] mt-1 text-12-5 text-white/70">{{ subtitle() }}</p>
+      }
     </div>
 
-    <div class="px-6 py-5">
+    <div class="px-[22px] py-5">
       <ng-content />
     </div>
   </aside>

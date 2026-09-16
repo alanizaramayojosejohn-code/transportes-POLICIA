@@ -1,6 +1,7 @@
 import { Component, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { NoticeComponent } from '../../../shared/notice/notice.component';
 import { UnitAssignmentsService } from '../unit-assignments.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { UnitOption } from '../../units/unit.model';
@@ -8,7 +9,7 @@ import { UnitsService } from '../../units/units.service';
 
 /** Nueva asignación de vehículo a unidad (spec 003, RF-01/RF-02). */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS, NoticeComponent],
   selector: 'app-unit-assignment-form',
   templateUrl: './unit-assignment-form.component.html',
 })

@@ -1,0 +1,64 @@
+<app-modal [title]="'Registrar llegada · ' + trip().vehicle.plate" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <div class="rounded-sm bg-surface-2 px-3 py-2 text-12-5 text-ink-muted min-[860px]:col-span-2">
+      Salida: {{ trip().destination }} · KM {{ trip().departureOdometer }}
+    </div>
+
+    <app-field label="Kilometraje de llegada *">
+      <input
+        appFieldControl
+        type="number"
+        [value]="returnOdometer()"
+        (input)="onOdometerInput($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Nivel de combustible (%)">
+      <input
+        appFieldControl
+        type="number"
+        min="0"
+        max="100"
+        [value]="returnFuelLevel()"
+        (input)="onFuelLevelInput($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Estado del vehículo en llegada">
+      <input
+        appFieldControl
+        placeholder="Bueno"
+        [value]="returnConditionNotes()"
+        (input)="returnConditionNotes.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Daños observados">
+      <input
+        appFieldControl
+        [value]="damagesFound()"
+        (input)="damagesFound.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="incidentNotes()"
+        (input)="incidentNotes.set($any($event.target).value)"
+      ></textarea>
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Registrar llegada
+    </button>
+  </app-form-actions>
+</app-modal>

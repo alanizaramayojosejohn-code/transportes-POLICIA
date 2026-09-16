@@ -1,0 +1,87 @@
+<app-page-head
+  title="Usuarios y roles"
+  description="Cuentas de acceso al sistema y su rol asignado."
+>
+  <button type="button" appButton variant="primary" (click)="showForm.set(true)">+ Usuario</button>
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por usuario, nombre o correo..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="roleId()" (change)="roleId.set($any($event.target).value)">
+      <option value="">Todos los roles</option>
+      @for (role of roles(); track role.id) {
+        <option [value]="role.id">{{ role.name }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="isActive()"
+      (change)="isActive.set($any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [footer]="page().total + ' usuario(s) en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Usuario</th>
+        <th appTableHeadCell>Nombre completo</th>
+        <th appTableHeadCell>Rol</th>
+        <th appTableHeadCell>Último acceso</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of page().items; track user.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ user.username }}</td>
+          <td appTableCell>{{ user.fullName }}</td>
+          <td appTableCell>{{ user.role.name }}</td>
+          <td appTableCell>{{ formatDate(user.lastLoginAt) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="user.isActive ? 'green' : 'gray'">
+              {{ user.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex justify-end gap-2">
+              <button type="button" appButton size="sm" variant="soft" (click)="edit(user.id)">
+                Editar
+              </button>
+              <button
+                type="button"
+                appButton
+                size="sm"
+                (click)="toggleActive(user.id, user.isActive)"
+              >
+                {{ user.isActive ? 'Dar de baja' : 'Reactivar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="6">
+          Sin usuarios registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
+
+@if (showForm()) {
+  <app-user-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingUserId()) {
+  <app-user-form [user]="editingUser" (saved)="closeForm()" (cancelled)="closeForm()" />
+}

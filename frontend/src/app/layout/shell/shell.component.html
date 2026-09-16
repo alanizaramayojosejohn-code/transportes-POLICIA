@@ -1,48 +1,105 @@
-<div class="min-h-screen md:grid md:grid-cols-[260px_1fr]">
+<div class="min-h-screen min-[860px]:grid min-[860px]:grid-cols-[270px_1fr]">
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full bg-sidebar text-sidebar-ink transition-transform duration-200 md:static md:translate-x-0"
+    class="fixed inset-y-0 left-0 z-[100] w-[260px] -translate-x-full overflow-hidden bg-sidebar text-sidebar-ink shadow-[12px_0_34px_-30px_rgba(0,0,0,.72)] transition-transform duration-200 min-[860px]:relative min-[860px]:w-[270px] min-[860px]:translate-x-0"
     [class.translate-x-0]="sidebarOpen()"
   >
-    <div class="flex items-center gap-3 px-5 py-6">
-      <svg class="h-9 w-9 flex-none" viewBox="0 0 64 64" fill="none">
-        <path
-          d="M32 4 57 12v17c0 17-10.5 26-25 30C17.5 55 7 46 7 29V12Z"
-          fill="#fff"
-          opacity=".95"
-        />
-        <path
-          d="M32 8 53 15v14c0 15-9 22.5-21 26C10 51.5 11 44.5 11 29.5V15Z"
-          class="fill-accent-strong"
-        />
-        <path d="M32 15 22 30l7 0 0 12 6 0 0-12 7 0Z" fill="#fff" />
-      </svg>
+    <div class="watermark text-white"></div>
+
+    <div class="relative z-[1] flex items-center gap-3 px-5 py-[26px]">
+      <app-icon name="brand-shield" class="h-[38px] w-[38px] flex-none" />
       <div>
-        <h1 class="font-serif text-[15px] font-semibold leading-tight text-white">
+        <h1 class="font-serif text-[15.5px] font-semibold leading-tight text-white">
           Sistema de Información Vehicular
         </h1>
-        <small class="text-[11.5px] text-sidebar-ink-dim">Comando Departamental · Oruro</small>
+        <small class="text-11 text-sidebar-ink-dim">Comando Departamental · Oruro</small>
       </div>
     </div>
 
-    <nav class="flex flex-col gap-1 px-3">
-      @for (item of nav; track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="bg-white/10 text-white"
-          class="flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium text-sidebar-ink-dim hover:bg-white/5 hover:text-white"
-        >
-          <span
-            class="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md bg-white/10 text-[10px] font-bold"
+    <nav class="relative z-[1] flex flex-col gap-0.5 overflow-y-auto px-2.5 py-[7px]">
+      @for (entry of nav(); track entry.key) {
+        @if (entry.children; as children) {
+          <button
+            type="button"
+            class="relative flex min-h-[43px] items-center gap-[11px] rounded-sm px-3 py-2.5 text-left text-12-5 font-semibold transition-[background,color,transform] duration-[180ms] hover:translate-x-0.5 hover:bg-white/5 hover:text-white"
+            [class]="activeGroupKey() === entry.key ? 'bg-white/5 text-white' : 'text-sidebar-ink'"
+            (click)="toggleGroup(entry.key)"
           >
-            {{ item.icon }}
-          </span>
-          {{ item.label }}
-        </a>
+            <span
+              class="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[7px] transition-colors"
+              [class]="
+                activeGroupKey() === entry.key
+                  ? 'bg-white/[.12] text-white'
+                  : 'bg-white/[.06] text-sidebar-ink-dim'
+              "
+            >
+              <app-icon [name]="entry.icon" class="h-4 w-4" />
+            </span>
+            {{ entry.label }}
+            <span
+              class="ml-auto flex h-[18px] w-[18px] flex-none items-center justify-center text-sidebar-ink-dim transition-transform duration-200"
+              [class.rotate-180]="openGroup() === entry.key"
+            >
+              <app-icon name="chevron-down" class="h-4 w-4" />
+            </span>
+          </button>
+
+          <div
+            class="ml-[22px] flex-col gap-0.5 border-l border-white/[.13] py-[3px] pl-[13px]"
+            [class.flex]="openGroup() === entry.key"
+            [class.hidden]="openGroup() !== entry.key"
+          >
+            @for (child of children; track child.path) {
+              <a
+                #rla="routerLinkActive"
+                [routerLink]="child.path"
+                routerLinkActive
+                class="flex min-h-8 items-center rounded-[6px] px-2.5 py-[7px] text-12-5 transition-colors hover:bg-white/5 hover:text-white"
+                [class]="
+                  rla.isActive ? 'bg-white/10 font-semibold text-white' : 'text-sidebar-ink-dim'
+                "
+              >
+                {{ child.label }}
+                @if (child.badge) {
+                  <span
+                    class="ml-auto rounded-full bg-amber px-1.5 py-px text-[10.5px] font-bold text-white"
+                    >{{ child.badge }}</span
+                  >
+                }
+              </a>
+            }
+          </div>
+        } @else {
+          <a
+            #rla="routerLinkActive"
+            [routerLink]="entry.path"
+            routerLinkActive
+            [routerLinkActiveOptions]="{ exact: entry.path === '/' }"
+            class="relative flex min-h-[43px] items-center gap-[11px] rounded-sm px-3 py-2.5 text-12-5 font-medium transition-[background,color,transform] duration-[180ms] hover:translate-x-0.5 hover:bg-white/5 hover:text-white"
+            [class]="rla.isActive ? 'bg-sidebar-active text-white' : 'text-sidebar-ink-dim'"
+          >
+            @if (rla.isActive) {
+              <span
+                class="absolute -left-3 top-2 bottom-2 w-[3px] rounded-r-[3px] bg-green-400"
+              ></span>
+            }
+            <span
+              class="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[7px] transition-colors"
+              [class]="
+                rla.isActive ? 'bg-green-500 text-white' : 'bg-white/[.06] text-sidebar-ink-dim'
+              "
+            >
+              <app-icon [name]="entry.icon" class="h-4 w-4" />
+            </span>
+            {{ entry.label }}
+          </a>
+        }
       }
     </nav>
 
-    <div class="mt-auto px-5 py-5 text-[11px] leading-relaxed text-sidebar-ink-dim">
+    <div
+      class="relative z-[1] mt-auto border-t border-sidebar-border px-5 py-5 text-11 leading-relaxed text-sidebar-ink-dim"
+    >
       Sistema de información vehicular
     </div>
   </aside>
@@ -50,7 +107,7 @@
   @if (sidebarOpen()) {
     <button
       type="button"
-      class="fixed inset-0 z-30 bg-black/40 md:hidden"
+      class="fixed inset-0 z-[90] bg-overlay min-[860px]:hidden"
       aria-label="Cerrar menú"
       (click)="toggleSidebar()"
     ></button>
@@ -59,54 +116,91 @@
   <!-- Main -->
   <div class="flex min-w-0 flex-col">
     <header
-      class="sticky top-0 z-20 flex items-center gap-4 border-b border-edge bg-surface px-5 py-3 md:px-7"
+      class="sticky top-0 z-20 flex items-center gap-3.5 border-b border-edge bg-surface px-5 py-3 shadow-[0_1px_0_var(--color-edge),0_12px_35px_-32px_rgba(8,20,15,.5)] backdrop-blur-[14px] min-[860px]:px-7"
     >
       <button
         type="button"
-        class="rounded-md border border-edge-strong px-2.5 py-2 text-[11px] font-semibold md:hidden"
+        class="rounded-sm border border-edge-strong bg-surface px-2.5 py-2 text-11 font-semibold tracking-wide text-ink min-[860px]:hidden"
         (click)="toggleSidebar()"
       >
         MENÚ
       </button>
 
-      <span class="font-serif text-[15px] font-semibold hidden sm:inline">Transportes</span>
+      <div
+        class="hidden min-w-0 max-w-[420px] flex-1 items-center gap-2 rounded-full border border-edge bg-surface-2 px-3.5 py-2 text-ink-faint transition-colors focus-within:border-green-500 min-[860px]:flex"
+      >
+        <span class="text-sm">⌕</span>
+        <input
+          class="w-full min-w-0 bg-transparent text-13-5 text-ink outline-none placeholder:text-ink-faint"
+          placeholder="Buscar por placa, vehículo, conductor o unidad..."
+        />
+      </div>
 
       <div class="ml-auto flex items-center gap-3">
+        <span
+          class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-12 font-semibold"
+          [class]="
+            online() ? 'bg-green-bg text-green-700 dark:text-green-300' : 'bg-red-bg text-red'
+          "
+        >
+          <i class="h-1.5 w-1.5 rounded-full" [class]="online() ? 'bg-green-500' : 'bg-red'"></i>
+          {{ online() ? 'En línea' : 'Sin conexión' }}
+        </span>
+
         <div class="flex items-center gap-1 rounded-full border border-edge bg-surface-2 p-0.5">
           <button
             type="button"
-            class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-[13px]"
-            [class.bg-accent-strong]="themeService.theme() === 'light'"
-            [class.text-white]="themeService.theme() === 'light'"
+            class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-ink-faint"
+            [class]="
+              themeService.theme() === 'light'
+                ? 'bg-green-700 text-white dark:bg-green-400 dark:text-green-900'
+                : ''
+            "
             (click)="themeService.theme.set('light')"
+            aria-label="Tema claro"
           >
-            ☀
+            <app-icon name="theme-sun" class="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
-            class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-[13px]"
-            [class.bg-accent-strong]="themeService.theme() === 'dark'"
-            [class.text-white]="themeService.theme() === 'dark'"
+            class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-ink-faint"
+            [class]="
+              themeService.theme() === 'dark'
+                ? 'bg-green-700 text-white dark:bg-green-400 dark:text-green-900'
+                : ''
+            "
             (click)="themeService.theme.set('dark')"
+            aria-label="Tema oscuro"
           >
-            ☾
+            <app-icon name="theme-moon" class="h-3.5 w-3.5" />
           </button>
         </div>
 
-        <select
-          class="rounded-md border border-edge bg-surface-2 px-2.5 py-2 text-[12.5px] font-medium text-ink"
-          (change)="onRoleChange($event)"
-        >
-          @for (role of roles; track role) {
-            <option [value]="role" [selected]="role === currentRole.role()">
-              {{ roleLabels[role] }}
-            </option>
-          }
-        </select>
+        @if (installPrompt()) {
+          <button type="button" appButton variant="soft" (click)="installPwa()">
+            Instalar PWA
+          </button>
+        }
+
+        <div class="hidden items-center gap-2.5 border-l border-edge pl-3 sm:flex">
+          <div
+            class="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-green-700 text-12-5 font-bold text-white"
+          >
+            {{ initials() }}
+          </div>
+          <div class="leading-tight">
+            <strong class="block text-13 font-semibold text-ink">{{
+              authService.currentUser()?.fullName
+            }}</strong>
+            <span class="text-11 text-ink-faint">{{ roleLabel() }}</span>
+          </div>
+        </div>
+
+        <button type="button" appButton (click)="logout()">Cerrar sesión</button>
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-[1360px] flex-1 px-5 py-6 md:px-7">
+    <main class="mx-auto w-full max-w-[1360px] flex-1 px-5 py-6 min-[860px]:px-7">
       <router-outlet />
     </main>
   </div>

@@ -1,0 +1,8 @@
+<div class="overflow-x-auto">
+  <table class="w-full text-13">
+    <ng-content />
+  </table>
+</div>
+@if (footer(); as f) {
+  <p class="mt-3 text-12 text-ink-faint">{{ f }}</p>
+}

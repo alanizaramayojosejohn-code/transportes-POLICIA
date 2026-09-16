@@ -1,0 +1,115 @@
+<app-modal title="Registro de abastecimiento" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Vehículo *">
+      <select
+        appFieldControl
+        [value]="vehicleId()"
+        (change)="vehicleId.set($any($event.target).value)"
+      >
+        <option value="">Seleccionar...</option>
+        @for (vehicle of vehicles(); track vehicle.id) {
+          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Conductor">
+      <select
+        appFieldControl
+        [value]="driverId()"
+        (change)="driverId.set($any($event.target).value)"
+      >
+        <option value="">Sin especificar</option>
+        @for (driver of drivers(); track driver.id) {
+          <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Fecha/hora *">
+      <input
+        appFieldControl
+        type="datetime-local"
+        [value]="suppliedAt()"
+        (input)="suppliedAt.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Kilometraje *">
+      <input
+        appFieldControl
+        type="number"
+        [value]="odometer()"
+        (input)="onNumberInput('odometer', $any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Tipo de combustible *">
+      <select
+        appFieldControl
+        [value]="fuelType()"
+        (change)="fuelType.set($any($event.target).value)"
+      >
+        @for (type of fuelTypes; track type) {
+          <option [value]="type">{{ fuelTypeLabel[type] }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Estación">
+      <input
+        appFieldControl
+        placeholder="YPFB"
+        [value]="station()"
+        (input)="station.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Cantidad (litros) *">
+      <input
+        appFieldControl
+        type="number"
+        [value]="quantity()"
+        (input)="onNumberInput('quantity', $any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Precio unitario *">
+      <input
+        appFieldControl
+        type="number"
+        step="0.01"
+        [value]="unitPrice()"
+        (input)="onNumberInput('unitPrice', $any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Número de vale">
+      <input
+        appFieldControl
+        [value]="ticketNumber()"
+        (input)="ticketNumber.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="notes()"
+        (input)="notes.set($any($event.target).value)"
+      ></textarea>
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar
+    </button>
+  </app-form-actions>
+</app-modal>

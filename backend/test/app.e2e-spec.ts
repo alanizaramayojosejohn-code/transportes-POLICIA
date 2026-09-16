@@ -19,14 +19,35 @@ describe('GraphQL (e2e)', () => {
     await app.init();
   });
 
-  it('responde el listado de vehículos', () => {
+  it('responde el listado de vehículos para un usuario autenticado', async () => {
+    const loginResponse = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query:
+          'mutation($input: LoginInput!) { login(input: $input) { accessToken } }',
+        variables: { input: { username: 'admin', password: 'Temporal2026' } },
+      });
+    const accessToken: string = loginResponse.body.data.login.accessToken;
+
     return request(app.getHttpServer())
       .post('/graphql')
+      .set('Authorization', `Bearer ${accessToken}`)
       .send({ query: '{ vehicles { total items { id plate } } }' })
       .expect(200)
       .expect((res) => {
         expect(res.body.errors).toBeUndefined();
         expect(res.body.data.vehicles).toHaveProperty('total');
+      });
+  });
+
+  it('rechaza una consulta sin token de acceso', () => {
+    return request(app.getHttpServer())
+      .post('/graphql')
+      .send({ query: '{ vehicles { total items { id plate } } }' })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.errors).toBeDefined();
+        expect(res.body.data).toBeNull();
       });
   });
 

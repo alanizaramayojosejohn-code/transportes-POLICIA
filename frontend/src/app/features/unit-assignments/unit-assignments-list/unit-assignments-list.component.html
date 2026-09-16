@@ -1,190 +1,164 @@
-<div class="mb-5 flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <h2 class="font-serif text-[23px] font-semibold text-ink">Asignaciones de unidad</h2>
-    <p class="text-[13.5px] text-ink-muted">
-      Historial de las unidades a las que estuvo asignado cada vehículo.
-    </p>
-  </div>
+<app-page-head
+  title="Asignaciones de unidad"
+  description="Historial de las unidades a las que estuvo asignado cada vehículo."
+>
   @if (currentRole.canWrite()) {
-    <button
-      type="button"
-      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent"
-      (click)="showCreateForm.set(true)"
-    >
+    <button type="button" appButton variant="primary" (click)="showCreateForm.set(true)">
       + Nueva asignación
     </button>
   }
-</div>
+</app-page-head>
 
-<div class="mb-4 rounded-md border-l-2 border-accent bg-surface-2 p-3 text-[12.5px] text-ink-muted">
+<app-notice class="mb-4">
   Este módulo registra el resultado de una asignación y su periodo de vigencia. No gestiona
   solicitudes ni trámites administrativos previos.
-</div>
+</app-notice>
 
-<div class="rounded-2xl border border-edge bg-surface p-5 shadow-sm">
-  <div class="mb-4 flex flex-wrap gap-2.5">
+<app-card>
+  <app-filter-bar>
     <input
-      class="min-w-56 flex-[2] rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      appFilterControl
       placeholder="Buscar placa, unidad o referencia..."
       [value]="search()"
       (input)="search.set($any($event.target).value)"
     />
-    <select
-      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
-      [value]="status()"
-      (change)="status.set($any($event.target).value)"
-    >
+    <select appFilterControl [value]="status()" (change)="status.set($any($event.target).value)">
       <option value="">Todas</option>
       <option value="ACTUAL">Actuales</option>
       <option value="HISTORICA">Históricas</option>
     </select>
-  </div>
+  </app-filter-bar>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-[13px]">
-      <thead>
-        <tr
-          class="border-b border-edge text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
-        >
-          <th class="pb-2.5">Vehículo</th>
-          <th class="pb-2.5">Unidad</th>
-          <th class="pb-2.5">Inicio</th>
-          <th class="pb-2.5">Fin</th>
-          <th class="pb-2.5">Motivo</th>
-          <th class="pb-2.5">Documento</th>
-          <th class="pb-2.5">Estado</th>
-          <th class="pb-2.5"></th>
+  <app-table [footer]="page().total + ' asignación(es) en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Inicio</th>
+        <th appTableHeadCell>Fin</th>
+        <th appTableHeadCell>Motivo</th>
+        <th appTableHeadCell>Documento</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of page().items; track a.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ a.vehicle.plate }}</td>
+          <td appTableCell>{{ a.unit.name }}</td>
+          <td appTableCell>{{ formatDate(a.startDate) }}</td>
+          <td appTableCell>{{ a.endDate ? formatDate(a.endDate) : '—' }}</td>
+          <td appTableCell>{{ a.reason || '—' }}</td>
+          <td appTableCell>{{ a.referenceDocument || '—' }}</td>
+          <td appTableCell>
+            <app-badge [tone]="a.endDate ? 'amber' : 'green'">
+              {{ a.endDate ? 'Histórica' : 'Actual' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            @if (!a.endDate && currentRole.canWrite()) {
+              <div class="flex justify-end gap-1.5">
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="openEdit(a.vehicle.id, a.reason, a.referenceDocument, a.notes)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  variant="soft"
+                  (click)="openClose(a.vehicle.id)"
+                >
+                  Cerrar
+                </button>
+              </div>
+            }
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        @for (a of page().items; track a.id) {
-          <tr class="border-b border-edge hover:bg-surface-2">
-            <td class="py-3 font-medium">{{ a.vehicle.plate }}</td>
-            <td class="py-3">{{ a.unit.name }}</td>
-            <td class="py-3">{{ formatDate(a.startDate) }}</td>
-            <td class="py-3">{{ a.endDate ? formatDate(a.endDate) : '—' }}</td>
-            <td class="py-3">{{ a.reason || '—' }}</td>
-            <td class="py-3">{{ a.referenceDocument || '—' }}</td>
-            <td class="py-3">
-              <app-badge [tone]="a.endDate ? 'amber' : 'green'">
-                {{ a.endDate ? 'Histórica' : 'Actual' }}
-              </app-badge>
-            </td>
-            <td class="py-3 text-right">
-              @if (!a.endDate && currentRole.canWrite()) {
-                <div class="flex justify-end gap-1.5">
+        @if (activeActionVehicleId() === a.vehicle.id) {
+          <tr appTableRow class="bg-surface-2">
+            <td appTableCell colspan="8">
+              @if (actionError()) {
+                <p class="mb-2 text-12-5 text-red">{{ actionError() }}</p>
+              }
+              @if (actionMode() === 'close') {
+                <div class="flex flex-wrap items-end gap-3">
+                  <app-field label="Fecha de fin *">
+                    <input
+                      appFieldControl
+                      type="date"
+                      [value]="closeDate()"
+                      (input)="closeDate.set($any($event.target).value)"
+                    />
+                  </app-field>
                   <button
                     type="button"
-                    class="rounded-md border border-edge-strong px-2.5 py-1 text-[11.5px] font-semibold"
-                    (click)="openEdit(a.vehicle.id, a.reason, a.referenceDocument, a.notes)"
+                    appButton
+                    variant="primary"
+                    size="sm"
+                    (click)="confirmClose()"
                   >
-                    Editar
+                    Confirmar cierre
                   </button>
-                  <button
-                    type="button"
-                    class="rounded-md bg-green-bg px-2.5 py-1 text-[11.5px] font-semibold text-accent-strong"
-                    (click)="openClose(a.vehicle.id)"
-                  >
-                    Cerrar
+                  <button type="button" appButton size="sm" (click)="closeActionPanel()">
+                    Cancelar
                   </button>
+                </div>
+              } @else {
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <app-field label="Motivo">
+                    <input
+                      appFieldControl
+                      [value]="editReason()"
+                      (input)="editReason.set($any($event.target).value)"
+                    />
+                  </app-field>
+                  <app-field label="Documento / referencia">
+                    <input
+                      appFieldControl
+                      [value]="editReferenceDocument()"
+                      (input)="editReferenceDocument.set($any($event.target).value)"
+                    />
+                  </app-field>
+                  <app-field label="Observaciones">
+                    <input
+                      appFieldControl
+                      [value]="editNotes()"
+                      (input)="editNotes.set($any($event.target).value)"
+                    />
+                  </app-field>
+                  <div class="flex gap-2 sm:col-span-3">
+                    <button
+                      type="button"
+                      appButton
+                      variant="primary"
+                      size="sm"
+                      (click)="confirmEdit()"
+                    >
+                      Guardar
+                    </button>
+                    <button type="button" appButton size="sm" (click)="closeActionPanel()">
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               }
             </td>
           </tr>
-          @if (activeActionVehicleId() === a.vehicle.id) {
-            <tr class="border-b border-edge bg-surface-2">
-              <td colspan="8" class="p-4">
-                @if (actionError()) {
-                  <p class="mb-2 text-[12.5px] text-red">{{ actionError() }}</p>
-                }
-                @if (actionMode() === 'close') {
-                  <div class="flex flex-wrap items-end gap-3">
-                    <label class="flex flex-col gap-1.5">
-                      <span class="text-xs font-semibold text-ink-muted">Fecha de fin *</span>
-                      <input
-                        type="date"
-                        class="rounded-md border border-edge bg-surface px-3 py-2 text-[13px]"
-                        [value]="closeDate()"
-                        (input)="closeDate.set($any($event.target).value)"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      class="rounded-md bg-accent-strong px-3.5 py-2 text-[12.5px] font-semibold text-on-accent"
-                      (click)="confirmClose()"
-                    >
-                      Confirmar cierre
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold"
-                      (click)="closeActionPanel()"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                } @else {
-                  <div class="grid gap-3 sm:grid-cols-3">
-                    <label class="flex flex-col gap-1.5">
-                      <span class="text-xs font-semibold text-ink-muted">Motivo</span>
-                      <input
-                        class="rounded-md border border-edge bg-surface px-3 py-2 text-[13px]"
-                        [value]="editReason()"
-                        (input)="editReason.set($any($event.target).value)"
-                      />
-                    </label>
-                    <label class="flex flex-col gap-1.5">
-                      <span class="text-xs font-semibold text-ink-muted"
-                        >Documento / referencia</span
-                      >
-                      <input
-                        class="rounded-md border border-edge bg-surface px-3 py-2 text-[13px]"
-                        [value]="editReferenceDocument()"
-                        (input)="editReferenceDocument.set($any($event.target).value)"
-                      />
-                    </label>
-                    <label class="flex flex-col gap-1.5">
-                      <span class="text-xs font-semibold text-ink-muted">Observaciones</span>
-                      <input
-                        class="rounded-md border border-edge bg-surface px-3 py-2 text-[13px]"
-                        [value]="editNotes()"
-                        (input)="editNotes.set($any($event.target).value)"
-                      />
-                    </label>
-                    <div class="flex gap-2 sm:col-span-3">
-                      <button
-                        type="button"
-                        class="rounded-md bg-accent-strong px-3.5 py-2 text-[12.5px] font-semibold text-on-accent"
-                        (click)="confirmEdit()"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        type="button"
-                        class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold"
-                        (click)="closeActionPanel()"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                }
-              </td>
-            </tr>
-          }
-        } @empty {
-          <tr>
-            <td colspan="8" class="py-8 text-center text-ink-muted">
-              Sin asignaciones registradas todavía.
-            </td>
-          </tr>
         }
-      </tbody>
-    </table>
-  </div>
-
-  <p class="mt-3 text-[12px] text-ink-faint">{{ page().total }} asignación(es) en total.</p>
-</div>
+      } @empty {
+        <tr appTableEmpty [colspan]="8">
+          Sin asignaciones registradas todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
 
 @if (showCreateForm()) {
   <app-unit-assignment-form

@@ -1,0 +1,10 @@
+<div class="pointer-events-none fixed bottom-[22px] right-[22px] z-[200] flex flex-col gap-2">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div
+      class="animate-toast-in pointer-events-auto flex items-center gap-2 rounded-sm bg-green-800 px-[18px] py-3 text-13 font-semibold text-white shadow-2 transition-opacity duration-[250ms] dark:bg-green-400 dark:text-green-900"
+      [class.opacity-0]="toast.leaving"
+    >
+      {{ toast.message }}
+    </div>
+  }
+</div>

@@ -1,0 +1,74 @@
+<app-page-head
+  title="Combustible"
+  description="Abastecimientos relacionados con vehículo y kilometraje."
+>
+  @if (currentRole.canWriteFuel()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Registrar abastecimiento
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo, estación o vale..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select
+      appFilterControl
+      [value]="fuelType()"
+      (change)="fuelType.set($any($event.target).value)"
+    >
+      <option value="">Todos los tipos</option>
+      @for (type of fuelTypes; track type) {
+        <option [value]="type">{{ fuelTypeLabel[type] }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  <app-table [footer]="page().total + ' abastecimiento(s) en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>KM</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Litros</th>
+        <th appTableHeadCell>Costo total</th>
+        <th appTableHeadCell>Estación</th>
+        <th appTableHeadCell>Rendimiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (record of page().items; track record.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+          <td appTableCell class="font-medium">{{ record.vehicle.plate }}</td>
+          <td appTableCell>{{ record.odometer }}</td>
+          <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+          <td appTableCell>{{ record.quantity }}</td>
+          <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+          <td appTableCell>{{ record.station || '—' }}</td>
+          <td appTableCell>
+            {{
+              record.efficiencyKmPerUnit !== null
+                ? record.efficiencyKmPerUnit.toFixed(1) + ' km/l'
+                : '—'
+            }}
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="8">
+          Sin abastecimientos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
+
+@if (showForm()) {
+  <app-fuel-record-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}

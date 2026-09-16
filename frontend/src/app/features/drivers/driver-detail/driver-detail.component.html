@@ -1,0 +1,61 @@
+@if (driver(); as d) {
+  <app-modal title="Ficha del conductor" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <div class="mb-5 flex items-center gap-3.5">
+        <div
+          class="flex h-[54px] w-[54px] flex-none items-center justify-center rounded-full bg-green-700 text-13 font-bold text-white"
+        >
+          CD
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-[19px] font-serif font-semibold text-ink">
+            {{ d.firstName }} {{ d.lastName }}
+          </h2>
+          <p class="text-12-5 text-ink-muted">{{ subtitle() }}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="CI">{{ d.ci }}</app-data-cell>
+        <app-data-cell label="Grado">{{ d.rank || '—' }}</app-data-cell>
+        <app-data-cell label="Licencia">{{ d.licenseNumber || '—' }}</app-data-cell>
+        <app-data-cell label="Categoría">{{ d.licenseCategory || '—' }}</app-data-cell>
+        <app-data-cell label="Vencimiento">
+          <div class="flex items-center gap-1.5">
+            {{ formatDate(d.licenseExpiresAt) }}
+            @if (isLicenseExpired(d.licenseExpiresAt)) {
+              <app-badge tone="red">Vencida</app-badge>
+            }
+          </div>
+        </app-data-cell>
+        <app-data-cell label="Teléfono">{{ d.phone || '—' }}</app-data-cell>
+        <app-data-cell label="Unidad">{{ d.unit?.name || 'Sin asignar' }}</app-data-cell>
+        <app-data-cell label="Estado">
+          <app-badge [tone]="d.isActive ? 'green' : 'gray'">
+            {{ d.isActive ? 'Activo' : 'Inactivo' }}
+          </app-badge>
+        </app-data-cell>
+      </div>
+
+      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-3.5">
+        <span class="mb-1.5 block text-11 font-semibold text-ink-faint">Vehículos asociados</span>
+        @if (associatedVehicles().length === 0) {
+          <p class="text-13 text-ink">Sin vehículos asociados.</p>
+        } @else {
+          <div class="flex flex-wrap gap-1.5">
+            @for (plate of associatedVehicles(); track plate) {
+              <span
+                class="inline-flex items-center rounded-full bg-green-bg px-2.5 py-1 text-11-5 font-semibold text-green-700 dark:text-green-300"
+                >{{ plate }}</span
+              >
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

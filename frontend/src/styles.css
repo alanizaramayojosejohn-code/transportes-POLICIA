@@ -21,9 +21,37 @@
   --color-red: #a83a32;
   --color-gray: #5b6660;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Radios y sombras: valores de la maqueta (`prototipo/`), capa "ACTUALIZACIÓN VISUAL 2026"
+     (`css/styles.css:4954-4959`), que pisa los valores originales del prototipo. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-1: 0 2px 8px rgba(8, 20, 15, 0.06);
+  --shadow-2: 0 22px 55px -28px rgba(8, 20, 15, 0.38);
+
+  /* Animaciones de entrada de modal/drawer/toast (la maqueta las dispara al togglear una clase
+     `.show`; aquí Angular monta/desmonta el componente, así que una única animación de entrada
+     al crear el nodo produce el mismo efecto — la maqueta tampoco anima la salida). */
+  --animate-pop: pop 0.18s ease;
+  --animate-drawer-in: drawer-in 0.25s ease;
+  --animate-toast-in: toast-in 0.2s ease;
+
+  /* Escala tipográfica: tamaños reales de la maqueta, nombrados por su valor en px para no
+     inventar una jerarquía nueva. Los tamaños poco frecuentes (9px, 9.5px, 16px, 19px, 30px...,
+     usados sólo en el login) se dejan como utilidades arbitrarias `text-[Npx]`. */
+  --text-11: 11px;
+  --text-11-5: 11.5px;
+  --text-12: 12px;
+  --text-12-5: 12.5px;
+  --text-13: 13px;
+  --text-13-5: 13.5px;
+  --text-14: 14px;
+  --text-14-5: 14.5px;
+  --text-15: 15px;
+  --text-17: 17px;
+  --text-20: 20px;
+  --text-23: 23px;
+  --text-24: 24px;
 }
 
 /* Tokens semánticos: cambian de valor entre claro y oscuro, así que viven
@@ -43,6 +71,8 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-ink: var(--sidebar-ink);
   --color-sidebar-ink-dim: var(--sidebar-ink-dim);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-on-accent: var(--on-accent);
@@ -50,13 +80,16 @@
   --color-red-bg: var(--red-bg);
   --color-gray-bg: var(--gray-bg);
   --color-green-bg: var(--green-bg);
+  --color-overlay: var(--overlay);
 }
 
 :root,
 [data-theme='light'] {
-  --canvas: #f6f8f5;
+  /* `--canvas`/`--surface-2` según la capa "ACTUALIZACIÓN VISUAL 2026" (`css/styles.css:4962-4965`
+     del prototipo), que pisa los valores originales (`#F6F8F5`/`#EFF3F0`). */
+  --canvas: #f3f6f3;
   --surface: #ffffff;
-  --surface-2: #eff3f0;
+  --surface-2: #f7f9f7;
   --surface-3: #e5ebe6;
   --edge: #dbe3dc;
   --edge-strong: #c4d0c7;
@@ -66,6 +99,8 @@
   --sidebar: var(--color-green-800);
   --sidebar-ink: #dcebe2;
   --sidebar-ink-dim: #9fbdac;
+  --sidebar-active: rgba(255, 255, 255, 0.1);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --accent: var(--color-green-700);
   --accent-strong: var(--color-green-800);
   --on-accent: #fdfefd;
@@ -73,13 +108,16 @@
   --red-bg: #fbeae8;
   --gray-bg: #eef1ef;
   --green-bg: #e4f1e9;
+  --overlay: rgba(9, 20, 15, 0.45);
 }
 
 [data-theme='dark'] {
-  --canvas: #0a0f0c;
-  --surface: #111813;
-  --surface-2: #161f19;
-  --surface-3: #1c2620;
+  /* `--canvas`/`--surface`/`--surface-2`/`--surface-3` según la misma capa 2026, que pisa
+     `#0A0F0C`/`#111813`/`#161F19`/`#1C2620`. */
+  --canvas: #080d0a;
+  --surface: #101712;
+  --surface-2: #151d18;
+  --surface-3: #1c2720;
   --edge: #243029;
   --edge-strong: #324237;
   --ink: #eaf1ec;
@@ -88,6 +126,8 @@
   --sidebar: #0c1512;
   --sidebar-ink: #dcebe2;
   --sidebar-ink-dim: #7e9689;
+  --sidebar-active: rgba(46, 156, 113, 0.14);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
   --accent: var(--color-green-400);
   --accent-strong: var(--color-green-300);
   --on-accent: #08251a;
@@ -95,16 +135,98 @@
   --red-bg: #2c1715;
   --gray-bg: #1a211d;
   --green-bg: #132b21;
+  --overlay: rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
+  margin: 0;
   font-family: var(--font-sans);
   background: var(--color-canvas);
   color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
+  /* Textura sutil de fondo (`css/styles.css:4975-4978` del prototipo). */
+  background-image:
+    radial-gradient(circle at 90% 0%, rgba(46, 156, 113, 0.055), transparent 28%),
+    linear-gradient(180deg, var(--color-canvas), var(--color-canvas));
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--font-serif);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+::selection {
+  background: var(--color-green-300);
+  color: var(--color-green-900);
+}
+
+/* Guilloché: arcos concéntricos muy tenues, textura de documento institucional
+   (`css/styles.css:120-127` del prototipo). Se usa sobre fondos oscuros del sidebar,
+   banner de instalación y cabecera de drawer — siempre como capa detrás del contenido. */
+.watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: repeating-radial-gradient(
+    circle at 0% 0%,
+    transparent 0 6px,
+    currentColor 6px 7px
+  );
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-green-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

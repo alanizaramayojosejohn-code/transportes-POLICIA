@@ -1,0 +1,62 @@
+<app-page-head title="Documentación vehicular" description="Expediente documental por vehículo.">
+  @if (currentRole.canWrite()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Registrar documento
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo o número de documento..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ typeLabel[t] }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  <app-table [footer]="page().total + ' documento(s) en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Número</th>
+        <th appTableHeadCell>Emisión</th>
+        <th appTableHeadCell>Vencimiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (document of page().items; track document.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ document.vehicle.plate }}</td>
+          <td appTableCell>{{ typeLabel[document.type] }}</td>
+          <td appTableCell>{{ document.documentNumber || '—' }}</td>
+          <td appTableCell>{{ formatDate(document.issuedAt) }}</td>
+          <td appTableCell>
+            <div class="flex items-center gap-1.5">
+              {{ formatDate(document.expiresAt) }}
+              @if (isExpired(document.expiresAt)) {
+                <app-badge tone="red">Vencido</app-badge>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="5">
+          Sin documentos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
+
+@if (showForm()) {
+  <app-vehicle-document-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}

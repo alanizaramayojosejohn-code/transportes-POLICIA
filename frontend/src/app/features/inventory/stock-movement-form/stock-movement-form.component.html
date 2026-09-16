@@ -1,0 +1,83 @@
+<app-modal title="Movimiento de inventario" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Tipo *">
+      <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
+        <option value="IN">Entrada</option>
+        <option value="OUT">Salida</option>
+      </select>
+    </app-field>
+
+    <app-field label="Artículo *">
+      <select
+        appFieldControl
+        [value]="sparePartId()"
+        (change)="sparePartId.set($any($event.target).value)"
+      >
+        <option value="">Seleccionar...</option>
+        @for (part of parts(); track part.id) {
+          <option [value]="part.id">
+            {{ part.name }} ({{ part.currentStock }} {{ part.unit }})
+          </option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Cantidad *">
+      <input
+        appFieldControl
+        type="number"
+        [value]="quantity()"
+        (input)="onNumberInput('quantity', $any($event.target).value)"
+      />
+    </app-field>
+
+    @if (!isOut) {
+      <app-field label="Precio unitario">
+        <input
+          appFieldControl
+          type="number"
+          step="0.01"
+          [value]="unitCost()"
+          (input)="onNumberInput('unitCost', $any($event.target).value)"
+        />
+      </app-field>
+      <app-field label="Proveedor">
+        <input
+          appFieldControl
+          [value]="supplier()"
+          (input)="supplier.set($any($event.target).value)"
+        />
+      </app-field>
+    }
+
+    @if (isOut) {
+      <app-field label="Para qué *" full>
+        <input
+          appFieldControl
+          placeholder="Cambio de aceite"
+          [value]="reason()"
+          (input)="reason.set($any($event.target).value)"
+        />
+      </app-field>
+    }
+
+    <app-field label="Documento / referencia" full>
+      <input
+        appFieldControl
+        [value]="reference()"
+        (input)="reference.set($any($event.target).value)"
+      />
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar movimiento
+    </button>
+  </app-form-actions>
+</app-modal>
