@@ -11,7 +11,7 @@ import { IncidentsService } from './incidents.service.js';
 import { Incident } from './entities/incident.entity.js';
 import { IncidentPage } from './entities/incident-page.entity.js';
 import { Vehicle } from '../vehicles/entities/vehicle.entity.js';
-import { Driver } from '../drivers/entities/driver.entity.js';
+import { Personnel } from '../personnel/entities/personnel.entity.js';
 import { CreateIncidentInput } from './dto/create-incident.input.js';
 import { IncidentFilterArgs } from './dto/incident-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
@@ -38,7 +38,7 @@ export class IncidentsResolver {
     return this.incidentsService.getVehicle(incident.vehicleId);
   }
 
-  @ResolveField(() => Driver, { nullable: true })
+  @ResolveField(() => Personnel, { nullable: true })
   driver(@Parent() incident: Incident) {
     return this.incidentsService.getDriver(incident.driverId);
   }

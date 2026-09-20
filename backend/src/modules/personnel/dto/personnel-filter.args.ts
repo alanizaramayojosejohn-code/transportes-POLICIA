@@ -1,9 +1,24 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
 import { IsBoolean, IsOptional, IsString, Max, Min } from 'class-validator';
 
-/** RF-8: búsqueda por CI, nombres, apellidos o licencia; filtro por unidad y estado. */
+/** Búsqueda por CI, nombres, apellidos o licencia; filtro por unidad, estado y rol. */
 @ArgsType()
-export class DriverFilterArgs {
+export class PersonnelFilterArgs {
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isDriver?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isOfficer?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isAdmin?: boolean;
+
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()

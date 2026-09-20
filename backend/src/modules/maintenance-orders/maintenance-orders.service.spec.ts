@@ -9,6 +9,8 @@ const actingUser: AuthenticatedUser = {
   username: 'mantenimiento.01',
   fullName: 'Usuario de prueba',
   role: 'MANTENIMIENTO',
+  personnelId: null,
+  managedUnitIds: [],
 };
 
 function buildPrismaMock() {

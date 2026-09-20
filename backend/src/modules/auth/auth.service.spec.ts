@@ -102,6 +102,8 @@ describe('AuthService', () => {
           username: 'jperez',
           fullName: 'Juan Pérez',
           role: 'TRANSPORTES',
+          personnelId: null,
+          managedUnitIds: [],
         },
       });
       expect(jwtService.signAsync).toHaveBeenCalledWith({

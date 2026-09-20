@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { TripsService } from './trips.service.js';
+import type { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 const actingUser: AuthenticatedUser = {
@@ -9,12 +10,14 @@ const actingUser: AuthenticatedUser = {
   username: 'transportes.admin',
   fullName: 'Usuario de prueba',
   role: 'TRANSPORTES',
+  personnelId: null,
+  managedUnitIds: [],
 };
 
 function buildPrismaMock() {
   const mock = {
     vehicle: { findUnique: vi.fn() },
-    driver: { findUnique: vi.fn() },
+    personnel: { findUnique: vi.fn() },
     trip: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
@@ -42,7 +45,10 @@ describe('TripsService', () => {
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    service = new TripsService(prisma);
+    const vehicleDriverAssignmentsService = {
+      assertDriverOwnsVehicle: vi.fn(),
+    } as unknown as VehicleDriverAssignmentsService;
+    service = new TripsService(prisma, vehicleDriverAssignmentsService);
   });
 
   describe('create', () => {
@@ -67,7 +73,7 @@ describe('TripsService', () => {
       vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
         id: 'v1',
       } as never);
-      vi.mocked(prisma.driver.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'd1',
         isActive: false,
       } as never);
@@ -90,7 +96,7 @@ describe('TripsService', () => {
       vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
         id: 'v1',
       } as never);
-      vi.mocked(prisma.driver.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'd1',
         isActive: true,
       } as never);
@@ -116,7 +122,7 @@ describe('TripsService', () => {
       vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
         id: 'v1',
       } as never);
-      vi.mocked(prisma.driver.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'd1',
         isActive: true,
       } as never);

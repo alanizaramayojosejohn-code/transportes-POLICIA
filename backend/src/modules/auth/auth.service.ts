@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { verify } from 'argon2';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { LoginInput } from './dto/login.input.js';
+import { resolveAuthenticatedUser } from './resolve-authenticated-user.js';
 import type { AuthenticatedUser } from './auth.types.js';
 
 const INVALID_CREDENTIALS_MESSAGE = 'Usuario o contraseña incorrectos';
@@ -25,7 +26,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; user: AuthenticatedUser }> {
     const user = await this.prisma.user.findUnique({
       where: { username: this.normalizeUsername(input.username) },
-      include: { role: true },
+      include: { role: true, personnel: true },
     });
 
     if (
@@ -41,12 +42,11 @@ export class AuthService {
       data: { lastLoginAt: new Date() },
     });
 
-    const authUser: AuthenticatedUser = {
-      id: user.id,
-      username: user.username,
-      fullName: user.fullName,
-      role: user.role.code,
-    };
+    const authUser = await resolveAuthenticatedUser(
+      this.prisma,
+      user,
+      user.personnel?.id ?? null,
+    );
 
     const accessToken = await this.jwtService.signAsync({
       sub: authUser.id,

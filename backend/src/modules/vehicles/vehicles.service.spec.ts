@@ -22,6 +22,9 @@ function buildPrismaMock() {
     unitAssignment: {
       updateMany: vi.fn(),
     },
+    vehicleDriverAssignment: {
+      updateMany: vi.fn(),
+    },
     $transaction: vi.fn(),
   };
   // Soporta las dos formas de $transaction que usa el servicio: un arreglo

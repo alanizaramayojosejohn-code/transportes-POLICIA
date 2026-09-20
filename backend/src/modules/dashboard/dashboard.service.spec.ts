@@ -5,7 +5,7 @@ import { DashboardService } from './dashboard.service.js';
 function buildPrismaMock() {
   const mock = {
     vehicle: { findMany: vi.fn().mockResolvedValue([]) },
-    driver: { count: vi.fn().mockResolvedValue(0) },
+    personnel: { count: vi.fn().mockResolvedValue(0) },
     trip: {
       count: vi.fn().mockResolvedValue(0),
       findMany: vi.fn().mockResolvedValue([]),

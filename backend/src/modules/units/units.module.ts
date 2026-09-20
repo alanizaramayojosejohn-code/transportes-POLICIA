@@ -1,18 +1,12 @@
 import { Module } from '@nestjs/common';
 import { UnitsService } from './units.service.js';
-import { OfficersService } from './officers.service.js';
 import { UnitsResolver } from './units.resolver.js';
-import { OfficersResolver } from './officers.resolver.js';
 import { TransportManagerAssignmentResolver } from './transport-manager-assignment.resolver.js';
+import { PersonnelModule } from '../personnel/personnel.module.js';
 
 @Module({
-  providers: [
-    UnitsService,
-    OfficersService,
-    UnitsResolver,
-    OfficersResolver,
-    TransportManagerAssignmentResolver,
-  ],
-  exports: [UnitsService, OfficersService],
+  imports: [PersonnelModule],
+  providers: [UnitsService, UnitsResolver, TransportManagerAssignmentResolver],
+  exports: [UnitsService],
 })
 export class UnitsModule {}

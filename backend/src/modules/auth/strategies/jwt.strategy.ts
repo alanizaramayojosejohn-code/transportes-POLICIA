@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { resolveAuthenticatedUser } from '../resolve-authenticated-user.js';
 import type { AuthenticatedUser, JwtPayload } from '../auth.types.js';
 
 /**
@@ -27,16 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      include: { role: true },
+      include: { role: true, personnel: true },
     });
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Sesión no válida');
     }
-    return {
-      id: user.id,
-      username: user.username,
-      fullName: user.fullName,
-      role: user.role.code,
-    };
+    return resolveAuthenticatedUser(
+      this.prisma,
+      user,
+      user.personnel?.id ?? null,
+    );
   }
 }

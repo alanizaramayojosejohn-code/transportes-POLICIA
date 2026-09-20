@@ -17,6 +17,8 @@ const ROLES = [
   { code: 'MANTENIMIENTO', name: 'Mantenimiento', isSystem: false },
   { code: 'ALMACEN', name: 'Almacén', isSystem: false },
   { code: 'CONSULTA', name: 'Consulta', isSystem: false },
+  /// Spec 014: acotado a un único vehículo a la vez (VehicleDriverAssignment).
+  { code: 'CONDUCTOR', name: 'Conductor', isSystem: false },
 ];
 
 /**
@@ -25,18 +27,19 @@ const ROLES = [
  * Mantenimiento, Inventario, Incidentes) igual necesitan un `User` real
  * como autor de cada registro (FK obligatoria del esquema). Se busca el
  * primer usuario activo con el rol simulado activo en el topbar; si no
- * existe ninguno, esos módulos no pueden operar. Nombres de usuario y
- * contraseña temporal tomados de la maqueta (`usuarioModal`).
+ * existe ninguno, esos módulos no pueden operar. Usuario = código del rol
+ * en minúsculas; contraseña temporal única para todos (`DEFAULT_PASSWORD`).
  */
 const USERS = [
-  { username: 'admin', fullName: 'Administrador del Sistema', roleCode: 'ADMINISTRADOR' },
-  { username: 'transportes.admin', fullName: 'Área de Transportes', roleCode: 'TRANSPORTES' },
-  { username: 'combustible.01', fullName: 'Encargado de Combustible', roleCode: 'COMBUSTIBLE' },
-  { username: 'mantenimiento.01', fullName: 'Encargado de Mantenimiento', roleCode: 'MANTENIMIENTO' },
-  { username: 'almacen.01', fullName: 'Encargado de Almacén', roleCode: 'ALMACEN' },
-  { username: 'consulta.01', fullName: 'Usuario de Consulta', roleCode: 'CONSULTA' },
+  { username: 'administrador', fullName: 'Administrador del Sistema', roleCode: 'ADMINISTRADOR' },
+  { username: 'transportes', fullName: 'Área de Transportes', roleCode: 'TRANSPORTES' },
+  { username: 'combustible', fullName: 'Encargado de Combustible', roleCode: 'COMBUSTIBLE' },
+  { username: 'mantenimiento', fullName: 'Encargado de Mantenimiento', roleCode: 'MANTENIMIENTO' },
+  { username: 'almacen', fullName: 'Encargado de Almacén', roleCode: 'ALMACEN' },
+  { username: 'consulta', fullName: 'Usuario de Consulta', roleCode: 'CONSULTA' },
+  { username: 'conductor', fullName: 'Conductor de Prueba', roleCode: 'CONDUCTOR' },
 ];
-const DEFAULT_PASSWORD = 'Temporal2026';
+const DEFAULT_PASSWORD = 'Test1234.';
 
 /**
  * Categorías de repuestos (spec 009): `SparePartCategory` es un catálogo

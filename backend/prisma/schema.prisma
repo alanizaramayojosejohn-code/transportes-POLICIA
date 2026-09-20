@@ -42,7 +42,7 @@ model User {
   departmentId String?     @map("department_id")
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  driver               Driver?
+  personnel            Personnel?
   auditLogs            AuditLog[]
   requestsMade         VehicleRequest[]   @relation("RequestRequester")
   requestsReviewed     VehicleRequest[]   @relation("RequestReviewer")
@@ -62,7 +62,8 @@ model User {
 
 model Role {
   id          String   @id @default(uuid(7))
-  /// Código estable para comparar en guards: ADMIN, SUPERVISOR, OPERADOR, CONDUCTOR.
+  /// Código estable para comparar en guards: ADMINISTRADOR, TRANSPORTES, COMBUSTIBLE,
+  /// MANTENIMIENTO, ALMACEN, CONSULTA, CONDUCTOR.
   code        String   @unique
   name        String
   description String?
@@ -156,7 +157,6 @@ model Department {
   children Department[] @relation("DepartmentTree")
 
   users    User[]
-  drivers  Driver[]
   vehicles Vehicle[]
 
   @@index([parentId])
@@ -193,6 +193,7 @@ model Vehicle {
 
   conditions        VehicleCondition[]
   unitAssignments   UnitAssignment[]
+  driverAssignments VehicleDriverAssignment[]
   assignments       Assignment[]
   odometerReadings  OdometerReading[]
   maintenanceOrders MaintenanceOrder[]
@@ -269,43 +270,66 @@ enum FuelType {
 }
 
 // =============================================================================
-// RF-02  Padrón de conductores
+// Personal — fusión de RF-02 (padrón de conductores, spec 005) y de la
+// sección "personal policial" del spec 002. `Driver` y `Officer` modelaban
+// la misma realidad (una persona del Comando) en dos tablas sin relación;
+// se fusionan en `Personnel` con banderas de rol independientes
+// (`isDriver`/`isOfficer`/`isAdmin`) porque una misma persona puede
+// conducir, estar a cargo de una unidad, tener cuenta de sistema, o
+// cualquier combinación de las tres, y puede ganar o perder un rol con el
+// tiempo sin dejar de ser la misma ficha.
 // =============================================================================
 
-model Driver {
-  id               String   @id @default(uuid(7))
-  firstName        String   @map("first_name")
-  lastName         String   @map("last_name")
-  /// Cédula de identidad, con extensión incluida: "1234567 OR".
-  ci               String   @unique
-  rank             String?
-  licenseNumber    String   @unique @map("license_number")
+model Personnel {
+  id           String  @id @default(uuid(7))
+  /// Cédula de identidad, sin extensión (va aparte en `ciComplement`).
+  ci           String
+  /// Normalizado a cadena vacía (nunca null) cuando no hay complemento, para
+  /// que el índice único (ci, ciComplement) trate "sin complemento" y
+  /// "complemento vacío" como la misma persona.
+  ciComplement String  @default("") @map("ci_complement")
+  firstName    String  @map("first_name")
+  lastName     String  @map("last_name")
+  rank         String?
+  phone        String?
+  email        String?
+  isActive     Boolean @default(true) @map("is_active")
+
+  /// Puede manejar vehículos institucionales; exige licencia (RF-1 spec 005).
+  isDriver  Boolean @default(false) @map("is_driver")
+  /// Elegible como encargado de transportes de una unidad (spec 002).
+  isOfficer Boolean @default(false) @map("is_officer")
+  /// Tiene (o puede tener) una cuenta de sistema vinculada (spec 004).
+  isAdmin   Boolean @default(false) @map("is_admin")
+
+  /// Sólo se exigen cuando `isDriver` es verdadero; nulos para quien no conduce.
+  licenseNumber    String?   @map("license_number")
   /// Categoría de la licencia boliviana: A, B, C, P, T.
-  licenseCategory  String   @map("license_category")
-  licenseExpiresAt DateTime @map("license_expires_at") @db.Date
-  phone            String?
-  isActive         Boolean  @default(true) @map("is_active")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  licenseCategory  String?   @map("license_category")
+  licenseExpiresAt DateTime? @map("license_expires_at") @db.Date
+  observations     String?
 
-  /// Un conductor puede tener cuenta en el sistema, o no tenerla.
-  userId       String?     @unique @map("user_id")
-  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  departmentId String?     @map("department_id")
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  /// Unidad operativa (spec 002/Unit), no `department` (dormant). Un
-  /// conductor puede no tener unidad asignada todavía.
-  unitId       String?     @map("unit_id")
-  unit         Unit?       @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  assignments Assignment[]
-  fuelRecords FuelRecord[]
-  incidents   Incident[]
+  /// Unidad operativa (spec 002/Unit) a la que pertenece hoy. Puede no tener
+  /// unidad asignada todavía.
+  unitId String? @map("unit_id")
+  unit   Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  /// Cuenta de sistema vinculada, si la tiene.
+  userId String? @unique @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@index([departmentId])
+  managerAssignments TransportManagerAssignment[]
+  vehicleCharges     VehicleDriverAssignment[]
+  assignments        Assignment[]
+  fuelRecords        FuelRecord[]
+  incidents          Incident[]
+
+  @@unique([ci, ciComplement])
   @@index([unitId])
   @@index([isActive])
-  @@map("driver")
+  @@map("personnel")
 }
 
 // =============================================================================
@@ -363,7 +387,7 @@ model Assignment {
   vehicleId    String         @map("vehicle_id")
   vehicle      Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   driverId     String         @map("driver_id")
-  driver       Driver         @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  driver       Personnel      @relation(fields: [driverId], references: [id], onDelete: Restrict)
   assignedById String         @map("assigned_by_id")
   assignedBy   User           @relation("AssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
 
@@ -577,14 +601,14 @@ model FuelRecord {
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  vehicleId      String  @map("vehicle_id")
-  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  driverId       String? @map("driver_id")
-  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  tripId         String? @map("trip_id")
-  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  registeredById String  @map("registered_by_id")
-  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  vehicleId      String     @map("vehicle_id")
+  vehicle        Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String?    @map("driver_id")
+  driver         Personnel? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String?    @map("trip_id")
+  trip           Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String     @map("registered_by_id")
+  registeredBy   User       @relation(fields: [registeredById], references: [id], onDelete: Restrict)
 
   @@index([vehicleId, suppliedAt])
   @@index([suppliedAt])
@@ -646,14 +670,14 @@ model Incident {
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  vehicleId      String  @map("vehicle_id")
-  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  driverId       String? @map("driver_id")
-  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  tripId         String? @map("trip_id")
-  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  registeredById String  @map("registered_by_id")
-  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  vehicleId      String     @map("vehicle_id")
+  vehicle        Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String?    @map("driver_id")
+  driver         Personnel? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String?    @map("trip_id")
+  trip           Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String     @map("registered_by_id")
+  registeredBy   User       @relation(fields: [registeredById], references: [id], onDelete: Restrict)
 
   attachments IncidentAttachment[]
 
@@ -840,41 +864,12 @@ model Unit {
   parent   Unit?   @relation("UnitTree", fields: [parentId], references: [id], onDelete: SetNull)
   children Unit[]  @relation("UnitTree")
 
-  officers           Officer[]
   managerAssignments TransportManagerAssignment[]
   vehicleAssignments UnitAssignment[]
-  drivers            Driver[]
+  personnel          Personnel[]
 
   @@index([parentId])
   @@map("unit")
-}
-
-/// Personal policial mínimo para poder designarlo encargado de transportes
-/// (spec 002). No es el padrón de conductores: eso es un módulo aparte.
-model Officer {
-  id           String   @id @default(uuid(7))
-  ci           String
-  /// Normalizado a cadena vacía (nunca null) cuando no hay complemento, para
-  /// que el índice único (ci, ciComplement) trate "sin complemento" y
-  /// "complemento vacío" como la misma persona.
-  ciComplement String   @default("") @map("ci_complement")
-  firstName    String   @map("first_name")
-  lastName     String   @map("last_name")
-  rank         String?
-  phone        String?
-  email        String?
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-
-  currentUnitId String? @map("current_unit_id")
-  currentUnit   Unit?   @relation(fields: [currentUnitId], references: [id], onDelete: SetNull)
-
-  managerAssignments TransportManagerAssignment[]
-
-  @@unique([ci, ciComplement])
-  @@index([currentUnitId])
-  @@map("officer")
 }
 
 /// Historial de encargados de transportes por unidad (RF-18 a RF-25). Una
@@ -889,10 +884,12 @@ model TransportManagerAssignment {
   notes             String?
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  unitId    String  @map("unit_id")
-  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  officerId String  @map("officer_id")
-  officer   Officer @relation(fields: [officerId], references: [id], onDelete: Restrict)
+  unitId    String    @map("unit_id")
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  /// Nombre de columna heredado de `Officer`; apunta a `Personnel` desde la
+  /// fusión (ver bloque `Personnel` más arriba).
+  officerId String    @map("officer_id")
+  officer   Personnel @relation(fields: [officerId], references: [id], onDelete: Restrict)
 
   @@index([unitId, startDate])
   @@map("transport_manager_assignment")
@@ -922,4 +919,32 @@ model UnitAssignment {
   @@index([vehicleId, startDate])
   @@index([unitId])
   @@map("unit_assignment")
+}
+
+// =============================================================================
+// Spec 014 — Conductor encargado de vehículo
+// =============================================================================
+
+/// Historial de qué conductor está a cargo de cada vehículo. Mismo patrón que
+/// `UnitAssignment`: una fila con `endDate` nulo es la vigente. La unicidad "un
+/// conductor, un vehículo a la vez" en ambos sentidos se garantiza con dos
+/// índices únicos parciales agregados a mano en la migración (Prisma no los
+/// expresa en el DSL): uno por `vehicle_id` y otro por `driver_id`, los dos con
+/// `WHERE end_date IS NULL`.
+model VehicleDriverAssignment {
+  id                String    @id @default(uuid(7))
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  referenceDocument String?   @map("reference_document")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  vehicleId String    @map("vehicle_id")
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId  String    @map("driver_id")
+  driver    Personnel @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, startDate])
+  @@index([driverId])
+  @@map("vehicle_driver_assignment")
 }

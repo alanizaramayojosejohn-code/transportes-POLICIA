@@ -11,7 +11,7 @@ import { TripsService } from './trips.service.js';
 import { Trip } from './entities/trip.entity.js';
 import { TripPage } from './entities/trip-page.entity.js';
 import { Vehicle } from '../vehicles/entities/vehicle.entity.js';
-import { Driver } from '../drivers/entities/driver.entity.js';
+import { Personnel } from '../personnel/entities/personnel.entity.js';
 import { CreateTripInput } from './dto/create-trip.input.js';
 import { CloseTripInput } from './dto/close-trip.input.js';
 import { TripFilterArgs } from './dto/trip-filter.args.js';
@@ -44,7 +44,7 @@ export class TripsResolver {
     return this.tripsService.getVehicle(trip.assignmentId);
   }
 
-  @ResolveField(() => Driver)
+  @ResolveField(() => Personnel)
   driver(@Parent() trip: Trip) {
     return this.tripsService.getDriver(trip.assignmentId);
   }
@@ -55,7 +55,7 @@ export class TripsResolver {
   }
 
   @UseGuards(RolesGuard)
-  @Roles('ADMINISTRADOR', 'TRANSPORTES')
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'CONDUCTOR')
   @Mutation(() => Trip)
   createTrip(
     @Args('input') input: CreateTripInput,
@@ -65,7 +65,7 @@ export class TripsResolver {
   }
 
   @UseGuards(RolesGuard)
-  @Roles('ADMINISTRADOR', 'TRANSPORTES')
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'CONDUCTOR')
   @Mutation(() => Trip)
   closeTrip(
     @Args('id') id: string,

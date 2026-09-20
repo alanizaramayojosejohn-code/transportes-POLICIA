@@ -38,4 +38,12 @@ export class CreateUserInput {
   @Field(() => String)
   @IsString()
   roleId!: string;
+
+  /// Ficha de personal a vincular (spec 004, cierre del hueco que dejó el
+  /// spec 002 abierto). Opcional: no toda cuenta corresponde a una persona
+  /// ya registrada en el padrón.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  personnelId?: string;
 }

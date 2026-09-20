@@ -45,7 +45,9 @@ export class DashboardService {
       recentTrips,
     ] = await Promise.all([
       this.prisma.vehicle.findMany({ select: { id: true } }),
-      this.prisma.driver.count({ where: { isActive: true } }),
+      this.prisma.personnel.count({
+        where: { isDriver: true, isActive: true },
+      }),
       this.prisma.trip.count({
         where: { departureAt: { gte: startOfMonth, lt: startOfNextMonth } },
       }),

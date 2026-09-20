@@ -21,10 +21,18 @@ function buildPrismaMock() {
       findUniqueOrThrow: vi.fn(),
       findMany: vi.fn(),
     },
-    $transaction: vi.fn((operations: Promise<unknown>[]) =>
-      Promise.all(operations),
-    ),
+    personnel: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    $transaction: vi.fn(),
   };
+  mock.$transaction.mockImplementation((arg: unknown) => {
+    if (typeof arg === 'function') {
+      return (arg as (tx: typeof mock) => Promise<unknown>)(mock);
+    }
+    return Promise.all(arg as Promise<unknown>[]);
+  });
   return mock as unknown as PrismaService & typeof mock;
 }
 
@@ -89,6 +97,54 @@ describe('UsersService', () => {
       ).rejects.toThrow(NotFoundException);
       expect(prisma.user.create).not.toHaveBeenCalled();
     });
+
+    it('marca isDriver al vincular una cuenta con rol CONDUCTOR (spec 015, RF-6)', async () => {
+      vi.mocked(prisma.role.findUnique).mockResolvedValue({
+        id: 'r-conductor',
+        code: 'CONDUCTOR',
+      } as never);
+      vi.mocked(prisma.user.create).mockResolvedValue({ id: 'u1' } as never);
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
+        id: 'p1',
+      } as never);
+
+      await service.create({
+        username: 'conductor1',
+        password: 'clave1234',
+        fullName: 'Conductor Uno',
+        roleId: 'r-conductor',
+        personnelId: 'p1',
+      } as never);
+
+      expect(prisma.personnel.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { userId: 'u1', isDriver: true },
+      });
+    });
+
+    it('marca isOfficer al vincular una cuenta con rol TRANSPORTES (spec 015, RF-6)', async () => {
+      vi.mocked(prisma.role.findUnique).mockResolvedValue({
+        id: 'r-transportes',
+        code: 'TRANSPORTES',
+      } as never);
+      vi.mocked(prisma.user.create).mockResolvedValue({ id: 'u1' } as never);
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
+        id: 'p1',
+      } as never);
+
+      await service.create({
+        username: 'encargado1',
+        password: 'clave1234',
+        fullName: 'Encargado Uno',
+        roleId: 'r-transportes',
+        personnelId: 'p1',
+      } as never);
+
+      expect(prisma.personnel.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { userId: 'u1', isOfficer: true },
+      });
+    });
   });
 
   describe('update', () => {
@@ -122,6 +178,28 @@ describe('UsersService', () => {
           }),
         }),
       );
+    });
+
+    it('usa el rol vigente de la cuenta al vincular personal sin cambiar el rol (spec 015, RF-6)', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'u1',
+        roleId: 'r-conductor',
+      } as never);
+      vi.mocked(prisma.user.update).mockResolvedValue({ id: 'u1' } as never);
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
+        id: 'p1',
+      } as never);
+      vi.mocked(prisma.role.findUniqueOrThrow).mockResolvedValue({
+        id: 'r-conductor',
+        code: 'CONDUCTOR',
+      } as never);
+
+      await service.update('u1', { personnelId: 'p1' } as never);
+
+      expect(prisma.personnel.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { userId: 'u1', isDriver: true },
+      });
     });
   });
 

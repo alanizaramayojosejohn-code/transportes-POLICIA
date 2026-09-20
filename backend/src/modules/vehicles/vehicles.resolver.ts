@@ -17,6 +17,7 @@ import { VehicleFilterArgs } from './dto/vehicle-filter.args.js';
 import { RegisterVehicleConditionInput } from './dto/register-vehicle-condition.input.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
@@ -30,8 +31,11 @@ export class VehiclesResolver {
   constructor(private readonly vehiclesService: VehiclesService) {}
 
   @Query(() => VehiclePage, { name: 'vehicles' })
-  findAll(@Args() filters: VehicleFilterArgs) {
-    return this.vehiclesService.findAll(filters);
+  findAll(
+    @Args() filters: VehicleFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.vehiclesService.findAll(filters, unitScopeFor(user));
   }
 
   @Query(() => Vehicle, { name: 'vehicle' })

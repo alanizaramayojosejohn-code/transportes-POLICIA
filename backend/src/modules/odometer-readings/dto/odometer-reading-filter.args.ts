@@ -1,18 +1,12 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
-import { IsBoolean, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsOptional, IsString, Max, Min } from 'class-validator';
 
-/** RF-17: búsqueda por cédula, nombres, apellidos o grado. */
 @ArgsType()
-export class OfficerFilterArgs {
-  @Field(() => Boolean, { nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
+export class OdometerReadingFilterArgs {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  search?: string;
+  vehicleId?: string;
 
   @Field(() => Int, { nullable: true, defaultValue: 0 })
   @IsOptional()

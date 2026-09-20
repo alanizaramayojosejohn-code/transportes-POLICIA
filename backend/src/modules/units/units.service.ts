@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { withUniqueConstraintHandling } from '../../common/prisma-errors.js';
+import { assertInScope, type UnitScope } from '../../common/unit-scope.js';
 import { CreateUnitInput } from './dto/create-unit.input.js';
 import { UpdateUnitInput } from './dto/update-unit.input.js';
 import { UnitFilterArgs } from './dto/unit-filter.args.js';
@@ -21,11 +22,14 @@ import { CloseTransportManagerAssignmentInput } from './dto/close-transport-mana
 export class UnitsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(filters: UnitFilterArgs) {
+  async findAll(filters: UnitFilterArgs, scope: UnitScope = null) {
     const where: Prisma.UnitWhereInput = {
       ...(filters.isActive !== undefined ? { isActive: filters.isActive } : {}),
       ...(filters.type ? { type: filters.type } : {}),
       ...(filters.parentId ? { parentId: filters.parentId } : {}),
+      /// Alcance por unidad (spec 015, RF-12): estrictamente la unidad
+      /// exacta donde el TRANSPORTES es encargado, sin heredar sub-unidades.
+      ...(scope !== null ? { id: { in: scope } } : {}),
       ...(filters.search
         ? {
             OR: [
@@ -79,8 +83,10 @@ export class UnitsService {
     );
   }
 
-  async update(id: string, input: UpdateUnitInput) {
+  async update(id: string, input: UpdateUnitInput, scope: UnitScope = null) {
     await this.findOne(id);
+    /// RF-14 (spec 015): un TRANSPORTES sólo edita su propia unidad.
+    assertInScope(scope, id);
     if (input.parentId) {
       await this.assertNoParentCycle(id, input.parentId);
     }
@@ -102,8 +108,9 @@ export class UnitsService {
   /// También rechaza si tiene vehículos con asignación vigente (spec 003,
   /// RF-17) — se consulta `unit_assignment` con Prisma directo, no
   /// UnitAssignmentsService, para que units no dependa de unit-assignments.
-  async deactivate(id: string) {
+  async deactivate(id: string, scope: UnitScope = null) {
     await this.findOne(id);
+    assertInScope(scope, id);
     const activeChildren = await this.prisma.unit.findMany({
       where: { parentId: id, isActive: true },
       select: { name: true },
@@ -135,8 +142,9 @@ export class UnitsService {
 
   /// RF-08/RF-09: no restaura ningún encargado; rechaza si la unidad
   /// superior sigue inactiva.
-  async reactivate(id: string) {
+  async reactivate(id: string, scope: UnitScope = null) {
     const unit = await this.findOne(id);
+    assertInScope(scope, id);
     if (unit.parentId) {
       const parent = await this.prisma.unit.findUnique({
         where: { id: unit.parentId },
@@ -166,13 +174,20 @@ export class UnitsService {
 
   /// RF-19/RF-20/RF-21/RF-22: designa un encargado, cerrando la vigente si
   /// la hay, dentro de una transacción.
-  async assignTransportManager(input: AssignTransportManagerInput) {
+  async assignTransportManager(
+    input: AssignTransportManagerInput,
+    scope: UnitScope = null,
+  ) {
     const unit = await this.findOne(input.unitId);
+    /// RF-14 (spec 015): un TRANSPORTES sólo redesigna encargado de su
+    /// propia unidad; la primera designación de una unidad sin encargado
+    /// previo la hace ADMINISTRADOR.
+    assertInScope(scope, input.unitId);
     if (!unit.isActive) {
       throw new ConflictException('La unidad está inactiva');
     }
 
-    const officer = await this.prisma.officer.findUnique({
+    const officer = await this.prisma.personnel.findUnique({
       where: { id: input.officerId },
     });
     if (!officer) {
@@ -201,6 +216,14 @@ export class UnitsService {
           data: { endDate: startDate },
         });
       }
+      // Designar a alguien como encargado lo marca como tal aunque hoy sólo
+      // fuera conductor u otra cosa: un rol se gana al ejercerlo.
+      if (!officer.isOfficer) {
+        await tx.personnel.update({
+          where: { id: input.officerId },
+          data: { isOfficer: true },
+        });
+      }
       return tx.transportManagerAssignment.create({
         data: {
           unitId: input.unitId,
@@ -216,7 +239,9 @@ export class UnitsService {
   /// RF-23/RF-24.
   async closeTransportManagerAssignment(
     input: CloseTransportManagerAssignmentInput,
+    scope: UnitScope = null,
   ) {
+    assertInScope(scope, input.unitId);
     const current = await this.getCurrentManager(input.unitId);
     if (!current) {
       throw new NotFoundException(

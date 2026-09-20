@@ -65,47 +65,94 @@ export class UsersService {
   }
 
   async create(input: CreateUserInput) {
-    await this.findRoleOrThrow(input.roleId);
+    const role = await this.findRoleOrThrow(input.roleId);
+    if (input.personnelId) {
+      await this.findPersonnelOrThrow(input.personnelId);
+    }
     const passwordHash = await hash(input.password);
 
     return withUniqueConstraintHandling(
       () =>
-        this.prisma.user.create({
-          data: {
-            username: this.normalizeUsername(input.username),
-            passwordHash,
-            fullName: input.fullName,
-            email: input.email,
-            rank: input.rank,
-            phone: input.phone,
-            roleId: input.roleId,
-          },
+        this.prisma.$transaction(async (tx) => {
+          const user = await tx.user.create({
+            data: {
+              username: this.normalizeUsername(input.username),
+              passwordHash,
+              fullName: input.fullName,
+              email: input.email,
+              rank: input.rank,
+              phone: input.phone,
+              roleId: input.roleId,
+            },
+          });
+          if (input.personnelId) {
+            await tx.personnel.update({
+              where: { id: input.personnelId },
+              data: { userId: user.id, ...this.roleFlag(role.code) },
+            });
+          }
+          return user;
         }),
       'Ya existe un usuario con ese',
     );
   }
 
   async update(id: string, input: UpdateUserInput) {
-    await this.findOne(id);
+    const current = await this.findOne(id);
     if (input.roleId) {
       await this.findRoleOrThrow(input.roleId);
     }
+    if (input.personnelId) {
+      await this.findPersonnelOrThrow(input.personnelId);
+    }
+    /// spec 015 RF-6: la bandera que se enciende depende del rol de la
+    /// cuenta (el nuevo si se cambia, si no el que ya tenía).
+    const role = input.personnelId
+      ? await this.getRole(input.roleId ?? current.roleId)
+      : null;
 
-    const { password, username, ...rest } = input;
+    const { password, username, personnelId, ...rest } = input;
     const passwordHash = password ? await hash(password) : undefined;
 
     return withUniqueConstraintHandling(
       () =>
-        this.prisma.user.update({
-          where: { id },
-          data: {
-            ...rest,
-            ...(username ? { username: this.normalizeUsername(username) } : {}),
-            ...(passwordHash ? { passwordHash } : {}),
-          },
+        this.prisma.$transaction(async (tx) => {
+          const user = await tx.user.update({
+            where: { id },
+            data: {
+              ...rest,
+              ...(username
+                ? { username: this.normalizeUsername(username) }
+                : {}),
+              ...(passwordHash ? { passwordHash } : {}),
+            },
+          });
+          if (personnelId) {
+            await tx.personnel.update({
+              where: { id: personnelId },
+              data: { userId: user.id, ...this.roleFlag(role!.code) },
+            });
+          }
+          return user;
         }),
       'Ya existe un usuario con ese',
     );
+  }
+
+  /// spec 015 RF-6: vincular una cuenta enciende la bandera que corresponde
+  /// a su rol — `CONDUCTOR` → `isDriver` (spec 014), `TRANSPORTES` →
+  /// `isOfficer` (spec 002), cualquier otro rol → `isAdmin` (spec 004) —
+  /// sin apagar las que la ficha ya tuviera por otro motivo.
+  private roleFlag(
+    roleCode: string,
+  ): { isDriver: true } | { isOfficer: true } | { isAdmin: true } {
+    if (roleCode === 'CONDUCTOR') {
+      return { isDriver: true };
+    }
+    if (roleCode === 'TRANSPORTES') {
+      return { isOfficer: true };
+    }
+    return { isAdmin: true };
   }
 
   /// RF-9: la baja es reversible y no borra el registro.
@@ -134,6 +181,18 @@ export class UsersService {
       throw new NotFoundException(`Rol ${roleId} no encontrado`);
     }
     return role;
+  }
+
+  /// Ficha de personal a vincular (RF opcional, ver dto): un id que no
+  /// existe se rechaza con un mensaje claro en vez del error crudo de la FK.
+  private async findPersonnelOrThrow(personnelId: string) {
+    const personnel = await this.prisma.personnel.findUnique({
+      where: { id: personnelId },
+    });
+    if (!personnel) {
+      throw new NotFoundException(`Personal ${personnelId} no encontrado`);
+    }
+    return personnel;
   }
 
   /// RF-3: minúsculas y sin espacios sobrantes, para que "Jperez" y

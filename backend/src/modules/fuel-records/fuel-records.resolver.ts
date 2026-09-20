@@ -11,7 +11,7 @@ import { FuelRecordsService } from './fuel-records.service.js';
 import { FuelRecord } from './entities/fuel-record.entity.js';
 import { FuelRecordPage } from './entities/fuel-record-page.entity.js';
 import { Vehicle } from '../vehicles/entities/vehicle.entity.js';
-import { Driver } from '../drivers/entities/driver.entity.js';
+import { Personnel } from '../personnel/entities/personnel.entity.js';
 import { CreateFuelRecordInput } from './dto/create-fuel-record.input.js';
 import { FuelRecordFilterArgs } from './dto/fuel-record-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
@@ -43,13 +43,13 @@ export class FuelRecordsResolver {
     return this.fuelRecordsService.getVehicle(record.vehicleId);
   }
 
-  @ResolveField(() => Driver, { nullable: true })
+  @ResolveField(() => Personnel, { nullable: true })
   driver(@Parent() record: FuelRecord) {
     return this.fuelRecordsService.getDriver(record.driverId);
   }
 
   @UseGuards(RolesGuard)
-  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'COMBUSTIBLE')
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'COMBUSTIBLE', 'CONDUCTOR')
   @Mutation(() => FuelRecord)
   createFuelRecord(
     @Args('input') input: CreateFuelRecordInput,

@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import { CreateTripInput } from './dto/create-trip.input.js';
 import { CloseTripInput } from './dto/close-trip.input.js';
 import { TripFilterArgs } from './dto/trip-filter.args.js';
@@ -19,7 +20,10 @@ import { TripFilterArgs } from './dto/trip-filter.args.js';
  */
 @Injectable()
 export class TripsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
+  ) {}
 
   async findAll(filters: TripFilterArgs) {
     const where: Prisma.TripWhereInput = {
@@ -122,15 +126,28 @@ export class TripsService {
     return assignment.request.destination;
   }
 
-  /// RF-1 a RF-4.
+  /// RF-1 a RF-4. RF-13/RF-14 (spec 014): un CONDUCTOR sólo puede registrar
+  /// su propio recorrido, sobre el vehículo del que es encargado vigente.
   async create(input: CreateTripInput, actingUser: AuthenticatedUser) {
+    if (actingUser.role === 'CONDUCTOR') {
+      if (input.driverId !== actingUser.personnelId) {
+        throw new ConflictException(
+          'Como conductor, sólo puede registrarse a sí mismo en el recorrido',
+        );
+      }
+      await this.vehicleDriverAssignmentsService.assertDriverOwnsVehicle(
+        actingUser.personnelId,
+        input.vehicleId,
+      );
+    }
+
     const vehicle = await this.prisma.vehicle.findUnique({
       where: { id: input.vehicleId },
     });
     if (!vehicle) {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
-    const driver = await this.prisma.driver.findUnique({
+    const driver = await this.prisma.personnel.findUnique({
       where: { id: input.driverId },
     });
     if (!driver) {
@@ -193,6 +210,13 @@ export class TripsService {
     actingUser: AuthenticatedUser,
   ) {
     const trip = await this.findOne(id);
+    if (actingUser.role === 'CONDUCTOR') {
+      const vehicle = await this.getVehicle(trip.assignmentId);
+      await this.vehicleDriverAssignmentsService.assertDriverOwnsVehicle(
+        actingUser.personnelId,
+        vehicle.id,
+      );
+    }
     if (trip.returnAt) {
       throw new ConflictException('El recorrido ya está cerrado');
     }

@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import { CreateFuelRecordInput } from './dto/create-fuel-record.input.js';
 import { FuelRecordFilterArgs } from './dto/fuel-record-filter.args.js';
 
@@ -24,7 +25,10 @@ type FuelRecordRow = {
  */
 @Injectable()
 export class FuelRecordsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
+  ) {}
 
   async findAll(filters: FuelRecordFilterArgs) {
     const where: Prisma.FuelRecordWhereInput = {
@@ -84,11 +88,21 @@ export class FuelRecordsService {
     if (!driverId) {
       return null;
     }
-    return this.prisma.driver.findUnique({ where: { id: driverId } });
+    return this.prisma.personnel.findUnique({ where: { id: driverId } });
   }
 
-  /// RF-1 a RF-5.
+  /// RF-1 a RF-5. RF-13/RF-14 (spec 014): un CONDUCTOR sólo carga
+  /// combustible del vehículo del que es encargado vigente, y siempre a su
+  /// propio nombre.
   async create(input: CreateFuelRecordInput, actingUser: AuthenticatedUser) {
+    if (actingUser.role === 'CONDUCTOR') {
+      await this.vehicleDriverAssignmentsService.assertDriverOwnsVehicle(
+        actingUser.personnelId,
+        input.vehicleId,
+      );
+      input = { ...input, driverId: actingUser.personnelId! };
+    }
+
     const vehicle = await this.prisma.vehicle.findUnique({
       where: { id: input.vehicleId },
     });
@@ -96,7 +110,7 @@ export class FuelRecordsService {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
     if (input.driverId) {
-      const driver = await this.prisma.driver.findUnique({
+      const driver = await this.prisma.personnel.findUnique({
         where: { id: input.driverId },
       });
       if (!driver) {

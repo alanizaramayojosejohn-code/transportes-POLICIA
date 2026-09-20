@@ -18,6 +18,9 @@ import { AssignTransportManagerInput } from './dto/assign-transport-manager.inpu
 import { CloseTransportManagerAssignmentInput } from './dto/close-transport-manager-assignment.input.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 /**
  * No decide nada: valida la forma de la entrada (ValidationPipe global) y
@@ -28,8 +31,11 @@ export class UnitsResolver {
   constructor(private readonly unitsService: UnitsService) {}
 
   @Query(() => UnitPage, { name: 'units' })
-  findAll(@Args() filters: UnitFilterArgs) {
-    return this.unitsService.findAll(filters);
+  findAll(
+    @Args() filters: UnitFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitsService.findAll(filters, unitScopeFor(user));
   }
 
   @Query(() => Unit, { name: 'unit' })
@@ -67,29 +73,42 @@ export class UnitsResolver {
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => Unit)
-  updateUnit(@Args('id') id: string, @Args('input') input: UpdateUnitInput) {
-    return this.unitsService.update(id, input);
+  updateUnit(
+    @Args('id') id: string,
+    @Args('input') input: UpdateUnitInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitsService.update(id, input, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => Unit)
-  deactivateUnit(@Args('id') id: string) {
-    return this.unitsService.deactivate(id);
+  deactivateUnit(
+    @Args('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitsService.deactivate(id, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => Unit)
-  reactivateUnit(@Args('id') id: string) {
-    return this.unitsService.reactivate(id);
+  reactivateUnit(
+    @Args('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitsService.reactivate(id, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => TransportManagerAssignment)
-  assignTransportManager(@Args('input') input: AssignTransportManagerInput) {
-    return this.unitsService.assignTransportManager(input);
+  assignTransportManager(
+    @Args('input') input: AssignTransportManagerInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitsService.assignTransportManager(input, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
@@ -97,7 +116,11 @@ export class UnitsResolver {
   @Mutation(() => TransportManagerAssignment)
   closeTransportManagerAssignment(
     @Args('input') input: CloseTransportManagerAssignmentInput,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.unitsService.closeTransportManagerAssignment(input);
+    return this.unitsService.closeTransportManagerAssignment(
+      input,
+      unitScopeFor(user),
+    );
   }
 }

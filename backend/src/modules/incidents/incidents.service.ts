@@ -68,7 +68,7 @@ export class IncidentsService {
     if (!driverId) {
       return null;
     }
-    return this.prisma.driver.findUnique({ where: { id: driverId } });
+    return this.prisma.personnel.findUnique({ where: { id: driverId } });
   }
 
   /// RF-1 a RF-4.
@@ -80,7 +80,7 @@ export class IncidentsService {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
     if (input.driverId) {
-      const driver = await this.prisma.driver.findUnique({
+      const driver = await this.prisma.personnel.findUnique({
         where: { id: input.driverId },
       });
       if (!driver) {

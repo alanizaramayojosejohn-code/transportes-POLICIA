@@ -16,6 +16,8 @@ import { UpdateUserInput } from './dto/update-user.input.js';
 import { UserFilterArgs } from './dto/user-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { PersonnelService } from '../personnel/personnel.service.js';
+import { Personnel } from '../personnel/entities/personnel.entity.js';
 
 /**
  * Puerta GraphQL del módulo (spec 004). Toda la administración de cuentas
@@ -27,7 +29,10 @@ import { Roles } from '../../common/decorators/roles.decorator.js';
  */
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly personnelService: PersonnelService,
+  ) {}
 
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR')
@@ -53,6 +58,13 @@ export class UsersResolver {
   @ResolveField(() => Role)
   role(@Parent() user: User) {
     return this.usersService.getRole(user.roleId);
+  }
+
+  /// spec 015 RF-7: lado de lectura del vínculo `Personnel.userId`, que
+  /// hasta ahora sólo se podía escribir (`CreateUserInput.personnelId`).
+  @ResolveField(() => Personnel, { nullable: true })
+  personnel(@Parent() user: User) {
+    return this.personnelService.getByUserId(user.id);
   }
 
   @UseGuards(RolesGuard)

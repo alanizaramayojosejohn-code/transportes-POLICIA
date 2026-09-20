@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { FuelRecordsService } from './fuel-records.service.js';
+import type { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 const actingUser: AuthenticatedUser = {
@@ -9,6 +10,8 @@ const actingUser: AuthenticatedUser = {
   username: 'combustible.01',
   fullName: 'Usuario de prueba',
   role: 'COMBUSTIBLE',
+  personnelId: null,
+  managedUnitIds: [],
 };
 
 function buildPrismaMock() {
@@ -35,7 +38,10 @@ describe('FuelRecordsService', () => {
 
   beforeEach(() => {
     prisma = buildPrismaMock();
-    service = new FuelRecordsService(prisma);
+    const vehicleDriverAssignmentsService = {
+      assertDriverOwnsVehicle: vi.fn(),
+    } as unknown as VehicleDriverAssignmentsService;
+    service = new FuelRecordsService(prisma, vehicleDriverAssignmentsService);
   });
 
   describe('create', () => {

@@ -10,6 +10,14 @@ input AssignTransportManagerInput {
   unitId: String!
 }
 
+input AssignVehicleDriverInput {
+  driverId: String!
+  notes: String
+  referenceDocument: String
+  startDate: String!
+  vehicleId: String!
+}
+
 type AuthPayload {
   accessToken: String!
   user: AuthUser!
@@ -41,16 +49,9 @@ input CloseUnitAssignmentInput {
   vehicleId: String!
 }
 
-input CreateDriverInput {
-  ci: String!
-  firstName: String!
-  lastName: String!
-  licenseCategory: String!
-  licenseExpiresAt: String!
-  licenseNumber: String!
-  phone: String
-  rank: String
-  unitId: String
+input CloseVehicleDriverAssignmentInput {
+  endDate: String!
+  vehicleId: String!
 }
 
 input CreateFuelRecordInput {
@@ -88,15 +89,22 @@ input CreateMaintenanceOrderInput {
   workshopName: String
 }
 
-input CreateOfficerInput {
+input CreatePersonnelInput {
   ci: String!
   ciComplement: String
-  currentUnitId: String
   email: String
   firstName: String!
+  isAdmin: Boolean = false
+  isDriver: Boolean = false
+  isOfficer: Boolean = false
   lastName: String!
+  licenseCategory: String
+  licenseExpiresAt: String
+  licenseNumber: String
+  observations: String
   phone: String
   rank: String
+  unitId: String
 }
 
 input CreateSparePartInput {
@@ -150,6 +158,7 @@ input CreateUserInput {
   email: String
   fullName: String!
   password: String!
+  personnelId: String
   phone: String
   rank: String
   roleId: String!
@@ -207,28 +216,6 @@ enum DocumentType {
   SOAT
 }
 
-type Driver {
-  ci: String!
-  createdAt: DateTime!
-  firstName: String!
-  id: String!
-  isActive: Boolean!
-  lastName: String!
-  licenseCategory: String!
-  licenseExpiresAt: DateTime!
-  licenseNumber: String!
-  phone: String
-  rank: String
-  unit: Unit
-  unitId: String
-  updatedAt: DateTime!
-}
-
-type DriverPage {
-  items: [Driver!]!
-  total: Int!
-}
-
 input FinishMaintenanceOrderInput {
   finishedAt: String
   invoiceNumber: String
@@ -244,7 +231,7 @@ type FleetStatusBreakdown {
 
 type FuelRecord {
   createdAt: DateTime!
-  driver: Driver
+  driver: Personnel
   driverId: String
   efficiencyKmPerUnit: Float
   fuelType: FuelType!
@@ -279,7 +266,7 @@ type Incident {
   createdAt: DateTime!
   damages: String
   description: String!
-  driver: Driver
+  driver: Personnel
   driverId: String
   id: String!
   occurredAt: DateTime!
@@ -360,14 +347,15 @@ type MonthlyTripCount {
 
 type Mutation {
   assignTransportManager(input: AssignTransportManagerInput!): TransportManagerAssignment!
+  assignVehicleDriver(input: AssignVehicleDriverInput!): VehicleDriverAssignment!
   closeTransportManagerAssignment(input: CloseTransportManagerAssignmentInput!): TransportManagerAssignment!
   closeTrip(id: String!, input: CloseTripInput!): Trip!
   closeUnitAssignment(input: CloseUnitAssignmentInput!): UnitAssignment!
-  createDriver(input: CreateDriverInput!): Driver!
+  closeVehicleDriverAssignment(input: CloseVehicleDriverAssignmentInput!): VehicleDriverAssignment!
   createFuelRecord(input: CreateFuelRecordInput!): FuelRecord!
   createIncident(input: CreateIncidentInput!): Incident!
   createMaintenanceOrder(input: CreateMaintenanceOrderInput!): MaintenanceOrder!
-  createOfficer(input: CreateOfficerInput!): Officer!
+  createPersonnel(input: CreatePersonnelInput!): Personnel!
   createSparePart(input: CreateSparePartInput!): SparePart!
   createTrip(input: CreateTripInput!): Trip!
   createUnit(input: CreateUnitInput!): Unit!
@@ -375,21 +363,20 @@ type Mutation {
   createUser(input: CreateUserInput!): User!
   createVehicle(input: CreateVehicleInput!): Vehicle!
   createVehicleDocument(input: CreateVehicleDocumentInput!): VehicleDocument!
-  deactivateDriver(id: String!): Driver!
-  deactivateOfficer(id: String!): Officer!
+  deactivatePersonnel(id: String!): Personnel!
   deactivateSparePart(id: String!): SparePart!
   deactivateUnit(id: String!): Unit!
   deactivateUser(id: String!): User!
   finishMaintenanceOrder(id: String!, input: FinishMaintenanceOrderInput!): MaintenanceOrder!
   login(input: LoginInput!): AuthPayload!
-  reactivateDriver(id: String!): Driver!
+  reactivatePersonnel(id: String!): Personnel!
   reactivateSparePart(id: String!): SparePart!
   reactivateUnit(id: String!): Unit!
   reactivateUser(id: String!): User!
+  registerOdometerReading(input: RegisterOdometerReadingInput!): OdometerReading!
   registerStockMovement(input: CreateStockMovementInput!): StockMovement!
   registerVehicleCondition(input: RegisterVehicleConditionInput!, vehicleId: String!): VehicleCondition!
-  updateDriver(id: String!, input: UpdateDriverInput!): Driver!
-  updateOfficer(id: String!, input: UpdateOfficerInput!): Officer!
+  updatePersonnel(id: String!, input: UpdatePersonnelInput!): Personnel!
   updateSparePart(id: String!, input: UpdateSparePartInput!): SparePart!
   updateUnit(id: String!, input: UpdateUnitInput!): Unit!
   updateUnitAssignmentNotes(input: UpdateUnitAssignmentNotesInput!): UnitAssignment!
@@ -397,39 +384,73 @@ type Mutation {
   updateVehicle(id: String!, input: UpdateVehicleInput!): Vehicle!
 }
 
-type Officer {
+type OdometerReading {
+  createdAt: DateTime!
+  id: String!
+  notes: String
+  readingAt: DateTime!
+  registeredById: String!
+  source: OdometerSource!
+  value: Int!
+  vehicleId: String!
+}
+
+type OdometerReadingPage {
+  items: [OdometerReading!]!
+  total: Int!
+}
+
+"""Origen de una lectura de kilometraje."""
+enum OdometerSource {
+  FUEL
+  MAINTENANCE
+  MANUAL
+  TRIP_DEPARTURE
+  TRIP_RETURN
+}
+
+type Personnel {
   ci: String!
   ciComplement: String!
   createdAt: DateTime!
-  currentUnit: Unit
-  currentUnitId: String
+  currentVehicle: Vehicle
   email: String
   firstName: String!
   id: String!
   isActive: Boolean!
+  isAdmin: Boolean!
+  isDriver: Boolean!
+  isOfficer: Boolean!
   lastName: String!
+  licenseCategory: String
+  licenseExpiresAt: DateTime
+  licenseNumber: String
+  observations: String
   phone: String
   rank: String
+  unit: Unit
+  unitId: String
   updatedAt: DateTime!
+  userId: String
 }
 
-type OfficerPage {
-  items: [Officer!]!
+type PersonnelPage {
+  items: [Personnel!]!
   total: Int!
 }
 
 type Query {
   dashboardSummary: DashboardSummary!
-  driver(id: String!): Driver!
-  drivers(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20, unitId: String): DriverPage!
   fuelRecord(id: String!): FuelRecord!
   fuelRecords(fromDate: String, fuelType: FuelType, search: String, skip: Int = 0, take: Int = 20, toDate: String, vehicleId: String): FuelRecordPage!
   incidents(search: String, skip: Int = 0, take: Int = 20, type: IncidentType, vehicleId: String): IncidentPage!
   maintenanceOrder(id: String!): MaintenanceOrder!
   maintenanceOrders(search: String, skip: Int = 0, status: MaintenanceStatus, take: Int = 20, type: MaintenanceType, vehicleId: String): MaintenanceOrderPage!
   me: AuthUser!
-  officer(id: String!): Officer!
-  officers(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): OfficerPage!
+  myVehicleAssignment: VehicleDriverAssignment
+  odometerReadings(skip: Int = 0, take: Int = 20, vehicleId: String): OdometerReadingPage!
+  personnel(isActive: Boolean, isAdmin: Boolean, isDriver: Boolean, isOfficer: Boolean, search: String, skip: Int = 0, take: Int = 20, unitId: String): PersonnelPage!
+  personnelMember(id: String!): Personnel!
   roles: [Role!]!
   sparePart(id: String!): SparePart!
   sparePartCategories: [SparePartCategory!]!
@@ -443,7 +464,14 @@ type Query {
   users(isActive: Boolean, roleId: String, search: String, skip: Int = 0, take: Int = 20): UserPage!
   vehicle(id: String!): Vehicle!
   vehicleDocuments(search: String, skip: Int = 0, take: Int = 20, type: DocumentType, vehicleId: String): VehicleDocumentPage!
+  vehicleDriverAssignments(current: Boolean, driverId: String, skip: Int = 0, take: Int = 20, vehicleId: String): VehicleDriverAssignmentPage!
   vehicles(condition: VehicleConditionCode, search: String, skip: Int = 0, take: Int = 20, type: VehicleType, unitId: String): VehiclePage!
+}
+
+input RegisterOdometerReadingInput {
+  notes: String
+  value: Int!
+  vehicleId: String!
 }
 
 input RegisterVehicleConditionInput {
@@ -508,7 +536,7 @@ type TransportManagerAssignment {
   endDate: DateTime
   id: String!
   notes: String
-  officer: Officer!
+  officer: Personnel!
   officerId: String!
   referenceDocument: String
   startDate: DateTime!
@@ -526,7 +554,7 @@ type Trip {
   departureOdometer: Int!
   destination: String!
   distanceKm: Int
-  driver: Driver!
+  driver: Personnel!
   id: String!
   incidentNotes: String
   returnAt: DateTime
@@ -582,27 +610,22 @@ type UnitPage {
   total: Int!
 }
 
-input UpdateDriverInput {
+input UpdatePersonnelInput {
   ci: String
+  ciComplement: String
+  email: String
   firstName: String
+  isAdmin: Boolean = false
+  isDriver: Boolean = false
+  isOfficer: Boolean = false
   lastName: String
   licenseCategory: String
   licenseExpiresAt: String
   licenseNumber: String
+  observations: String
   phone: String
   rank: String
   unitId: String
-}
-
-input UpdateOfficerInput {
-  ci: String
-  ciComplement: String
-  currentUnitId: String
-  email: String
-  firstName: String
-  lastName: String
-  phone: String
-  rank: String
 }
 
 input UpdateSparePartInput {
@@ -634,6 +657,7 @@ input UpdateUserInput {
   email: String
   fullName: String
   password: String
+  personnelId: String
   phone: String
   rank: String
   roleId: String
@@ -662,6 +686,7 @@ type User {
   id: String!
   isActive: Boolean!
   lastLoginAt: DateTime
+  personnel: Personnel
   phone: String
   rank: String
   role: Role!
@@ -682,11 +707,14 @@ type Vehicle {
   conditionHistory: [VehicleCondition!]!
   createdAt: DateTime!
   currentCondition: VehicleCondition
+  currentDriver: Personnel
   currentUnit: Unit
   departmentId: String
+  driverAssignmentHistory: [VehicleDriverAssignment!]!
   engineNumber: String
   id: String!
   isActive: Boolean!
+  lastOdometer: Int
   model: String
   observations: String
   origin: String
@@ -737,6 +765,24 @@ type VehicleDocument {
 
 type VehicleDocumentPage {
   items: [VehicleDocument!]!
+  total: Int!
+}
+
+type VehicleDriverAssignment {
+  createdAt: DateTime!
+  driver: Personnel!
+  driverId: String!
+  endDate: DateTime
+  id: String!
+  notes: String
+  referenceDocument: String
+  startDate: DateTime!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type VehicleDriverAssignmentPage {
+  items: [VehicleDriverAssignment!]!
   total: Int!
 }
 

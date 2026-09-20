@@ -9,10 +9,12 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { UnitsModule } from './modules/units/units.module.js';
 import { UnitAssignmentsModule } from './modules/unit-assignments/unit-assignments.module.js';
+import { VehicleDriverAssignmentsModule } from './modules/vehicle-driver-assignments/vehicle-driver-assignments.module.js';
 import { UsersModule } from './modules/users/users.module.js';
-import { DriversModule } from './modules/drivers/drivers.module.js';
+import { PersonnelModule } from './modules/personnel/personnel.module.js';
 import { TripsModule } from './modules/trips/trips.module.js';
 import { FuelRecordsModule } from './modules/fuel-records/fuel-records.module.js';
+import { OdometerReadingsModule } from './modules/odometer-readings/odometer-readings.module.js';
 import { MaintenanceOrdersModule } from './modules/maintenance-orders/maintenance-orders.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { VehicleDocumentsModule } from './modules/vehicle-documents/vehicle-documents.module.js';
@@ -55,10 +57,12 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
     VehiclesModule,
     UnitsModule,
     UnitAssignmentsModule,
+    VehicleDriverAssignmentsModule,
     UsersModule,
-    DriversModule,
+    PersonnelModule,
     TripsModule,
     FuelRecordsModule,
+    OdometerReadingsModule,
     MaintenanceOrdersModule,
     InventoryModule,
     VehicleDocumentsModule,
