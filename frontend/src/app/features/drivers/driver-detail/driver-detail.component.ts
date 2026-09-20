@@ -6,7 +6,7 @@ import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { ButtonDirective } from '../../../shared/button/button.directive';
 import { DataCellComponent } from '../../../shared/data-cell/data-cell.component';
 import { FormActionsComponent } from '../../../shared/form-actions/form-actions.component';
-import { DriversService } from '../drivers.service';
+import { PersonnelService } from '../../personnel/personnel.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { TripsService } from '../../trips/trips.service';
 
@@ -21,9 +21,7 @@ const RELATED_TAKE = 50;
  * "Vehículos asociados" en el prototipo es un dato de mock sin fuente real; el spec 005 lo deja
  * fuera de alcance explícitamente ("depende del historial de asignaciones conductor-vehículo...
  * se resuelve en el spec de Recorridos"). Ese módulo ya existe, así que aquí se deriva de las
- * placas distintas de los recorridos del conductor en vez de dejarlo como texto fijo. Se omite la
- * sección "Observaciones" del prototipo: ese campo no existe en `Driver` (fuera de alcance
- * también, ver spec 005).
+ * placas distintas de los recorridos del conductor en vez de dejarlo como texto fijo.
  */
 @Component({
   imports: [
@@ -45,7 +43,7 @@ export class DriverDetailComponent {
   private readonly driverId$ = toObservable(this.driverId);
 
   protected readonly driver = toSignal(
-    this.driverId$.pipe(switchMap((id) => this.driversService.get(id))),
+    this.driverId$.pipe(switchMap((id) => this.personnelService.get(id))),
     { initialValue: null },
   );
 
@@ -68,11 +66,11 @@ export class DriverDetailComponent {
   });
 
   constructor(
-    private readonly driversService: DriversService,
+    private readonly personnelService: PersonnelService,
     private readonly tripsService: TripsService,
   ) {}
 
-  protected isLicenseExpired(licenseExpiresAt: string): boolean {
-    return new Date(licenseExpiresAt).getTime() < Date.now();
+  protected isLicenseExpired(licenseExpiresAt: string | null): boolean {
+    return !!licenseExpiresAt && new Date(licenseExpiresAt).getTime() < Date.now();
   }
 }

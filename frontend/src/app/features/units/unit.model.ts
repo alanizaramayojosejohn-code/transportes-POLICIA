@@ -51,44 +51,6 @@ export interface CreateUnitInput {
 
 export type UpdateUnitInput = Partial<CreateUnitInput>;
 
-export interface Officer {
-  id: string;
-  ci: string;
-  ciComplement: string;
-  firstName: string;
-  lastName: string;
-  rank: string | null;
-  phone: string | null;
-  email: string | null;
-  isActive: boolean;
-  currentUnit: { id: string; name: string } | null;
-}
-
-export interface OfficerPage {
-  items: Officer[];
-  total: number;
-}
-
-export interface OfficerFilter {
-  isActive?: boolean;
-  search?: string;
-  skip?: number;
-  take?: number;
-}
-
-export interface CreateOfficerInput {
-  ci: string;
-  ciComplement?: string;
-  firstName: string;
-  lastName: string;
-  rank?: string;
-  phone?: string;
-  email?: string;
-  currentUnitId?: string;
-}
-
-export type UpdateOfficerInput = Partial<CreateOfficerInput>;
-
 export interface AssignTransportManagerInput {
   unitId: string;
   officerId: string;

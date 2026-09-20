@@ -1,0 +1,241 @@
+<app-page-head
+  title="Mi vehículo"
+  description="Vehículo del que es conductor encargado."
+></app-page-head>
+
+@if (assignment(); as a) {
+  <app-card>
+    <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 min-[640px]:grid-cols-3">
+      <app-data-cell label="Placa">{{ a.vehicle.plate }}</app-data-cell>
+      <app-data-cell label="Unidad">{{
+        a.vehicle.currentUnit?.name || 'Sin asignar'
+      }}</app-data-cell>
+      <app-data-cell label="Kilometraje actual">{{ a.vehicle.lastOdometer ?? '—' }}</app-data-cell>
+      <app-data-cell label="Encargado de transportes">
+        @if (a.vehicle.currentUnit?.currentManager?.officer; as m) {
+          {{ (m.rank ? m.rank + ' ' : '') + m.firstName + ' ' + m.lastName }}
+        } @else {
+          Sin encargado
+        }
+      </app-data-cell>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      <button type="button" appButton (click)="openPanel('odometer')">Registrar kilometraje</button>
+      <button type="button" appButton (click)="openPanel('fuel')">Registrar combustible</button>
+      <button type="button" appButton variant="primary" (click)="openPanel('trip')">
+        {{ openTrip().items.length > 0 ? 'Registrar llegada' : 'Registrar salida' }}
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="mt-3 text-13 text-red">{{ errorMessage() }}</p>
+    }
+
+    @if (panel() === 'odometer') {
+      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
+        <app-field label="Kilometraje actual *" class="mb-3">
+          <input
+            appFieldControl
+            type="number"
+            [value]="odometerValue() ?? ''"
+            (input)="
+              odometerValue.set(
+                $any($event.target).value === '' ? null : +$any($event.target).value
+              )
+            "
+          />
+        </app-field>
+        <app-field label="Observaciones" class="mb-3">
+          <textarea
+            appFieldControl
+            [value]="odometerNotes()"
+            (input)="odometerNotes.set($any($event.target).value)"
+          ></textarea>
+        </app-field>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            appButton
+            variant="primary"
+            size="sm"
+            [disabled]="submitting()"
+            (click)="registerOdometer()"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (panel() === 'fuel') {
+      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
+        <div class="grid grid-cols-1 gap-3 min-[640px]:grid-cols-2">
+          <app-field label="Tipo de combustible *">
+            <select appFieldControl (change)="fuelType.set($any($event.target).value)">
+              @for (type of fuelTypes; track type) {
+                <option [value]="type" [selected]="type === fuelType()">
+                  {{ fuelTypeLabel[type] }}
+                </option>
+              }
+            </select>
+          </app-field>
+          <app-field label="Estación">
+            <input
+              appFieldControl
+              [value]="fuelStation()"
+              (input)="fuelStation.set($any($event.target).value)"
+            />
+          </app-field>
+          <app-field label="Cantidad *">
+            <input
+              appFieldControl
+              type="number"
+              [value]="fuelQuantity() ?? ''"
+              (input)="
+                fuelQuantity.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <app-field label="Precio unitario *">
+            <input
+              appFieldControl
+              type="number"
+              [value]="fuelUnitPrice() ?? ''"
+              (input)="
+                fuelUnitPrice.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <app-field label="Kilometraje *">
+            <input
+              appFieldControl
+              type="number"
+              [value]="fuelOdometer() ?? ''"
+              (input)="
+                fuelOdometer.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button
+            type="button"
+            appButton
+            variant="primary"
+            size="sm"
+            [disabled]="submitting()"
+            (click)="registerFuel()"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (panel() === 'trip') {
+      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
+        @if (openTrip().items.length > 0) {
+          <app-field label="Kilometraje de llegada *" class="mb-3">
+            <input
+              appFieldControl
+              type="number"
+              [value]="returnOdometer() ?? ''"
+              (input)="
+                returnOdometer.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <app-field label="Nivel de combustible (%)" class="mb-3">
+            <input
+              appFieldControl
+              type="number"
+              [value]="returnFuelLevel() ?? ''"
+              (input)="
+                returnFuelLevel.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <app-field label="Daños encontrados" class="mb-3">
+            <textarea
+              appFieldControl
+              [value]="damagesFound()"
+              (input)="damagesFound.set($any($event.target).value)"
+            ></textarea>
+          </app-field>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              appButton
+              variant="primary"
+              size="sm"
+              [disabled]="submitting()"
+              (click)="registerArrival()"
+            >
+              Guardar llegada
+            </button>
+          </div>
+        } @else {
+          <app-field label="Destino *" class="mb-3">
+            <input
+              appFieldControl
+              [value]="tripDestination()"
+              (input)="tripDestination.set($any($event.target).value)"
+            />
+          </app-field>
+          <app-field label="Kilometraje de salida *" class="mb-3">
+            <input
+              appFieldControl
+              type="number"
+              [value]="tripOdometer() ?? ''"
+              (input)="
+                tripOdometer.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <app-field label="Nivel de combustible (%)" class="mb-3">
+            <input
+              appFieldControl
+              type="number"
+              [value]="tripFuelLevel() ?? ''"
+              (input)="
+                tripFuelLevel.set(
+                  $any($event.target).value === '' ? null : +$any($event.target).value
+                )
+              "
+            />
+          </app-field>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              appButton
+              variant="primary"
+              size="sm"
+              [disabled]="submitting()"
+              (click)="registerDeparture()"
+            >
+              Guardar salida
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </app-card>
+} @else {
+  <app-notice>
+    Todavía no tiene un vehículo a cargo. Solicite su asignación al encargado de transportes de su
+    unidad.
+  </app-notice>
+}

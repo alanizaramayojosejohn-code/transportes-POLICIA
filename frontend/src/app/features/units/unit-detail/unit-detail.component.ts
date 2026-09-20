@@ -10,6 +10,7 @@ import { FieldComponent } from '../../../shared/field/field.component';
 import { FieldControlDirective } from '../../../shared/field/field-control.directive';
 import { ManagerAssignmentFormComponent } from '../manager-assignment-form/manager-assignment-form.component';
 import { UnitsService } from '../units.service';
+import { VehiclesService } from '../../vehicles/vehicles.service';
 import { formatDateEs } from '../../../shared/date-format';
 
 /** Ficha de la unidad (spec 002, RF-11): jerarquía, encargado vigente e historial. */
@@ -46,7 +47,18 @@ export class UnitDetailComponent {
     { initialValue: null },
   );
 
-  constructor(private readonly unitsService: UnitsService) {}
+  /// «Un encargado tiene todos los vehículos de la unidad a su cargo»: la
+  /// lectura operativa que pidió el spec 002 (enmienda) es esta lista, con
+  /// el conductor encargado de cada uno.
+  protected readonly vehicles = toSignal(
+    this.unitId$.pipe(switchMap((id) => this.vehiclesService.list({ unitId: id, take: 100 }))),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  constructor(
+    private readonly unitsService: UnitsService,
+    private readonly vehiclesService: VehiclesService,
+  ) {}
 
   protected async toggleActive(): Promise<void> {
     const unit = this.unit();

@@ -42,6 +42,7 @@
         <th appTableHeadCell>Grado</th>
         <th appTableHeadCell>Licencia</th>
         <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Vehículo a cargo</th>
         <th appTableHeadCell>Estado</th>
         <th appTableHeadCell></th>
       </tr>
@@ -62,6 +63,7 @@
             </div>
           </td>
           <td appTableCell>{{ driver.unit?.name || 'Sin asignar' }}</td>
+          <td appTableCell>{{ driver.currentVehicle?.plate || 'Sin asignar' }}</td>
           <td appTableCell>
             <app-badge [tone]="driver.isActive ? 'green' : 'gray'">
               {{ driver.isActive ? 'Activo' : 'Inactivo' }}
@@ -93,7 +95,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="8">
           Sin conductores registrados todavía.
         </tr>
       }

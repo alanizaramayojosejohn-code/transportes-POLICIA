@@ -112,6 +112,29 @@
         </div>
       }
 
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Vehículos de la unidad</h4>
+      @if (vehicles().items.length === 0) {
+        <p class="mb-5 text-12-5 text-ink-muted">Sin vehículos asignados.</p>
+      } @else {
+        <div class="mb-5 flex flex-col gap-2">
+          @for (v of vehicles().items; track v.id) {
+            <app-timeline-item>
+              <div class="flex items-center justify-between">
+                <strong>{{ v.plate }}</strong>
+                <span class="text-ink-faint">{{
+                  v.currentDriver
+                    ? (v.currentDriver.rank ? v.currentDriver.rank + ' ' : '') +
+                      v.currentDriver.firstName +
+                      ' ' +
+                      v.currentDriver.lastName
+                    : 'Sin conductor asignado'
+                }}</span>
+              </div>
+            </app-timeline-item>
+          }
+        </div>
+      }
+
       <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Sub-unidades</h4>
       @if (u.children.length === 0) {
         <p class="text-12-5 text-ink-muted">No tiene sub-unidades.</p>

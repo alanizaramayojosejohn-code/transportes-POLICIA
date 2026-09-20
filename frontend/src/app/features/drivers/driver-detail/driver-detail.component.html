@@ -30,12 +30,22 @@
         </app-data-cell>
         <app-data-cell label="Teléfono">{{ d.phone || '—' }}</app-data-cell>
         <app-data-cell label="Unidad">{{ d.unit?.name || 'Sin asignar' }}</app-data-cell>
+        <app-data-cell label="Vehículo a cargo">{{
+          d.currentVehicle?.plate || 'Sin asignar'
+        }}</app-data-cell>
         <app-data-cell label="Estado">
           <app-badge [tone]="d.isActive ? 'green' : 'gray'">
             {{ d.isActive ? 'Activo' : 'Inactivo' }}
           </app-badge>
         </app-data-cell>
       </div>
+
+      @if (d.observations) {
+        <h4 class="mb-2.5 mt-4 font-serif text-14-5 font-semibold">Observaciones</h4>
+        <div class="rounded-sm border border-edge bg-surface-2 p-3 text-12-5 text-ink-muted">
+          {{ d.observations }}
+        </div>
+      }
 
       <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-3.5">
         <span class="mb-1.5 block text-11 font-semibold text-ink-faint">Vehículos asociados</span>

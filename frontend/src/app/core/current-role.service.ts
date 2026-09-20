@@ -9,6 +9,7 @@ export const ROLES = [
   'MANTENIMIENTO',
   'ALMACEN',
   'CONSULTA',
+  'CONDUCTOR',
 ] as const;
 
 export type Role = (typeof ROLES)[number];
@@ -20,6 +21,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   MANTENIMIENTO: 'Mantenimiento',
   ALMACEN: 'Almacén',
   CONSULTA: 'Consulta',
+  CONDUCTOR: 'Conductor',
 };
 
 /**

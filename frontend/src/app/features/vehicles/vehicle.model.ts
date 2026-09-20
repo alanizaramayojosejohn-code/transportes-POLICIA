@@ -62,6 +62,26 @@ export interface UnitAssignmentSummary {
   unit: { id: string; name: string };
 }
 
+export interface VehicleDriverSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  rank: string | null;
+}
+
+export interface DriverAssignmentSummary {
+  id: string;
+  startDate: string;
+  endDate: string | null;
+  driver: VehicleDriverSummary;
+}
+
+export interface VehicleCurrentUnit {
+  id: string;
+  name: string;
+  currentManager: { officer: VehicleDriverSummary } | null;
+}
+
 export interface Vehicle {
   id: string;
   plate: string;
@@ -80,8 +100,14 @@ export interface Vehicle {
   createdAt: string;
   currentCondition: VehicleCondition | null;
   conditionHistory: VehicleCondition[];
-  currentUnit: { id: string; name: string } | null;
+  currentUnit: VehicleCurrentUnit | null;
   unitAssignmentHistory: UnitAssignmentSummary[];
+  /// Conductor encargado vigente (spec 014).
+  currentDriver: VehicleDriverSummary | null;
+  driverAssignmentHistory: DriverAssignmentSummary[];
+  /// Mayor kilometraje conocido entre recorridos, combustible y lecturas
+  /// sueltas (spec 014); null si el vehículo no tiene ninguna todavía.
+  lastOdometer: number | null;
 }
 
 export interface VehiclePage {

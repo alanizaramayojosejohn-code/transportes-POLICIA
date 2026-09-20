@@ -35,7 +35,24 @@
                 <app-badge tone="gray">Sin evaluar</app-badge>
               }
             </app-data-cell>
-            <app-data-cell label="Último KM">—</app-data-cell>
+            <app-data-cell label="Último KM">{{ v.lastOdometer ?? '—' }}</app-data-cell>
+            <app-data-cell label="Conductor encargado">
+              {{
+                v.currentDriver
+                  ? (v.currentDriver.rank ? v.currentDriver.rank + ' ' : '') +
+                    v.currentDriver.firstName +
+                    ' ' +
+                    v.currentDriver.lastName
+                  : 'Sin conductor asignado'
+              }}
+            </app-data-cell>
+            <app-data-cell label="Encargado de transportes">
+              @if (v.currentUnit?.currentManager?.officer; as m) {
+                {{ (m.rank ? m.rank + ' ' : '') + m.firstName + ' ' + m.lastName }}
+              } @else {
+                Sin encargado
+              }
+            </app-data-cell>
           </div>
 
           @if (v.observations) {
@@ -142,6 +159,27 @@
         }
 
         @case ('conductores') {
+          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Encargos de conductor</h4>
+          @if (v.driverAssignmentHistory.length === 0) {
+            <p class="mb-5 text-12-5 text-ink-muted">Sin encargos registrados.</p>
+          } @else {
+            <div class="mb-5 flex flex-col gap-2">
+              @for (assignment of v.driverAssignmentHistory; track assignment.id) {
+                <app-timeline-item>
+                  <strong
+                    >{{ assignment.driver.rank ? assignment.driver.rank + ' ' : '' }}
+                    {{ assignment.driver.firstName }} {{ assignment.driver.lastName }}</strong
+                  >
+                  <span class="text-ink-faint">
+                    · {{ formatDate(assignment.startDate) }} –
+                    {{ assignment.endDate ? formatDate(assignment.endDate) : 'vigente' }}
+                  </span>
+                </app-timeline-item>
+              }
+            </div>
+          }
+
+          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Uso por recorridos</h4>
           <app-table [footer]="drivers().length + ' conductor(es) con recorridos registrados.'">
             <thead>
               <tr appTableHeadRow>

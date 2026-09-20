@@ -48,6 +48,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mi-vehiculo',
+        canActivate: [roleGuard(['CONDUCTOR'])],
+        loadComponent: () =>
+          import('./features/my-vehicle/my-vehicle.component').then((m) => m.MyVehicleComponent),
+      },
+      {
         path: 'recorridos',
         loadComponent: () =>
           import('./features/trips/trips-list/trips-list.component').then(
@@ -93,6 +99,14 @@ export const routes: Routes = [
         path: 'reportes',
         loadComponent: () =>
           import('./features/reports/reports.component').then((m) => m.ReportsComponent),
+      },
+      {
+        path: 'area-transportes',
+        canActivate: [roleGuard(['ADMINISTRADOR'])],
+        loadComponent: () =>
+          import('./features/transport-office/transport-office.component').then(
+            (m) => m.TransportOfficeComponent,
+          ),
       },
       {
         path: 'usuarios',

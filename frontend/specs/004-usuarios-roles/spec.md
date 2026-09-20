@@ -23,6 +23,21 @@ en la configuración del proyecto, pero autenticarse con esas credenciales es un
 módulo entrega la administración de cuentas; el reemplazo del selector simulado por sesión real
 queda para cuando exista ese spec.
 
+> **Vínculo con `Personnel` (posterior a este spec):** tras la fusión de `Driver`/`Officer` en
+> `Personnel` (ver spec 002/005), `CreateUserInput`/`UpdateUserInput` ganaron un campo opcional
+> `personnelId`: si se indica, el usuario queda vinculado a esa ficha de personal
+> (`Personnel.userId`) y la marca `isAdmin = true`, cerrando el hueco que este spec dejaba
+> explícitamente fuera de alcance.
+>
+> **Enmienda (spec 014/015):** vincular una cuenta a una ficha de personal ya no marca siempre
+> `isAdmin`: enciende la bandera que corresponde al rol de la cuenta — `isDriver` para `CONDUCTOR`,
+> `isOfficer` para `TRANSPORTES`, `isAdmin` para cualquier otro rol — sin apagar las demás. Se agrega
+> el rol `CONDUCTOR` al catálogo (spec 014), acotado a un único vehículo a la vez. El listado de
+> Usuarios (RF-11) pasa a agruparse visualmente en tres tablas — Administrativos, Encargados,
+> Conductores — sin cambiar filtros ni mutaciones (spec 015, RF-9 a RF-11); y se agrega la pantalla
+> «Área de Transportes» (spec 015) como punto de alta combinada de ficha + cuenta para el personal
+> administrativo, que convive con esta pantalla en vez de reemplazarla.
+
 ## Usuarios / actores
 
 - **ADMINISTRADOR**: único rol que puede consultar, crear, editar, dar de baja y reactivar
@@ -141,8 +156,6 @@ decisión de alcance de quien pida esos módulos.
   sesión real.
 - Matriz fina de permisos (`Permission` / `RolePermission`): el rol por sí solo es lo que se
   administra aquí.
-- Vínculo entre un usuario y su ficha de personal policial (`Officer`): el esquema no lo modela
-  todavía, igual que lo dejó fuera el spec 002.
 - Registro de auditoría (`AuditLog`) de las operaciones sobre usuarios u otros módulos.
 - Recuperación de contraseña por correo, expiración de contraseña o bloqueo por intentos fallidos.
 - Roles `TRANSPORTES`, `MANTENIMIENTO` y `CONSULTA` como filas de `Role`.

@@ -1,8 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
-import { DriversService } from '../drivers.service';
-import { DriverFilter } from '../driver.model';
+import { PersonnelService } from '../../personnel/personnel.service';
+import { PersonnelFilter } from '../../personnel/personnel.model';
 import { DriverFormComponent } from '../driver-form/driver-form.component';
 import { DriverDetailComponent } from '../driver-detail/driver-detail.component';
 import { UnitOption } from '../../units/unit.model';
@@ -11,7 +11,7 @@ import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
 
-/** Padrón de conductores (spec 005). */
+/** Padrón de conductores (spec 005), sobre el personal unificado (isDriver = true). */
 @Component({
   imports: [...LIST_PAGE_IMPORTS, DriverFormComponent, DriverDetailComponent],
   selector: 'app-drivers-list',
@@ -22,7 +22,8 @@ export class DriversListComponent {
   protected readonly unitId = signal('');
   protected readonly isActive = signal<'true' | 'false' | ''>('');
 
-  private readonly filter = computed<DriverFilter>(() => ({
+  private readonly filter = computed<PersonnelFilter>(() => ({
+    isDriver: true,
     search: this.search() || undefined,
     unitId: this.unitId() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
@@ -30,7 +31,7 @@ export class DriversListComponent {
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.driversService.list(filter))),
+    toObservable(this.filter).pipe(switchMap((filter) => this.personnelService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 
@@ -42,7 +43,7 @@ export class DriversListComponent {
   protected readonly formatDate = formatDateEs;
 
   constructor(
-    private readonly driversService: DriversService,
+    private readonly personnelService: PersonnelService,
     private readonly unitsService: UnitsService,
     protected readonly currentRole: CurrentRoleService,
   ) {
@@ -73,14 +74,14 @@ export class DriversListComponent {
 
   protected async toggleActive(id: string, isActive: boolean): Promise<void> {
     if (isActive) {
-      await this.driversService.deactivate(id);
+      await this.personnelService.deactivate(id);
     } else {
-      await this.driversService.reactivate(id);
+      await this.personnelService.reactivate(id);
     }
   }
 
   /// RF-9: señala visualmente una licencia ya vencida.
-  protected isLicenseExpired(licenseExpiresAt: string): boolean {
-    return new Date(licenseExpiresAt).getTime() < Date.now();
+  protected isLicenseExpired(licenseExpiresAt: string | null): boolean {
+    return !!licenseExpiresAt && new Date(licenseExpiresAt).getTime() < Date.now();
   }
 }

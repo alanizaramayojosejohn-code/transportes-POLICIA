@@ -72,10 +72,19 @@ const ADMIN_GROUP: NavEntry = {
   label: 'Administración',
   icon: 'user-gear',
   children: [
+    { path: '/area-transportes', label: 'Área de transportes' },
     { path: '/usuarios', label: 'Usuarios' },
     { path: '/auditoria', label: 'Auditoría' },
   ],
 };
+
+/// El rol CONDUCTOR (spec 014) no opera sobre el resto del parque: ve sólo su
+/// vehículo a cargo y los dos módulos donde puede registrar algo.
+const CONDUCTOR_NAV: readonly NavEntry[] = [
+  { key: 'miVehiculo', label: 'Mi vehículo', icon: 'vehicle', path: '/mi-vehiculo' },
+  { key: 'recorridos', label: 'Recorridos', icon: 'compass', path: '/recorridos' },
+  { key: 'combustible', label: 'Combustible', icon: 'wrench', path: '/combustible' },
+];
 
 /**
  * Sidebar + topbar del sistema (diseño en `prototipo/`). El menú replica el árbol de 5 secciones
@@ -106,9 +115,14 @@ export class ShellComponent {
 
   /// Usuarios y Auditoría son exclusivos de ADMINISTRADOR (spec 004, RF-14): ningún otro rol
   /// puede consultarlos, así que el grupo "Administración" completo ni aparece para el resto.
-  protected readonly nav = computed<readonly NavEntry[]>(() =>
-    this.currentRole.role() === 'ADMINISTRADOR' ? [...BASE_NAV, ADMIN_GROUP] : BASE_NAV,
-  );
+  /// CONDUCTOR (spec 014) tiene su propio árbol reducido, no el de operaciones completo.
+  protected readonly nav = computed<readonly NavEntry[]>(() => {
+    const role = this.currentRole.role();
+    if (role === 'CONDUCTOR') {
+      return CONDUCTOR_NAV;
+    }
+    return role === 'ADMINISTRADOR' ? [...BASE_NAV, ADMIN_GROUP] : BASE_NAV;
+  });
 
   protected readonly activeGroupKey = computed(() => this.groupKeyForPath(this.currentUrl()));
 

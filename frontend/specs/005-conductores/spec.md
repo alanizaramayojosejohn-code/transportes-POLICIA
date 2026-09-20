@@ -1,11 +1,31 @@
 # Spec 005 — Conductores
 
 > Alineado con `base_datos_transportes_postgresql_final.sql` (padrón de conductores) y con el
-> modelo `Driver` que ya vive en `schema.prisma` desde la migración inicial. `Driver.departmentId`
-> apunta a `Department`, modelo dormido a propósito desde el spec 002 (ver spec 002, fuera de
-> alcance) — no se usa aquí. En su lugar, este spec agrega `Driver.unitId` (nullable, FK a `Unit`)
+> modelo `Driver` que vivió en `schema.prisma` desde la migración inicial. `Driver.departmentId`
+> apuntaba a `Department`, modelo dormido a propósito desde el spec 002 (ver spec 002, fuera de
+> alcance) — no se usaba aquí. En su lugar, este spec agregó `Driver.unitId` (nullable, FK a `Unit`)
 > porque la maqueta (`prototype/`) pide un campo «Unidad» por conductor y `Unit` es el modelo activo
-> desde spec 002/003; es una migración aditiva (columna nullable), no destructiva.
+> desde spec 002/003, y `Driver.observations` (nullable) porque la maqueta también pide un campo
+> «Observaciones» de texto libre; ambas fueron migraciones aditivas (columnas nullable), no
+> destructivas.
+>
+> **Fusión posterior con `Personnel`:** `Driver` (este spec) y `Officer` (spec 002) modelaban la
+> misma realidad — una persona del Comando — en dos tablas sin relación, con CI/nombre/grado
+> duplicados y sin forma de que un conductor pasara a ser encargado (o viceversa) sin volver a
+> registrarse desde cero. Se fusionaron en un único modelo `Personnel`, con banderas independientes
+> `isDriver` / `isOfficer` / `isAdmin` que reemplazan la pertenencia a una tabla u otra: lo que este
+> spec describe como «conductor» es ahora una ficha de `Personnel` con `isDriver = true`, y sus
+> campos de licencia (`licenseNumber`, `licenseCategory`, `licenseExpiresAt`) son nullable —
+> obligatorios sólo cuando `isDriver` es verdadero, validación que se movió del DTO al service. Las
+> referencias a `Driver` en el resto de este documento deben leerse como «`Personnel` con
+> `isDriver = true`».
+>
+> **Enmienda (spec 014):** se agrega el vehículo a cargo del conductor (`VehicleDriverAssignment`,
+> historial con fecha de inicio/fin, uno vigente por conductor y por vehículo a la vez) y la
+> posibilidad de crear en el mismo formulario de alta la cuenta de acceso del conductor con rol
+> `CONDUCTOR`, acotada a operar únicamente sobre el vehículo del que es encargado vigente. «Vehículos
+> asociados» (fuera de alcance original, más abajo) sigue siendo el historial derivado de recorridos;
+> el vehículo a cargo es un dato distinto y nuevo, no un reemplazo de esa sección.
 
 ## Contexto y objetivo
 
@@ -41,7 +61,7 @@ filtros, siguiendo el mismo patrón de permisos que vehículos y unidades (spec 
 
 - RF-1: CUANDO un usuario ADMINISTRADOR o TRANSPORTES registra un conductor indicando CI, nombres,
   apellidos, número de licencia, categoría de licencia y fecha de vencimiento, EL SISTEMA lo crea
-  activo, con grado, unidad y teléfono opcionales.
+  activo, con grado, unidad, teléfono y observaciones opcionales.
 - RF-2: SI el registro no incluye CI, nombres, apellidos, número de licencia, categoría o
   vencimiento de licencia, ENTONCES EL SISTEMA rechaza la operación y señala el campo faltante.
 - RF-3: SI el CI o el número de licencia ya pertenecen a otro conductor, ENTONCES EL SISTEMA
@@ -83,6 +103,8 @@ filtros, siguiendo el mismo patrón de permisos que vehículos y unidades (spec 
   vehículos, unidades y asignaciones: no hay login real todavía.
 - La comparación de unicidad de CI y licencia es exacta (no normaliza mayúsculas), porque ambos son
   identificadores oficiales que ya vienen en un formato fijo.
+- El campo «Grado» se limita a la lista cerrada de grados policiales de la maqueta (Pol., Cabo,
+  Sgto., Sof., Subof., Subtte., Tte., Cap., My., Tcnl., Cnl.), igual que «Categoría» de licencia.
 
 ## Casos límite
 
@@ -96,12 +118,11 @@ filtros, siguiendo el mismo patrón de permisos que vehículos y unidades (spec 
 
 ## Fuera de alcance
 
-- Vínculo entre `Driver` y `User` (cuenta de sistema para el conductor): el campo `Driver.userId`
-  ya existe en el esquema pero su llenado queda para cuando se pida ese flujo explícitamente.
+- Vínculo entre el conductor y `User` (cuenta de sistema): el campo `Personnel.userId` existe y ya
+  es asignable desde la pantalla de Usuarios (spec 004, campo `personnelId`), pero no hay flujo
+  dedicado de "crear cuenta para este conductor" desde este módulo.
 - «Vehículos asociados» por conductor: depende del historial de asignaciones conductor-vehículo
   (`Assignment`/`Trip`), que no existe todavía como módulo. Se resuelve en el spec de Recorridos.
-- Campo «Observaciones» de texto libre: no existe en `Driver` en el esquema actual; no se agrega en
-  este spec.
 - Historial de cambios de unidad del conductor (a diferencia de `UnitAssignment` para vehículos, no
   se pide un historial aquí, sólo la unidad vigente).
 
@@ -118,7 +139,10 @@ filtros, siguiendo el mismo patrón de permisos que vehículos y unidades (spec 
 | Vencimiento de licencia | `licenseExpiresAt` |
 | Teléfono | `phone` |
 | Unidad | `Unit` / `unitId` |
+| Observaciones | `observations` |
 | Activo | `isActive` |
+| (padrón de conductores) | `Personnel` / tabla `personnel`, con `isDriver = true` |
+| Es conductor | `isDriver` |
 
 Etiquetas de interfaz: «Conductores», «Nuevo conductor», «CI», «Nombres», «Apellidos», «Licencia»,
 «Categoría», «Vencimiento», «Unidad», «Activo», «Inactivo», «Licencia vencida», «Dar de baja»,

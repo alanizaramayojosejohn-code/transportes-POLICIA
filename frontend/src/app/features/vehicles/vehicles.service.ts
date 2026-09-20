@@ -36,7 +36,22 @@ const VEHICLE_FIELDS = `
   currentUnit {
     id
     name
+    currentManager {
+      officer {
+        id
+        firstName
+        lastName
+        rank
+      }
+    }
   }
+  currentDriver {
+    id
+    firstName
+    lastName
+    rank
+  }
+  lastOdometer
 `;
 
 const VEHICLES_QUERY = gql`
@@ -82,6 +97,17 @@ const VEHICLE_QUERY = gql`
         unit {
           id
           name
+        }
+      }
+      driverAssignmentHistory {
+        id
+        startDate
+        endDate
+        driver {
+          id
+          firstName
+          lastName
+          rank
         }
       }
     }

@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { TripsService } from '../trips.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
-import { DriverOption, DriversService } from '../../drivers/drivers.service';
+import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
 
 /** Registro de salida de un recorrido (spec 006, RF-1). */
 @Component({
@@ -16,7 +16,7 @@ export class TripFormComponent {
   readonly cancelled = output<void>();
 
   protected readonly vehicles: () => VehicleOption[];
-  protected readonly drivers: () => DriverOption[];
+  protected readonly drivers: () => PersonnelOption[];
 
   protected readonly vehicleId = signal('');
   protected readonly driverId = signal('');
@@ -31,10 +31,12 @@ export class TripFormComponent {
   constructor(
     private readonly tripsService: TripsService,
     private readonly vehiclesService: VehiclesService,
-    private readonly driversService: DriversService,
+    private readonly personnelService: PersonnelService,
   ) {
     this.vehicles = toSignal(this.vehiclesService.listAllActiveOptions(), { initialValue: [] });
-    this.drivers = toSignal(this.driversService.listAllActiveOptions(), { initialValue: [] });
+    this.drivers = toSignal(this.personnelService.listActiveOptions({ isDriver: true }), {
+      initialValue: [],
+    });
   }
 
   protected onOdometerInput(value: string): void {

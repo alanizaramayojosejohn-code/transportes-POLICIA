@@ -9,12 +9,16 @@
     </app-field>
 
     <app-field label="Grado">
-      <input
+      <select
         appFieldControl
-        placeholder="Sgto."
         [value]="form().rank"
-        (input)="patch({ rank: $any($event.target).value })"
-      />
+        (change)="patch({ rank: $any($event.target).value })"
+      >
+        <option value="">Seleccionar...</option>
+        @for (rank of rankOptions; track rank) {
+          <option [value]="rank">{{ rank }}</option>
+        }
+      </select>
     </app-field>
 
     <app-field label="Nombres *">
@@ -33,37 +37,75 @@
       />
     </app-field>
 
-    <app-field label="Número de licencia *">
+    <app-field label="Complemento">
       <input
         appFieldControl
-        [value]="form().licenseNumber"
-        (input)="patch({ licenseNumber: $any($event.target).value })"
+        placeholder="1A"
+        [value]="form().ciComplement"
+        (input)="patch({ ciComplement: $any($event.target).value })"
       />
     </app-field>
 
-    <app-field label="Categoría *">
-      <select
-        appFieldControl
-        [value]="form().licenseCategory"
-        (change)="patch({ licenseCategory: $any($event.target).value })"
-      >
-        <option value="">Seleccionar...</option>
-        <option>A</option>
-        <option>B</option>
-        <option>C</option>
-        <option>M</option>
-        <option>P</option>
-      </select>
-    </app-field>
+    <div class="flex flex-wrap items-center gap-4 min-[860px]:col-span-2">
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isDriver"
+          (change)="patch({ isDriver: $any($event.target).checked })"
+        />
+        Conductor
+      </label>
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isOfficer"
+          (change)="patch({ isOfficer: $any($event.target).checked })"
+        />
+        Encargado de transportes
+      </label>
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isAdmin"
+          (change)="patch({ isAdmin: $any($event.target).checked })"
+        />
+        Personal administrativo
+      </label>
+    </div>
 
-    <app-field label="Vencimiento de licencia *">
-      <input
-        appFieldControl
-        type="date"
-        [value]="form().licenseExpiresAt"
-        (input)="patch({ licenseExpiresAt: $any($event.target).value })"
-      />
-    </app-field>
+    @if (form().isDriver) {
+      <app-field label="Número de licencia *">
+        <input
+          appFieldControl
+          [value]="form().licenseNumber"
+          (input)="patch({ licenseNumber: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Categoría *">
+        <select
+          appFieldControl
+          [value]="form().licenseCategory"
+          (change)="patch({ licenseCategory: $any($event.target).value })"
+        >
+          <option value="">Seleccionar...</option>
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+          <option>M</option>
+          <option>P</option>
+        </select>
+      </app-field>
+
+      <app-field label="Vencimiento de licencia *">
+        <input
+          appFieldControl
+          type="date"
+          [value]="form().licenseExpiresAt"
+          (input)="patch({ licenseExpiresAt: $any($event.target).value })"
+        />
+      </app-field>
+    }
 
     <app-field label="Unidad">
       <select
@@ -85,6 +127,63 @@
         (input)="patch({ phone: $any($event.target).value })"
       />
     </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        placeholder="Observaciones adicionales"
+        [value]="form().observations"
+        (input)="patch({ observations: $any($event.target).value })"
+      ></textarea>
+    </app-field>
+
+    @if (form().isDriver) {
+      <app-field label="Vehículo a cargo" full>
+        <select
+          appFieldControl
+          [value]="form().vehicleId"
+          (change)="patch({ vehicleId: $any($event.target).value })"
+        >
+          <option value="">Sin vehículo asignado</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
+
+      @if (canCreateAccount) {
+        <div class="flex flex-col gap-3 min-[860px]:col-span-2">
+          <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+            <input
+              type="checkbox"
+              [checked]="form().createAccount"
+              (change)="patch({ createAccount: $any($event.target).checked })"
+            />
+            Crear cuenta de acceso de conductor
+          </label>
+
+          @if (form().createAccount) {
+            <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
+              <app-field label="Usuario *">
+                <input
+                  appFieldControl
+                  [value]="form().username"
+                  (input)="patch({ username: $any($event.target).value })"
+                />
+              </app-field>
+              <app-field label="Contraseña *">
+                <input
+                  appFieldControl
+                  type="password"
+                  [value]="form().password"
+                  (input)="patch({ password: $any($event.target).value })"
+                />
+              </app-field>
+            </div>
+          }
+        </div>
+      }
+    }
   </div>
 
   @if (errorMessage()) {

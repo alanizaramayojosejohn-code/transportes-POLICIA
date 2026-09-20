@@ -18,6 +18,16 @@ const USER_FIELDS = `
     code
     name
   }
+  personnel {
+    id
+    ci
+    firstName
+    lastName
+    unit {
+      id
+      name
+    }
+  }
 `;
 
 const USERS_QUERY = gql`

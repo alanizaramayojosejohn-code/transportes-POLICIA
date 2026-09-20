@@ -4,7 +4,7 @@ import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { IncidentsService } from '../incidents.service';
 import { INCIDENT_TYPE_LABEL, INCIDENT_TYPES, IncidentType } from '../incident.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
-import { DriverOption, DriversService } from '../../drivers/drivers.service';
+import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
 import { VEHICLE_CONDITION_LABEL, VehicleConditionCode } from '../../vehicles/vehicle.model';
 
 const POST_CONDITION_OPTIONS: VehicleConditionCode[] = [
@@ -29,7 +29,7 @@ export class IncidentFormComponent {
   protected readonly postConditionOptions = POST_CONDITION_OPTIONS;
   protected readonly conditionLabel = VEHICLE_CONDITION_LABEL;
   protected readonly vehicles: () => VehicleOption[];
-  protected readonly drivers: () => DriverOption[];
+  protected readonly drivers: () => PersonnelOption[];
 
   protected readonly vehicleId = signal('');
   protected readonly driverId = signal('');
@@ -46,10 +46,12 @@ export class IncidentFormComponent {
   constructor(
     private readonly incidentsService: IncidentsService,
     private readonly vehiclesService: VehiclesService,
-    private readonly driversService: DriversService,
+    private readonly personnelService: PersonnelService,
   ) {
     this.vehicles = toSignal(this.vehiclesService.listAllActiveOptions(), { initialValue: [] });
-    this.drivers = toSignal(this.driversService.listAllActiveOptions(), { initialValue: [] });
+    this.drivers = toSignal(this.personnelService.listActiveOptions({ isDriver: true }), {
+      initialValue: [],
+    });
   }
 
   protected async submit(): Promise<void> {

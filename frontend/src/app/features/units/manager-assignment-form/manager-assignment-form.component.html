@@ -1,20 +1,120 @@
 <app-modal title="Designar encargado de transportes" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Personal *" full>
-      <select
+    <app-field label="Unidad *" full>
+      <input
         appFieldControl
-        [value]="officerId()"
-        (change)="officerId.set($any($event.target).value)"
-      >
-        <option value="">Seleccionar...</option>
-        @for (officer of officers(); track officer.id) {
-          <option [value]="officer.id">
-            {{ officer.rank ? officer.rank + ' ' : '' }}{{ officer.firstName }}
-            {{ officer.lastName }}
-          </option>
+        list="managerUnitOptions"
+        placeholder="Buscar unidad por nombre..."
+        [value]="unitQuery()"
+        (input)="onUnitQueryInput($any($event.target).value)"
+      />
+      <datalist id="managerUnitOptions">
+        @for (unit of units(); track unit.id) {
+          <option [value]="unit.name"></option>
         }
-      </select>
+      </datalist>
     </app-field>
+
+    <div
+      class="inline-flex w-fit gap-1 rounded-full border border-edge bg-surface-2/70 p-1 shadow-[0_1px_1px_rgba(8,20,15,.03)] backdrop-blur-sm min-[860px]:col-span-2"
+    >
+      <button
+        type="button"
+        class="min-h-[34px] rounded-full px-3.5 text-11-5 font-semibold transition-colors duration-150"
+        [class]="
+          mode() === 'existing'
+            ? 'bg-surface text-green-700 shadow-sm dark:text-green-300'
+            : 'bg-transparent text-ink-muted hover:text-ink'
+        "
+        (click)="mode.set('existing')"
+      >
+        Personal existente
+      </button>
+      <button
+        type="button"
+        class="min-h-[34px] rounded-full px-3.5 text-11-5 font-semibold transition-colors duration-150"
+        [class]="
+          mode() === 'new'
+            ? 'bg-surface text-green-700 shadow-sm dark:text-green-300'
+            : 'bg-transparent text-ink-muted hover:text-ink'
+        "
+        (click)="mode.set('new')"
+      >
+        Nuevo personal
+      </button>
+    </div>
+
+    @if (mode() === 'existing') {
+      <app-field label="Personal *" full>
+        <select
+          appFieldControl
+          [value]="officerId()"
+          (change)="officerId.set($any($event.target).value)"
+        >
+          <option value="">Seleccionar...</option>
+          @for (officer of officers(); track officer.id) {
+            <option [value]="officer.id">
+              {{ officer.rank ? officer.rank + ' ' : '' }}{{ officer.firstName }}
+              {{ officer.lastName }}
+            </option>
+          }
+        </select>
+      </app-field>
+    } @else {
+      <app-field label="CI *">
+        <input
+          appFieldControl
+          [value]="newOfficer().ci"
+          (input)="patchNewOfficer({ ci: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Complemento">
+        <input
+          appFieldControl
+          placeholder="1A"
+          [value]="newOfficer().ciComplement"
+          (input)="patchNewOfficer({ ciComplement: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Nombres *">
+        <input
+          appFieldControl
+          [value]="newOfficer().firstName"
+          (input)="patchNewOfficer({ firstName: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Apellidos *">
+        <input
+          appFieldControl
+          [value]="newOfficer().lastName"
+          (input)="patchNewOfficer({ lastName: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Grado">
+        <select
+          appFieldControl
+          [value]="newOfficer().rank"
+          (change)="patchNewOfficer({ rank: $any($event.target).value })"
+        >
+          <option value="">Seleccionar...</option>
+          @for (rank of rankOptions; track rank) {
+            <option [value]="rank">{{ rank }}</option>
+          }
+        </select>
+      </app-field>
+
+      <app-field label="Teléfono">
+        <input
+          appFieldControl
+          [value]="newOfficer().phone"
+          (input)="patchNewOfficer({ phone: $any($event.target).value })"
+        />
+      </app-field>
+    }
 
     <app-field label="Fecha desde *">
       <input
@@ -40,6 +140,37 @@
         (input)="notes.set($any($event.target).value)"
       ></textarea>
     </app-field>
+
+    <div class="flex flex-col gap-3 min-[860px]:col-span-2">
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="createAccount()"
+          (change)="createAccount.set($any($event.target).checked)"
+        />
+        Crear cuenta de acceso del encargado
+      </label>
+
+      @if (createAccount()) {
+        <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
+          <app-field label="Usuario *">
+            <input
+              appFieldControl
+              [value]="username()"
+              (input)="username.set($any($event.target).value)"
+            />
+          </app-field>
+          <app-field label="Contraseña *">
+            <input
+              appFieldControl
+              type="password"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+            />
+          </app-field>
+        </div>
+      }
+    </div>
   </div>
 
   @if (errorMessage()) {

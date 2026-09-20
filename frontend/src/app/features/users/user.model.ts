@@ -4,6 +4,14 @@ export interface Role {
   name: string;
 }
 
+export interface UserPersonnel {
+  id: string;
+  ci: string;
+  firstName: string;
+  lastName: string;
+  unit: { id: string; name: string } | null;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -15,6 +23,8 @@ export interface User {
   lastLoginAt: string | null;
   roleId: string;
   role: Role;
+  /// Ficha de personal vinculada (spec 015): null si la cuenta no tiene una.
+  personnel: UserPersonnel | null;
 }
 
 export interface UserPage {
@@ -38,6 +48,9 @@ export interface CreateUserInput {
   rank?: string;
   phone?: string;
   roleId: string;
+  /// Ficha de personal a vincular (spec 015): marca isDriver/isOfficer/isAdmin
+  /// según el rol de la cuenta.
+  personnelId?: string;
 }
 
 export type UpdateUserInput = Partial<CreateUserInput>;

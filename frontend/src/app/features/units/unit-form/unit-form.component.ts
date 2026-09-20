@@ -12,7 +12,9 @@ import { CreateUnitInput, Unit, UnitOption } from '../unit.model';
 })
 export class UnitFormComponent {
   readonly unit = input<Unit | null>(null);
-  readonly saved = output<void>();
+  /// Emite la unidad creada o editada: el llamador la usa para encadenar la
+  /// designación de encargado en el mismo flujo de alta (spec 002, enmienda).
+  readonly saved = output<Unit>();
   readonly cancelled = output<void>();
 
   protected readonly units: () => UnitOption[];
@@ -68,12 +70,10 @@ export class UnitFormComponent {
     this.errorMessage.set(null);
     try {
       const current = this.unit();
-      if (current) {
-        await this.unitsService.update(current.id, value);
-      } else {
-        await this.unitsService.create(value);
-      }
-      this.saved.emit();
+      const result = current
+        ? await this.unitsService.update(current.id, value)
+        : await this.unitsService.create(value);
+      this.saved.emit(result);
     } catch (error) {
       this.errorMessage.set(
         error instanceof Error ? error.message : 'No se pudo guardar la unidad.',
