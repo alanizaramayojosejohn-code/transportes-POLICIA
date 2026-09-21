@@ -1,30 +1,39 @@
 <app-modal title="Nuevo recorrido" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Vehículo *">
-      <select
-        appFieldControl
-        [value]="vehicleId()"
-        (change)="vehicleId.set($any($event.target).value)"
-      >
-        <option value="">Seleccionar...</option>
-        @for (vehicle of vehicles(); track vehicle.id) {
-          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
-        }
-      </select>
-    </app-field>
+    @if (isConductor) {
+      <app-field label="Vehículo">
+        <input appFieldControl [value]="myAssignment()?.vehicle.plate ?? ''" disabled />
+      </app-field>
+      <app-field label="Conductor">
+        <input appFieldControl value="Usted" disabled />
+      </app-field>
+    } @else {
+      <app-field label="Vehículo *">
+        <select
+          appFieldControl
+          [value]="vehicleId()"
+          (change)="vehicleId.set($any($event.target).value)"
+        >
+          <option value="">Seleccionar...</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
 
-    <app-field label="Conductor *">
-      <select
-        appFieldControl
-        [value]="driverId()"
-        (change)="driverId.set($any($event.target).value)"
-      >
-        <option value="">Seleccionar...</option>
-        @for (driver of drivers(); track driver.id) {
-          <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
-        }
-      </select>
-    </app-field>
+      <app-field label="Conductor *">
+        <select
+          appFieldControl
+          [value]="driverId()"
+          (change)="driverId.set($any($event.target).value)"
+        >
+          <option value="">Seleccionar...</option>
+          @for (driver of drivers(); track driver.id) {
+            <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
+          }
+        </select>
+      </app-field>
+    }
 
     <app-field label="Destino *" full>
       <input

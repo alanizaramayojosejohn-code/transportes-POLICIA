@@ -17,6 +17,7 @@ type DecimalRow = Record<string, unknown> & {
   minStock?: Prisma.Decimal;
   currentStock?: Prisma.Decimal;
   lastUnitCost?: Prisma.Decimal | null;
+  weight?: Prisma.Decimal | null;
   quantity?: Prisma.Decimal;
   unitCost?: Prisma.Decimal | null;
   balanceAfter?: Prisma.Decimal;
@@ -38,6 +39,7 @@ export class InventoryService {
   async findAll(filters: SparePartFilterArgs) {
     const where: Prisma.SparePartWhereInput = {
       ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+      ...(filters.type ? { type: filters.type } : {}),
       ...(filters.isActive !== undefined ? { isActive: filters.isActive } : {}),
       ...(filters.search
         ? {
@@ -89,6 +91,9 @@ export class InventoryService {
           code: input.code,
           name: input.name,
           categoryId: input.categoryId,
+          type: input.type,
+          tireSize: input.tireSize,
+          weight: input.weight,
           unit: input.unit,
           minStock: input.minStock ?? 0,
           location: input.location,
@@ -170,6 +175,19 @@ export class InventoryService {
         : currentStock - input.quantity;
     const actingUserId = actingUser.id;
 
+    /// Spec 017 RF-5/RF-8: el lote sólo aplica a una entrada, el vehículo
+    /// destino sólo a una salida; el otro lado se ignora si se envía.
+    if (input.type === 'OUT' && input.vehicleId) {
+      const vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: input.vehicleId },
+      });
+      if (!vehicle) {
+        throw new NotFoundException(
+          `Vehículo ${input.vehicleId} no encontrado`,
+        );
+      }
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const movement = await tx.stockMovement.create({
         data: {
@@ -182,6 +200,15 @@ export class InventoryService {
           supplier: input.supplier,
           reference: input.reference,
           registeredById: actingUserId,
+          ...(input.type === 'IN'
+            ? {
+                lotNumber: input.lotNumber,
+                lotExpiresAt: input.lotExpiresAt
+                  ? new Date(input.lotExpiresAt)
+                  : undefined,
+              }
+            : {}),
+          ...(input.type === 'OUT' ? { vehicleId: input.vehicleId } : {}),
         },
       });
       await tx.sparePart.update({
@@ -219,6 +246,9 @@ export class InventoryService {
             lastUnitCost:
               row.lastUnitCost === null ? null : Number(row.lastUnitCost),
           }
+        : {}),
+      ...(row.weight !== undefined
+        ? { weight: row.weight === null ? null : Number(row.weight) }
         : {}),
       ...(row.quantity !== undefined ? { quantity: Number(row.quantity) } : {}),
       ...(row.unitCost !== undefined

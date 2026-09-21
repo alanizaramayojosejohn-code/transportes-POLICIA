@@ -1,5 +1,12 @@
 import { Field, Float, InputType } from '@nestjs/graphql';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { StockMovementType } from '../../../generated/prisma/enums.js';
 
 /** RF-6/RF-7: artículo, tipo y cantidad son obligatorios. */
@@ -38,4 +45,23 @@ export class CreateStockMovementInput {
   @IsOptional()
   @IsString()
   reference?: string;
+
+  /** Spec 017 RF-4/RF-5: sólo aplica a una entrada; en una salida se ignora. */
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  lotNumber?: string;
+
+  /// `Field(() => String)` a propósito, igual que otras fechas de entrada en
+  /// el proyecto, para poder usar `@IsDateString()`.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsDateString()
+  lotExpiresAt?: string;
+
+  /** Spec 017 RF-6/RF-8: sólo aplica a una salida; en una entrada se ignora. */
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  vehicleId?: string;
 }

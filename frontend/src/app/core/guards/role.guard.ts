@@ -19,3 +19,18 @@ export const roleGuard = (allowedRoles: Role[]): CanActivateFn => {
     return router.createUrlTree(['/']);
   };
 };
+
+/**
+ * Un CONDUCTOR no tiene panel general (spec 012): «Inicio» para ese rol es
+ * «Mi vehículo». Sin este guard, entrar sin `returnUrl` (login o navegar a
+ * `/` a mano) mostraría el panel administrativo, que ese rol ni ve en el nav.
+ */
+export const homeGuard: CanActivateFn = () => {
+  const currentRole = inject(CurrentRoleService);
+  const router = inject(Router);
+
+  if (currentRole.role() === 'CONDUCTOR') {
+    return router.createUrlTree(['/mi-vehiculo']);
+  }
+  return true;
+};

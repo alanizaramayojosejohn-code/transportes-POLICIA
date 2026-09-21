@@ -41,9 +41,16 @@ export class CurrentRoleService {
 
   readonly canWrite = () => this.role() === 'ADMINISTRADOR' || this.role() === 'TRANSPORTES';
 
+  /// Un CONDUCTOR también registra sus propios recorridos (spec 014,
+  /// RF-13/RF-14), acotado a su vehículo a cargo — la pantalla que consume
+  /// esto se encarga de ese acotamiento, aquí sólo se habilita el botón.
+  readonly canWriteTrips = () => this.canWrite() || this.role() === 'CONDUCTOR';
+
   /// Combustible, además de ADMINISTRADOR/TRANSPORTES, puede registrar
-  /// abastecimientos (spec 007). Mismo patrón para Mantenimiento/Almacén.
-  readonly canWriteFuel = () => this.canWrite() || this.role() === 'COMBUSTIBLE';
+  /// abastecimientos (spec 007); un CONDUCTOR también, del vehículo del que
+  /// es encargado (spec 014). Mismo patrón para Mantenimiento/Almacén.
+  readonly canWriteFuel = () =>
+    this.canWrite() || this.role() === 'COMBUSTIBLE' || this.role() === 'CONDUCTOR';
 
   /// Mantenimiento, además de ADMINISTRADOR/TRANSPORTES, puede registrar y
   /// finalizar órdenes de mantenimiento (spec 008).

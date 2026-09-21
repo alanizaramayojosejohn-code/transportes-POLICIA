@@ -25,6 +25,12 @@
         <option [value]="category.id">{{ category.name }}</option>
       }
     </select>
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ typeLabels[t] }}</option>
+      }
+    </select>
     <select
       appFilterControl
       [value]="isActive()"
@@ -41,6 +47,7 @@
       <tr appTableHeadRow>
         <th appTableHeadCell>Código</th>
         <th appTableHeadCell>Artículo</th>
+        <th appTableHeadCell>Tipo</th>
         <th appTableHeadCell>Categoría</th>
         <th appTableHeadCell>Unidad</th>
         <th appTableHeadCell>Stock</th>
@@ -54,6 +61,7 @@
         <tr appTableRow>
           <td appTableCell class="font-medium">{{ part.code }}</td>
           <td appTableCell>{{ part.name }}</td>
+          <td appTableCell>{{ typeLabels[part.type] }}</td>
           <td appTableCell>{{ part.category?.name || '—' }}</td>
           <td appTableCell>{{ part.unit }}</td>
           <td appTableCell>{{ part.currentStock }}</td>
@@ -86,7 +94,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="9">
           Sin artículos registrados todavía.
         </tr>
       }

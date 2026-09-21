@@ -1,9 +1,17 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { SparePartType } from '../../../generated/prisma/enums.js';
+
+registerEnumType(SparePartType, {
+  name: 'SparePartType',
+  description:
+    'Tipo de artículo: determina qué campos aplica el formulario (spec 017).',
+});
 
 /**
- * Tipo GraphQL de salida para SparePart (spec 009). `currentStock`, etc.
- * viajan como `Float` (misma decisión que los specs 007/008: no hay
- * escalar `Decimal` instalado). `category` viaja como campo resuelto.
+ * Tipo GraphQL de salida para SparePart (spec 009, extendido por el 017).
+ * `currentStock`, etc. viajan como `Float` (misma decisión que los specs
+ * 007/008: no hay escalar `Decimal` instalado). `category` viaja como campo
+ * resuelto.
  */
 @ObjectType()
 export class SparePart {
@@ -18,6 +26,15 @@ export class SparePart {
 
   @Field(() => String, { nullable: true })
   description!: string | null;
+
+  @Field(() => SparePartType)
+  type!: SparePartType;
+
+  @Field(() => String, { nullable: true })
+  tireSize!: string | null;
+
+  @Field(() => Float, { nullable: true })
+  weight!: number | null;
 
   @Field(() => String)
   unit!: string;

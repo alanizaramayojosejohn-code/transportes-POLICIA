@@ -25,6 +25,7 @@ function buildPrismaMock() {
       count: vi.fn(),
     },
     stockMovement: { create: vi.fn() },
+    vehicle: { findUnique: vi.fn() },
     $transaction: vi.fn(),
   };
   mock.$transaction.mockImplementation((arg: unknown) => {
@@ -161,6 +162,142 @@ describe('InventoryService', () => {
       expect(prisma.sparePart.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ currentStock: 8 }),
+        }),
+      );
+    });
+
+    it('guarda el lote en una entrada y lo omite en una salida (spec 017, RF-4/RF-5)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 5,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 15,
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'IN',
+          quantity: 10,
+          lotNumber: 'LOTE-001',
+          lotExpiresAt: '2027-01-01',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            lotNumber: 'LOTE-001',
+            lotExpiresAt: new Date('2027-01-01'),
+          }),
+        }),
+      );
+
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 15,
+        unit: 'unidad',
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'OUT',
+          quantity: 2,
+          reason: 'Mantenimiento',
+          lotNumber: 'NO-DEBERIA-GUARDARSE',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ lotNumber: expect.anything() }),
+        }),
+      );
+    });
+
+    it('rechaza una salida hacia un vehículo inexistente (spec 017, RF-7)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.vehicle.findUnique).mockResolvedValue(null);
+
+      await expect(
+        service.registerMovement(
+          {
+            sparePartId: 'p1',
+            type: 'OUT',
+            quantity: 2,
+            reason: 'Mantenimiento',
+            vehicleId: 'vehiculo-inexistente',
+          } as never,
+          actingUser,
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('guarda el vehículo destino en una salida y lo omite en una entrada (spec 017, RF-6/RF-8)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
+        id: 'v1',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 8,
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'OUT',
+          quantity: 2,
+          reason: 'Mantenimiento',
+          vehicleId: 'v1',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ vehicleId: 'v1' }),
+        }),
+      );
+
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 8,
+        unit: 'unidad',
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'IN',
+          quantity: 5,
+          vehicleId: 'v1',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ vehicleId: expect.anything() }),
         }),
       );
     });

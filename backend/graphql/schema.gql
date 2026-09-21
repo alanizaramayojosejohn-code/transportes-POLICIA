@@ -114,10 +114,15 @@ input CreateSparePartInput {
   location: String
   minStock: Float
   name: String!
+  tireSize: String
+  type: SparePartType
   unit: String!
+  weight: Float
 }
 
 input CreateStockMovementInput {
+  lotExpiresAt: String
+  lotNumber: String
   quantity: Float!
   reason: String
   reference: String
@@ -125,6 +130,7 @@ input CreateStockMovementInput {
   supplier: String
   type: StockMovementType!
   unitCost: Float
+  vehicleId: String
 }
 
 input CreateTripInput {
@@ -454,7 +460,7 @@ type Query {
   roles: [Role!]!
   sparePart(id: String!): SparePart!
   sparePartCategories: [SparePartCategory!]!
-  spareParts(categoryId: String, isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): SparePartPage!
+  spareParts(categoryId: String, isActive: Boolean, search: String, skip: Int = 0, take: Int = 20, type: SparePartType): SparePartPage!
   trip(id: String!): Trip!
   trips(driverId: String, open: Boolean, search: String, skip: Int = 0, take: Int = 20, vehicleId: String): TripPage!
   unit(id: String!): Unit!
@@ -498,7 +504,10 @@ type SparePart {
   location: String
   minStock: Float!
   name: String!
+  tireSize: String
+  type: SparePartType!
   unit: String!
+  weight: Float
 }
 
 type SparePartCategory {
@@ -511,10 +520,22 @@ type SparePartPage {
   total: Int!
 }
 
+"""
+Tipo de artículo: determina qué campos aplica el formulario (spec 017).
+"""
+enum SparePartType {
+  LIQUIDO
+  LLANTA
+  OTRO
+  PIEZA
+}
+
 type StockMovement {
   balanceAfter: Float!
   createdAt: DateTime!
   id: String!
+  lotExpiresAt: DateTime
+  lotNumber: String
   quantity: Float!
   reason: String
   reference: String
@@ -522,6 +543,7 @@ type StockMovement {
   supplier: String
   type: StockMovementType!
   unitCost: Float
+  vehicleId: String
 }
 
 """Tipo de movimiento de inventario."""
@@ -635,7 +657,10 @@ input UpdateSparePartInput {
   location: String
   minStock: Float
   name: String
+  tireSize: String
+  type: SparePartType
   unit: String
+  weight: Float
 }
 
 input UpdateUnitAssignmentNotesInput {

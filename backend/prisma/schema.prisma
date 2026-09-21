@@ -201,6 +201,7 @@ model Vehicle {
   fuelRecords       FuelRecord[]
   documents         VehicleDocument[]
   incidents         Incident[]
+  stockMovements    StockMovement[]
 
   @@index([departmentId])
   @@index([plate])
@@ -723,6 +724,15 @@ model IncidentAttachment {
 // RF-14 / RF-15  Inventario de repuestos y movimientos de stock
 // =============================================================================
 
+enum SparePartType {
+  LIQUIDO
+  LLANTA
+  PIEZA
+  OTRO
+
+  @@map("spare_part_type")
+}
+
 model SparePartCategory {
   id          String   @id @default(uuid(7))
   name        String   @unique
@@ -735,24 +745,33 @@ model SparePartCategory {
 }
 
 model SparePart {
-  id           String   @id @default(uuid(7))
-  code         String   @unique
+  id           String        @id @default(uuid(7))
+  code         String        @unique
   name         String
   description  String?
+  /// Tipo de artículo (spec 017): determina qué campos pide el formulario.
+  /// A diferencia de `SparePartCategory` no es un catálogo editable.
+  type         SparePartType @default(OTRO)
+  /// Medida de la llanta (ej. "195/65 R15"). Sólo tiene sentido cuando
+  /// `type = LLANTA`, pero se guarda como columna libre, igual que los
+  /// campos de `Vehicle` que sólo aplican a algunos tipos (spec 017).
+  tireSize     String?       @map("tire_size")
+  /// Peso unitario en kilogramos, para logística y reportes de carga.
+  weight       Decimal?      @db.Decimal(10, 3)
   /// Unidad de medida: unidad, litro, juego, metro.
-  unit         String   @default("unidad")
+  unit         String        @default("unidad")
   /// Umbral que dispara la alerta de stock mínimo (RF-14, RF-15).
-  minStock     Decimal  @default(0) @map("min_stock") @db.Decimal(10, 2)
+  minStock     Decimal       @default(0) @map("min_stock") @db.Decimal(10, 2)
   /// Existencia actual. La escribe únicamente InventoryService, dentro de la
   /// misma transacción que inserta el StockMovement, para que no puedan
   /// separarse el movimiento y el saldo.
-  currentStock Decimal  @default(0) @map("current_stock") @db.Decimal(10, 2)
+  currentStock Decimal       @default(0) @map("current_stock") @db.Decimal(10, 2)
   /// Costo unitario de la última entrada, para valorizar el inventario.
-  lastUnitCost Decimal? @map("last_unit_cost") @db.Decimal(12, 2)
+  lastUnitCost Decimal?      @map("last_unit_cost") @db.Decimal(12, 2)
   location     String?
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   categoryId String?            @map("category_id")
   category   SparePartCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -762,6 +781,7 @@ model SparePart {
 
   @@index([categoryId])
   @@index([isActive])
+  @@index([type])
   @@map("spare_part")
 }
 
@@ -777,15 +797,24 @@ model StockMovement {
   supplier     String?
   /// Documento de respaldo: factura, nota de entrega, orden de mantenimiento.
   reference    String?
+  /// Lote de la entrada, dato descriptivo del movimiento (spec 017): no crea
+  /// una entidad de lote propia ni fracciona el stock del artículo.
+  lotNumber    String?           @map("lot_number")
+  lotExpiresAt DateTime?         @map("lot_expires_at") @db.Timestamptz(3)
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
 
   sparePartId    String    @map("spare_part_id")
   sparePart      SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
   registeredById String    @map("registered_by_id")
   registeredBy   User      @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  /// Vehículo destino de una salida, trazabilidad a nivel de movimiento, no
+  /// de unidad física serializada (spec 017).
+  vehicleId      String?   @map("vehicle_id")
+  vehicle        Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
 
   @@index([sparePartId, createdAt])
   @@index([createdAt])
+  @@index([vehicleId])
   @@map("stock_movement")
 }
 

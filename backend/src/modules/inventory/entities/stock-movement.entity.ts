@@ -32,8 +32,17 @@ export class StockMovement {
   @Field(() => String, { nullable: true })
   reference!: string | null;
 
+  @Field(() => String, { nullable: true })
+  lotNumber!: string | null;
+
+  @Field(() => Date, { nullable: true })
+  lotExpiresAt!: Date | null;
+
   @Field(() => String)
   sparePartId!: string;
+
+  @Field(() => String, { nullable: true })
+  vehicleId!: string | null;
 
   @Field(() => Date)
   createdAt!: Date;

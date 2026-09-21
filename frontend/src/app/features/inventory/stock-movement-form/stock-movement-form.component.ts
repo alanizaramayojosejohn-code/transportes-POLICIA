@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { InventoryService } from '../inventory.service';
 import { SparePart, SparePartPage, StockMovementType } from '../spare-part.model';
+import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 
 /** Movimiento de entrada o salida de inventario (spec 009, RF-6/RF-7). */
 @Component({
@@ -16,6 +17,7 @@ export class StockMovementFormComponent {
 
   private readonly partsPage: () => SparePartPage;
   protected readonly parts: () => SparePart[];
+  protected readonly vehicles: () => VehicleOption[];
 
   protected readonly type = signal<StockMovementType>('IN');
   protected readonly sparePartId = signal('');
@@ -24,14 +26,21 @@ export class StockMovementFormComponent {
   protected readonly reason = signal('');
   protected readonly supplier = signal('');
   protected readonly reference = signal('');
+  protected readonly lotNumber = signal('');
+  protected readonly lotExpiresAt = signal('');
+  protected readonly vehicleId = signal('');
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
-  constructor(private readonly inventoryService: InventoryService) {
+  constructor(
+    private readonly inventoryService: InventoryService,
+    private readonly vehiclesService: VehiclesService,
+  ) {
     this.partsPage = toSignal(this.inventoryService.list({ isActive: true, take: 100 }), {
       initialValue: { items: [], total: 0 },
     });
     this.parts = computed(() => this.partsPage().items);
+    this.vehicles = toSignal(this.vehiclesService.listAllActiveOptions(), { initialValue: [] });
   }
 
   protected get isOut(): boolean {
@@ -64,6 +73,9 @@ export class StockMovementFormComponent {
         reason: this.reason() || undefined,
         supplier: this.supplier() || undefined,
         reference: this.reference() || undefined,
+        lotNumber: !this.isOut && this.lotNumber() ? this.lotNumber() : undefined,
+        lotExpiresAt: !this.isOut && this.lotExpiresAt() ? this.lotExpiresAt() : undefined,
+        vehicleId: this.isOut && this.vehicleId() ? this.vehicleId() : undefined,
       });
       this.saved.emit();
     } catch (error) {

@@ -2,12 +2,21 @@ import { Component, effect, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { InventoryService } from '../inventory.service';
-import { CreateSparePartInput, SparePart, SparePartCategory } from '../spare-part.model';
+import {
+  CreateSparePartInput,
+  SPARE_PART_TYPE_LABELS,
+  SparePart,
+  SparePartCategory,
+  SparePartType,
+} from '../spare-part.model';
 
 interface SparePartFormState {
   code: string;
   name: string;
   categoryId: string;
+  type: SparePartType;
+  tireSize: string;
+  weight: string;
   unit: string;
   minStock: string;
   location: string;
@@ -18,11 +27,16 @@ const EMPTY_FORM: SparePartFormState = {
   code: '',
   name: '',
   categoryId: '',
+  type: 'OTRO',
+  tireSize: '',
+  weight: '',
   unit: '',
   minStock: '',
   location: '',
   description: '',
 };
+
+const SPARE_PART_TYPES: SparePartType[] = ['LIQUIDO', 'LLANTA', 'PIEZA', 'OTRO'];
 
 /** Alta y edición de artículos de inventario (spec 009, RF-1/RF-4). */
 @Component({
@@ -39,6 +53,8 @@ export class SparePartFormComponent {
   protected readonly form = signal<SparePartFormState>(EMPTY_FORM);
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly types = SPARE_PART_TYPES;
+  protected readonly typeLabels = SPARE_PART_TYPE_LABELS;
 
   constructor(private readonly inventoryService: InventoryService) {
     this.categories = toSignal(this.inventoryService.listCategories(), { initialValue: [] });
@@ -51,6 +67,9 @@ export class SparePartFormComponent {
               code: part.code,
               name: part.name,
               categoryId: part.categoryId ?? '',
+              type: part.type,
+              tireSize: part.tireSize ?? '',
+              weight: part.weight !== null ? String(part.weight) : '',
               unit: part.unit,
               minStock: String(part.minStock),
               location: part.location ?? '',
@@ -63,6 +82,10 @@ export class SparePartFormComponent {
 
   protected get isEdit(): boolean {
     return this.part() !== null;
+  }
+
+  protected get isTire(): boolean {
+    return this.form().type === 'LLANTA';
   }
 
   protected patch(partial: Partial<SparePartFormState>): void {
@@ -83,6 +106,9 @@ export class SparePartFormComponent {
         code: value.code,
         name: value.name,
         categoryId: value.categoryId,
+        type: value.type,
+        tireSize: value.type === 'LLANTA' && value.tireSize ? value.tireSize : undefined,
+        weight: value.weight ? Number(value.weight) : undefined,
         unit: value.unit,
         minStock: value.minStock ? Number(value.minStock) : undefined,
         location: value.location || undefined,

@@ -20,14 +20,20 @@
     </app-field>
 
     <app-field label="Categoría *">
-      <select
-        appFieldControl
-        [value]="form().categoryId"
-        (change)="patch({ categoryId: $any($event.target).value })"
-      >
-        <option value="">Seleccionar...</option>
+      <select appFieldControl (change)="patch({ categoryId: $any($event.target).value })">
+        <option value="" [selected]="!form().categoryId">Seleccionar...</option>
         @for (category of categories(); track category.id) {
-          <option [value]="category.id">{{ category.name }}</option>
+          <option [value]="category.id" [selected]="category.id === form().categoryId">
+            {{ category.name }}
+          </option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Tipo *">
+      <select appFieldControl (change)="patch({ type: $any($event.target).value })">
+        @for (type of types; track type) {
+          <option [value]="type" [selected]="type === form().type">{{ typeLabels[type] }}</option>
         }
       </select>
     </app-field>
@@ -38,6 +44,27 @@
         placeholder="Galón, unidad, juego..."
         [value]="form().unit"
         (input)="patch({ unit: $any($event.target).value })"
+      />
+    </app-field>
+
+    @if (isTire) {
+      <app-field label="Medida de la llanta">
+        <input
+          appFieldControl
+          placeholder="195/65 R15"
+          [value]="form().tireSize"
+          (input)="patch({ tireSize: $any($event.target).value })"
+        />
+      </app-field>
+    }
+
+    <app-field label="Peso unitario (kg)">
+      <input
+        appFieldControl
+        type="number"
+        step="0.001"
+        [value]="form().weight"
+        (input)="patch({ weight: $any($event.target).value })"
       />
     </app-field>
 

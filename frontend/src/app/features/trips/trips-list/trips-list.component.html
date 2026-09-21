@@ -1,5 +1,5 @@
 <app-page-head title="Recorridos" description="Control de salida, llegada y kilometraje.">
-  @if (currentRole.canWrite()) {
+  @if (currentRole.canWriteTrips()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Nuevo recorrido
     </button>
@@ -49,7 +49,7 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            @if (!trip.returnAt && currentRole.canWrite()) {
+            @if (!trip.returnAt && currentRole.canWriteTrips()) {
               <button type="button" appButton size="sm" variant="soft" (click)="openClose(trip.id)">
                 Registrar llegada
               </button>

@@ -1,12 +1,19 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, effect, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { FuelRecordsService } from '../fuel-records.service';
 import { FUEL_TYPE_LABEL, FUEL_TYPES, FuelType } from '../fuel-record.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
+import { CurrentRoleService } from '../../../core/current-role.service';
+import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
+import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
 
-/** Registro de abastecimiento (spec 007, RF-1). */
+/**
+ * Registro de abastecimiento (spec 007, RF-1). Un CONDUCTOR (spec 014) sólo
+ * carga combustible del vehículo del que es encargado, a su propio nombre:
+ * no elige vehículo ni conductor.
+ */
 @Component({
   imports: [...FORM_MODAL_IMPORTS],
   selector: 'app-fuel-record-form',
@@ -20,6 +27,9 @@ export class FuelRecordFormComponent {
   protected readonly fuelTypeLabel = FUEL_TYPE_LABEL;
   protected readonly vehicles: () => VehicleOption[];
   protected readonly drivers: () => PersonnelOption[];
+  protected readonly myAssignment: () => MyVehicleAssignment | null;
+
+  protected readonly isConductor: boolean;
 
   protected readonly vehicleId = signal('');
   protected readonly driverId = signal('');
@@ -38,10 +48,23 @@ export class FuelRecordFormComponent {
     private readonly fuelRecordsService: FuelRecordsService,
     private readonly vehiclesService: VehiclesService,
     private readonly personnelService: PersonnelService,
+    currentRole: CurrentRoleService,
+    vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
   ) {
+    this.isConductor = currentRole.role() === 'CONDUCTOR';
     this.vehicles = toSignal(this.vehiclesService.listAllActiveOptions(), { initialValue: [] });
     this.drivers = toSignal(this.personnelService.listActiveOptions({ isDriver: true }), {
       initialValue: [],
+    });
+    this.myAssignment = toSignal(vehicleDriverAssignmentsService.myAssignment(), {
+      initialValue: null,
+    });
+    effect(() => {
+      const assignment = this.myAssignment();
+      if (this.isConductor && assignment) {
+        this.vehicleId.set(assignment.vehicleId);
+        this.driverId.set(assignment.driverId);
+      }
     });
   }
 

@@ -21,11 +21,7 @@
     </div>
 
     <div class="mt-5 flex flex-wrap gap-2">
-      <button type="button" appButton (click)="openPanel('odometer')">Registrar kilometraje</button>
-      <button type="button" appButton (click)="openPanel('fuel')">Registrar combustible</button>
-      <button type="button" appButton variant="primary" (click)="openPanel('trip')">
-        {{ openTrip().items.length > 0 ? 'Registrar llegada' : 'Registrar salida' }}
-      </button>
+      <button type="button" appButton (click)="toggleOdometerPanel()">Registrar kilometraje</button>
     </div>
 
     @if (errorMessage()) {
@@ -67,171 +63,84 @@
         </div>
       </div>
     }
+  </app-card>
 
-    @if (panel() === 'fuel') {
-      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
-        <div class="grid grid-cols-1 gap-3 min-[640px]:grid-cols-2">
-          <app-field label="Tipo de combustible *">
-            <select appFieldControl (change)="fuelType.set($any($event.target).value)">
-              @for (type of fuelTypes; track type) {
-                <option [value]="type" [selected]="type === fuelType()">
-                  {{ fuelTypeLabel[type] }}
-                </option>
-              }
-            </select>
-          </app-field>
-          <app-field label="Estación">
-            <input
-              appFieldControl
-              [value]="fuelStation()"
-              (input)="fuelStation.set($any($event.target).value)"
-            />
-          </app-field>
-          <app-field label="Cantidad *">
-            <input
-              appFieldControl
-              type="number"
-              [value]="fuelQuantity() ?? ''"
-              (input)="
-                fuelQuantity.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <app-field label="Precio unitario *">
-            <input
-              appFieldControl
-              type="number"
-              [value]="fuelUnitPrice() ?? ''"
-              (input)="
-                fuelUnitPrice.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <app-field label="Kilometraje *">
-            <input
-              appFieldControl
-              type="number"
-              [value]="fuelOdometer() ?? ''"
-              (input)="
-                fuelOdometer.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-        </div>
-        <div class="mt-3 flex justify-end">
-          <button
-            type="button"
-            appButton
-            variant="primary"
-            size="sm"
-            [disabled]="submitting()"
-            (click)="registerFuel()"
-          >
-            Guardar
-          </button>
-        </div>
-      </div>
-    }
-
-    @if (panel() === 'trip') {
-      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
-        @if (openTrip().items.length > 0) {
-          <app-field label="Kilometraje de llegada *" class="mb-3">
-            <input
-              appFieldControl
-              type="number"
-              [value]="returnOdometer() ?? ''"
-              (input)="
-                returnOdometer.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <app-field label="Nivel de combustible (%)" class="mb-3">
-            <input
-              appFieldControl
-              type="number"
-              [value]="returnFuelLevel() ?? ''"
-              (input)="
-                returnFuelLevel.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <app-field label="Daños encontrados" class="mb-3">
-            <textarea
-              appFieldControl
-              [value]="damagesFound()"
-              (input)="damagesFound.set($any($event.target).value)"
-            ></textarea>
-          </app-field>
-          <div class="flex justify-end">
-            <button
-              type="button"
-              appButton
-              variant="primary"
-              size="sm"
-              [disabled]="submitting()"
-              (click)="registerArrival()"
-            >
-              Guardar llegada
-            </button>
-          </div>
-        } @else {
-          <app-field label="Destino *" class="mb-3">
-            <input
-              appFieldControl
-              [value]="tripDestination()"
-              (input)="tripDestination.set($any($event.target).value)"
-            />
-          </app-field>
-          <app-field label="Kilometraje de salida *" class="mb-3">
-            <input
-              appFieldControl
-              type="number"
-              [value]="tripOdometer() ?? ''"
-              (input)="
-                tripOdometer.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <app-field label="Nivel de combustible (%)" class="mb-3">
-            <input
-              appFieldControl
-              type="number"
-              [value]="tripFuelLevel() ?? ''"
-              (input)="
-                tripFuelLevel.set(
-                  $any($event.target).value === '' ? null : +$any($event.target).value
-                )
-              "
-            />
-          </app-field>
-          <div class="flex justify-end">
-            <button
-              type="button"
-              appButton
-              variant="primary"
-              size="sm"
-              [disabled]="submitting()"
-              (click)="registerDeparture()"
-            >
-              Guardar salida
-            </button>
-          </div>
+  <app-card class="mt-4">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos recorridos</h2>
+      <a
+        routerLink="/recorridos"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a recorridos</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Destino</th>
+          <th appTableHeadCell>Salida</th>
+          <th appTableHeadCell>Llegada</th>
+          <th appTableHeadCell>KM</th>
+          <th appTableHeadCell>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trip of recentTrips().items; track trip.id) {
+          <tr appTableRow>
+            <td appTableCell>{{ trip.destination }}</td>
+            <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
+            <td appTableCell>{{ formatDateTime(trip.returnAt) }}</td>
+            <td appTableCell>{{ trip.distanceKm ?? '—' }}</td>
+            <td appTableCell>
+              <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
+                {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
+              </app-badge>
+            </td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="5">
+            Sin recorridos registrados todavía.
+          </tr>
         }
-      </div>
-    }
+      </tbody>
+    </app-table>
+  </app-card>
+
+  <app-card class="mt-4">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos cargos de combustible</h2>
+      <a
+        routerLink="/combustible"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a combustible</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Fecha</th>
+          <th appTableHeadCell>Tipo</th>
+          <th appTableHeadCell>Litros</th>
+          <th appTableHeadCell>Costo total</th>
+          <th appTableHeadCell>Vale</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of recentFuelRecords().items; track record.id) {
+          <tr appTableRow>
+            <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+            <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+            <td appTableCell>{{ record.quantity }}</td>
+            <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+            <td appTableCell>{{ record.ticketNumber || '—' }}</td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="5">
+            Sin cargas de combustible registradas todavía.
+          </tr>
+        }
+      </tbody>
+    </app-table>
   </app-card>
 } @else {
   <app-notice>

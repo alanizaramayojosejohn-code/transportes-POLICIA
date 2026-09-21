@@ -1,5 +1,14 @@
 export type StockMovementType = 'IN' | 'OUT';
 
+export type SparePartType = 'LIQUIDO' | 'LLANTA' | 'PIEZA' | 'OTRO';
+
+export const SPARE_PART_TYPE_LABELS: Record<SparePartType, string> = {
+  LIQUIDO: 'Líquido',
+  LLANTA: 'Llanta',
+  PIEZA: 'Pieza',
+  OTRO: 'Otro',
+};
+
 export interface SparePartCategory {
   id: string;
   name: string;
@@ -10,6 +19,9 @@ export interface SparePart {
   code: string;
   name: string;
   description: string | null;
+  type: SparePartType;
+  tireSize: string | null;
+  weight: number | null;
   unit: string;
   minStock: number;
   currentStock: number;
@@ -27,6 +39,7 @@ export interface SparePartPage {
 
 export interface SparePartFilter {
   categoryId?: string;
+  type?: SparePartType;
   isActive?: boolean;
   search?: string;
   skip?: number;
@@ -37,6 +50,9 @@ export interface CreateSparePartInput {
   code: string;
   name: string;
   categoryId: string;
+  type?: SparePartType;
+  tireSize?: string;
+  weight?: number;
   unit: string;
   minStock?: number;
   location?: string;
@@ -53,4 +69,7 @@ export interface CreateStockMovementInput {
   reason?: string;
   supplier?: string;
   reference?: string;
+  lotNumber?: string;
+  lotExpiresAt?: string;
+  vehicleId?: string;
 }

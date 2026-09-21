@@ -16,6 +16,9 @@ const SPARE_PART_FIELDS = `
   code
   name
   description
+  type
+  tireSize
+  weight
   unit
   minStock
   currentStock
@@ -30,8 +33,8 @@ const SPARE_PART_FIELDS = `
 `;
 
 const SPARE_PARTS_QUERY = gql`
-  query SpareParts($categoryId: String, $isActive: Boolean, $search: String, $skip: Int, $take: Int) {
-    spareParts(categoryId: $categoryId, isActive: $isActive, search: $search, skip: $skip, take: $take) {
+  query SpareParts($categoryId: String, $type: SparePartType, $isActive: Boolean, $search: String, $skip: Int, $take: Int) {
+    spareParts(categoryId: $categoryId, type: $type, isActive: $isActive, search: $search, skip: $skip, take: $take) {
       total
       items {
         ${SPARE_PART_FIELDS}

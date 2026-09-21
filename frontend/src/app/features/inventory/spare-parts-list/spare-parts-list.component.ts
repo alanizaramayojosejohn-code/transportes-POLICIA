@@ -2,7 +2,12 @@ import { Component, computed, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { InventoryService } from '../inventory.service';
-import { SparePartCategory, SparePartFilter } from '../spare-part.model';
+import {
+  SPARE_PART_TYPE_LABELS,
+  SparePartCategory,
+  SparePartFilter,
+  SparePartType,
+} from '../spare-part.model';
 import { SparePartFormComponent } from '../spare-part-form/spare-part-form.component';
 import { StockMovementFormComponent } from '../stock-movement-form/stock-movement-form.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
@@ -17,11 +22,15 @@ import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
 export class SparePartsListComponent {
   protected readonly search = signal('');
   protected readonly categoryId = signal('');
+  protected readonly type = signal<SparePartType | ''>('');
   protected readonly isActive = signal<'true' | 'false' | ''>('');
+  protected readonly types: SparePartType[] = ['LIQUIDO', 'LLANTA', 'PIEZA', 'OTRO'];
+  protected readonly typeLabels = SPARE_PART_TYPE_LABELS;
 
   private readonly filter = computed<SparePartFilter>(() => ({
     search: this.search() || undefined,
     categoryId: this.categoryId() || undefined,
+    type: this.type() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
     take: 20,
   }));

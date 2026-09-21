@@ -48,6 +48,21 @@
           (input)="supplier.set($any($event.target).value)"
         />
       </app-field>
+      <app-field label="Lote">
+        <input
+          appFieldControl
+          [value]="lotNumber()"
+          (input)="lotNumber.set($any($event.target).value)"
+        />
+      </app-field>
+      <app-field label="Vencimiento del lote">
+        <input
+          appFieldControl
+          type="date"
+          [value]="lotExpiresAt()"
+          (input)="lotExpiresAt.set($any($event.target).value)"
+        />
+      </app-field>
     }
 
     @if (isOut) {
@@ -58,6 +73,18 @@
           [value]="reason()"
           (input)="reason.set($any($event.target).value)"
         />
+      </app-field>
+      <app-field label="Vehículo destino">
+        <select
+          appFieldControl
+          [value]="vehicleId()"
+          (change)="vehicleId.set($any($event.target).value)"
+        >
+          <option value="">Sin vehículo</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+          }
+        </select>
       </app-field>
     }
 
