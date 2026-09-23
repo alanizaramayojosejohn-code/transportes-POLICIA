@@ -24,10 +24,22 @@ function buildPrismaMock() {
       update: vi.fn(),
       count: vi.fn(),
     },
-    $transaction: vi.fn((operations: Promise<unknown>[]) =>
-      Promise.all(operations),
-    ),
+    procedureType: {
+      findMany: vi.fn(),
+    },
+    procedureChecklistItem: {
+      createMany: vi.fn(),
+    },
+    $transaction: vi.fn(),
   };
+  // Soporta las dos formas de $transaction: un arreglo de promesas y una
+  // función de callback con `tx` (create).
+  mock.$transaction.mockImplementation((arg: unknown) => {
+    if (typeof arg === 'function') {
+      return (arg as (tx: typeof mock) => Promise<unknown>)(mock);
+    }
+    return Promise.all(arg as Promise<unknown>[]);
+  });
   return mock as unknown as PrismaService & typeof mock;
 }
 
@@ -86,6 +98,44 @@ describe('MaintenanceOrdersService', () => {
         }),
       );
       expect(result.status).toBe('IN_PROGRESS');
+    });
+
+    it('guarda el checklist de trámites junto con la orden (spec 016, RF-9/RF-10)', async () => {
+      vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
+        id: 'v1',
+      } as never);
+      vi.mocked(prisma.maintenanceOrder.create).mockResolvedValue({
+        id: 'o1',
+        status: 'IN_PROGRESS',
+        totalCost: 0,
+      } as never);
+      vi.mocked(prisma.procedureType.findMany).mockResolvedValue([
+        { id: 't1' },
+      ] as never);
+
+      await service.create(
+        {
+          vehicleId: 'v1',
+          type: 'PREVENTIVE',
+          odometer: 45000,
+          description: 'Cambio de aceite',
+          checklistItems: [
+            { procedureTypeId: 't1', completed: true, documentCode: 'C-1' },
+          ],
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.procedureChecklistItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            procedureTypeId: 't1',
+            completed: true,
+            documentCode: 'C-1',
+            maintenanceOrderId: 'o1',
+          },
+        ],
+      });
     });
   });
 

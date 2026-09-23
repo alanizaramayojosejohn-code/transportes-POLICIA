@@ -1,3 +1,8 @@
+import {
+  ProcedureChecklistItem,
+  ProcedureChecklistItemDraft,
+} from '../procedure-types/procedure-type.model';
+
 export type FuelType = 'GASOLINA' | 'DIESEL' | 'GNV' | 'ELECTRICO';
 
 export const FUEL_TYPES: FuelType[] = ['GASOLINA', 'DIESEL', 'GNV', 'ELECTRICO'];
@@ -34,6 +39,8 @@ export interface FuelRecord {
   notes: string | null;
   vehicle: FuelRecordVehicle;
   driver: FuelRecordDriver | null;
+  /// Checklist de trámites de su registro (spec 016, RF-17).
+  procedureChecklistItems: ProcedureChecklistItem[];
 }
 
 export interface FuelRecordPage {
@@ -62,4 +69,6 @@ export interface CreateFuelRecordInput {
   ticketNumber?: string;
   odometer: number;
   notes?: string;
+  /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
+  checklistItems?: ProcedureChecklistItemDraft[];
 }

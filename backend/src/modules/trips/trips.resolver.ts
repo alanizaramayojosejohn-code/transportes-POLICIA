@@ -17,6 +17,7 @@ import { CloseTripInput } from './dto/close-trip.input.js';
 import { TripFilterArgs } from './dto/trip-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
@@ -30,8 +31,11 @@ export class TripsResolver {
   constructor(private readonly tripsService: TripsService) {}
 
   @Query(() => TripPage, { name: 'trips' })
-  findAll(@Args() filters: TripFilterArgs) {
-    return this.tripsService.findAll(filters);
+  findAll(
+    @Args() filters: TripFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.tripsService.findAll(filters, unitScopeFor(user));
   }
 
   @Query(() => Trip, { name: 'trip' })

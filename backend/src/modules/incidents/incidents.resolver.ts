@@ -16,6 +16,7 @@ import { CreateIncidentInput } from './dto/create-incident.input.js';
 import { IncidentFilterArgs } from './dto/incident-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
@@ -29,8 +30,11 @@ export class IncidentsResolver {
   constructor(private readonly incidentsService: IncidentsService) {}
 
   @Query(() => IncidentPage, { name: 'incidents' })
-  findAll(@Args() filters: IncidentFilterArgs) {
-    return this.incidentsService.findAll(filters);
+  findAll(
+    @Args() filters: IncidentFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.incidentsService.findAll(filters, unitScopeFor(user));
   }
 
   @ResolveField(() => Vehicle)

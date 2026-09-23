@@ -6,6 +6,11 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import {
+  assertVehicleInScope,
+  unitScopeFor,
+  type UnitScope,
+} from '../../common/unit-scope.js';
 import { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import { CreateTripInput } from './dto/create-trip.input.js';
 import { CloseTripInput } from './dto/close-trip.input.js';
@@ -25,18 +30,31 @@ export class TripsService {
     private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
   ) {}
 
-  async findAll(filters: TripFilterArgs) {
+  async findAll(filters: TripFilterArgs, scope: UnitScope = null) {
+    /// Alcance por unidad (spec 015, RF-12): un TRANSPORTES sólo ve
+    /// recorridos de vehículos con asignación vigente a alguna de sus
+    /// unidades. Se arma en un solo objeto porque ambos filtros cuelgan de
+    /// `assignment`: dos entradas separadas del spread se pisarían entre sí.
+    const assignmentWhere: Prisma.AssignmentWhereInput = {
+      ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
+      ...(filters.driverId ? { driverId: filters.driverId } : {}),
+      ...(scope !== null
+        ? {
+            vehicle: {
+              unitAssignments: {
+                some: { unitId: { in: scope }, endDate: null },
+              },
+            },
+          }
+        : {}),
+    };
+
     const where: Prisma.TripWhereInput = {
       ...(filters.open !== undefined
         ? { returnAt: filters.open ? null : { not: null } }
         : {}),
-      ...(filters.vehicleId || filters.driverId
-        ? {
-            assignment: {
-              ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
-              ...(filters.driverId ? { driverId: filters.driverId } : {}),
-            },
-          }
+      ...(Object.keys(assignmentWhere).length > 0
+        ? { assignment: assignmentWhere }
         : {}),
       ...(filters.search
         ? {
@@ -147,6 +165,14 @@ export class TripsService {
     if (!vehicle) {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
+    /// RF-14 (spec 015): un TRANSPORTES sólo registra recorridos de
+    /// vehículos con asignación vigente a alguna de sus unidades.
+    await assertVehicleInScope(
+      this.prisma,
+      unitScopeFor(actingUser),
+      vehicle.id,
+    );
+
     const driver = await this.prisma.personnel.findUnique({
       where: { id: input.driverId },
     });
@@ -216,6 +242,15 @@ export class TripsService {
         actingUser.personnelId,
         vehicle.id,
       );
+    } else {
+      /// RF-14: un TRANSPORTES sólo cierra recorridos de vehículos de sus
+      /// unidades. Se evita la consulta extra del vehículo cuando no hay
+      /// alcance que validar (ADMINISTRADOR y el resto de roles de escritura).
+      const scope = unitScopeFor(actingUser);
+      if (scope !== null) {
+        const vehicle = await this.getVehicle(trip.assignmentId);
+        await assertVehicleInScope(this.prisma, scope, vehicle.id);
+      }
     }
     if (trip.returnAt) {
       throw new ConflictException('El recorrido ya está cerrado');

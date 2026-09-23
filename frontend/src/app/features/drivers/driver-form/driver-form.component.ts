@@ -10,6 +10,8 @@ import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service'
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { UsersService } from '../../users/users.service';
 import { POLICE_RANK_OPTIONS } from '../../../shared/police-ranks';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { requiredIf, required } from '../../../shared/validation/validators';
 
 interface DriverFormState {
   firstName: string;
@@ -74,6 +76,30 @@ export class DriverFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  protected readonly validation = new FormValidation(this.form, {
+    ci: required<string, DriverFormState>('La CI es obligatoria.'),
+    firstName: required('Los nombres son obligatorios.'),
+    lastName: required('Los apellidos son obligatorios.'),
+    licenseNumber: requiredIf(
+      (form) => form.isDriver,
+      'El número de licencia es obligatorio para el rol de conductor.',
+    ),
+    licenseCategory: requiredIf(
+      (form) => form.isDriver,
+      'La categoría de licencia es obligatoria para el rol de conductor.',
+    ),
+    licenseExpiresAt: requiredIf(
+      (form) => form.isDriver,
+      'El vencimiento de licencia es obligatorio para el rol de conductor.',
+    ),
+    username: requiredIf((form) => form.createAccount, 'El usuario es obligatorio.'),
+    password: (value, form) => {
+      if (!form.createAccount) return null;
+      if (!value.trim()) return 'La contraseña es obligatoria.';
+      return value.length < 8 ? 'Debe tener al menos 8 caracteres.' : null;
+    },
+  });
+
   constructor(
     private readonly personnelService: PersonnelService,
     private readonly unitsService: UnitsService,
@@ -130,27 +156,11 @@ export class DriverFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.firstName.trim() || !value.lastName.trim() || !value.ci.trim()) {
-      this.errorMessage.set('CI, nombres y apellidos son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
     if (!value.isDriver && !value.isOfficer && !value.isAdmin) {
       this.errorMessage.set('Debe marcar al menos un rol: conductor, encargado o administrativo.');
-      return;
-    }
-    if (
-      value.isDriver &&
-      (!value.licenseNumber.trim() || !value.licenseCategory.trim() || !value.licenseExpiresAt)
-    ) {
-      this.errorMessage.set(
-        'Número de licencia, categoría y vencimiento son obligatorios para el rol de conductor.',
-      );
-      return;
-    }
-    if (value.createAccount && (!value.username.trim() || value.password.length < 8)) {
-      this.errorMessage.set(
-        'El usuario y una contraseña de al menos 8 caracteres son obligatorios para crear la cuenta.',
-      );
       return;
     }
 

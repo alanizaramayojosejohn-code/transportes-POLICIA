@@ -1,12 +1,14 @@
 <app-modal title="Designar encargado de transportes" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Unidad *" full>
+    <app-field label="Unidad *" full [errorText]="validation.error('selectedUnitId')">
       <input
         appFieldControl
         list="managerUnitOptions"
         placeholder="Buscar unidad por nombre..."
+        [invalid]="!!validation.error('selectedUnitId')"
         [value]="unitQuery()"
         (input)="onUnitQueryInput($any($event.target).value)"
+        (blur)="validation.touch('selectedUnitId')"
       />
       <datalist id="managerUnitOptions">
         @for (unit of units(); track unit.id) {
@@ -45,11 +47,13 @@
     </div>
 
     @if (mode() === 'existing') {
-      <app-field label="Personal *" full>
+      <app-field label="Personal *" full [errorText]="validation.error('officerId')">
         <select
           appFieldControl
+          [invalid]="!!validation.error('officerId')"
           [value]="officerId()"
           (change)="officerId.set($any($event.target).value)"
+          (blur)="validation.touch('officerId')"
         >
           <option value="">Seleccionar...</option>
           @for (officer of officers(); track officer.id) {
@@ -61,11 +65,13 @@
         </select>
       </app-field>
     } @else {
-      <app-field label="CI *">
+      <app-field label="CI *" [errorText]="validation.error('newOfficerCi')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('newOfficerCi')"
           [value]="newOfficer().ci"
           (input)="patchNewOfficer({ ci: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerCi')"
         />
       </app-field>
 
@@ -78,19 +84,23 @@
         />
       </app-field>
 
-      <app-field label="Nombres *">
+      <app-field label="Nombres *" [errorText]="validation.error('newOfficerFirstName')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('newOfficerFirstName')"
           [value]="newOfficer().firstName"
           (input)="patchNewOfficer({ firstName: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerFirstName')"
         />
       </app-field>
 
-      <app-field label="Apellidos *">
+      <app-field label="Apellidos *" [errorText]="validation.error('newOfficerLastName')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('newOfficerLastName')"
           [value]="newOfficer().lastName"
           (input)="patchNewOfficer({ lastName: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerLastName')"
         />
       </app-field>
 
@@ -116,12 +126,14 @@
       </app-field>
     }
 
-    <app-field label="Fecha desde *">
+    <app-field label="Fecha desde *" [errorText]="validation.error('startDate')">
       <input
         appFieldControl
         type="date"
+        [invalid]="!!validation.error('startDate')"
         [value]="startDate()"
         (input)="startDate.set($any($event.target).value)"
+        (blur)="validation.touch('startDate')"
       />
     </app-field>
 
@@ -153,19 +165,23 @@
 
       @if (createAccount()) {
         <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
-          <app-field label="Usuario *">
+          <app-field label="Usuario *" [errorText]="validation.error('username')">
             <input
               appFieldControl
+              [invalid]="!!validation.error('username')"
               [value]="username()"
               (input)="username.set($any($event.target).value)"
+              (blur)="validation.touch('username')"
             />
           </app-field>
-          <app-field label="Contraseña *">
+          <app-field label="Contraseña *" [errorText]="validation.error('password')">
             <input
               appFieldControl
               type="password"
+              [invalid]="!!validation.error('password')"
               [value]="password()"
               (input)="password.set($any($event.target).value)"
+              (blur)="validation.touch('password')"
             />
           </app-field>
         </div>

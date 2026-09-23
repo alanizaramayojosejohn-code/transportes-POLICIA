@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
+import { assertInScope, type UnitScope } from '../../common/unit-scope.js';
 import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { UnitsService } from '../units/units.service.js';
 import { CreateUnitAssignmentInput } from './dto/create-unit-assignment.input.js';
@@ -27,9 +28,17 @@ export class UnitAssignmentsService {
     private readonly unitsService: UnitsService,
   ) {}
 
-  async findAll(filters: UnitAssignmentFilterArgs) {
+  async findAll(filters: UnitAssignmentFilterArgs, scope: UnitScope = null) {
+    /// Alcance por unidad (spec 015, RF-12): ambos filtros pesan sobre
+    /// `unitId`, así que se combinan con `AND` en vez de dos entradas del
+    /// spread (que se pisarían entre sí).
+    const unitIdConditions: Prisma.UnitAssignmentWhereInput[] = [
+      ...(filters.unitId ? [{ unitId: filters.unitId }] : []),
+      ...(scope !== null ? [{ unitId: { in: scope } }] : []),
+    ];
+
     const where: Prisma.UnitAssignmentWhereInput = {
-      ...(filters.unitId ? { unitId: filters.unitId } : {}),
+      ...(unitIdConditions.length > 0 ? { AND: unitIdConditions } : {}),
       ...(filters.current !== undefined
         ? { endDate: filters.current ? null : { not: null } }
         : {}),
@@ -100,7 +109,7 @@ export class UnitAssignmentsService {
   }
 
   /// RF-01 a RF-07: crea la asignación, cerrando la vigente si la hay.
-  async create(input: CreateUnitAssignmentInput) {
+  async create(input: CreateUnitAssignmentInput, scope: UnitScope = null) {
     const vehicle = await this.vehiclesService.findOne(input.vehicleId);
     if (!vehicle.isActive) {
       throw new ConflictException('El vehículo está inactivo');
@@ -110,6 +119,11 @@ export class UnitAssignmentsService {
     if (!unit.isActive) {
       throw new ConflictException('La unidad está inactiva');
     }
+    /// RF-14 (spec 015): un TRANSPORTES sólo asigna vehículos a alguna de
+    /// sus propias unidades — nunca a una ajena. No exige que la unidad
+    /// *anterior* del vehículo también esté en el alcance: así puede tomar
+    /// uno recién creado y todavía sin ninguna asignación.
+    assertInScope(scope, input.unitId);
 
     const startDate = new Date(input.startDate);
     if (startDate > new Date()) {
@@ -151,13 +165,15 @@ export class UnitAssignmentsService {
   }
 
   /// RF-08/RF-09.
-  async close(input: CloseUnitAssignmentInput) {
+  async close(input: CloseUnitAssignmentInput, scope: UnitScope = null) {
     const current = await this.getCurrentForVehicle(input.vehicleId);
     if (!current) {
       throw new NotFoundException(
         'El vehículo no tiene una asignación de unidad vigente',
       );
     }
+    /// RF-14: sólo sobre vehículos cuya unidad actual está en el alcance.
+    assertInScope(scope, current.unitId);
     const endDate = new Date(input.endDate);
     if (endDate < current.startDate) {
       throw new ConflictException(
@@ -176,13 +192,18 @@ export class UnitAssignmentsService {
   }
 
   /// RF-10: única edición permitida sobre la vigente.
-  async updateNotes(input: UpdateUnitAssignmentNotesInput) {
+  async updateNotes(
+    input: UpdateUnitAssignmentNotesInput,
+    scope: UnitScope = null,
+  ) {
     const current = await this.getCurrentForVehicle(input.vehicleId);
     if (!current) {
       throw new NotFoundException(
         'El vehículo no tiene una asignación de unidad vigente',
       );
     }
+    /// RF-14: mismo criterio que `close`.
+    assertInScope(scope, current.unitId);
     return this.prisma.unitAssignment.update({
       where: { id: current.id },
       data: {

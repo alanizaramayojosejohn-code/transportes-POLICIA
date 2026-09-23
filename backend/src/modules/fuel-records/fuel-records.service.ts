@@ -6,7 +6,13 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import {
+  assertVehicleInScope,
+  unitScopeFor,
+  type UnitScope,
+} from '../../common/unit-scope.js';
 import { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
+import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import { CreateFuelRecordInput } from './dto/create-fuel-record.input.js';
 import { FuelRecordFilterArgs } from './dto/fuel-record-filter.args.js';
 
@@ -30,10 +36,21 @@ export class FuelRecordsService {
     private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
   ) {}
 
-  async findAll(filters: FuelRecordFilterArgs) {
+  async findAll(filters: FuelRecordFilterArgs, scope: UnitScope = null) {
     const where: Prisma.FuelRecordWhereInput = {
       ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
       ...(filters.fuelType ? { fuelType: filters.fuelType } : {}),
+      /// Alcance por unidad (spec 015, RF-12): un TRANSPORTES sólo ve cargas
+      /// de vehículos con asignación vigente a alguna de sus unidades.
+      ...(scope !== null
+        ? {
+            vehicle: {
+              unitAssignments: {
+                some: { unitId: { in: scope }, endDate: null },
+              },
+            },
+          }
+        : {}),
       ...(filters.fromDate || filters.toDate
         ? {
             suppliedAt: {
@@ -109,6 +126,14 @@ export class FuelRecordsService {
     if (!vehicle) {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
+    /// RF-14 (spec 015): un TRANSPORTES sólo carga combustible a vehículos
+    /// con asignación vigente a alguna de sus unidades.
+    await assertVehicleInScope(
+      this.prisma,
+      unitScopeFor(actingUser),
+      vehicle.id,
+    );
+
     if (input.driverId) {
       const driver = await this.prisma.personnel.findUnique({
         where: { id: input.driverId },
@@ -136,22 +161,30 @@ export class FuelRecordsService {
       ? (input.odometer - last.odometer) / input.quantity
       : null;
 
-    const created = await this.prisma.fuelRecord.create({
-      data: {
-        vehicleId: input.vehicleId,
-        driverId: input.driverId,
-        suppliedAt: new Date(input.suppliedAt),
-        fuelType: input.fuelType,
-        quantity: input.quantity,
-        unitPrice: input.unitPrice,
-        totalCost,
-        station: input.station,
-        ticketNumber: input.ticketNumber,
-        odometer: input.odometer,
-        efficiencyKmPerUnit: efficiencyKmPerUnit ?? undefined,
-        notes: input.notes,
-        registeredById: actingUserId,
-      },
+    /// Spec 016 RF-9/RF-10: el alta y el checklist de trámites de la acción
+    /// «Vale de combustible» se guardan en una sola transacción.
+    const created = await this.prisma.$transaction(async (tx) => {
+      const record = await tx.fuelRecord.create({
+        data: {
+          vehicleId: input.vehicleId,
+          driverId: input.driverId,
+          suppliedAt: new Date(input.suppliedAt),
+          fuelType: input.fuelType,
+          quantity: input.quantity,
+          unitPrice: input.unitPrice,
+          totalCost,
+          station: input.station,
+          ticketNumber: input.ticketNumber,
+          odometer: input.odometer,
+          efficiencyKmPerUnit: efficiencyKmPerUnit ?? undefined,
+          notes: input.notes,
+          registeredById: actingUserId,
+        },
+      });
+      await saveChecklistItems(tx, input.checklistItems, {
+        fuelRecordId: record.id,
+      });
+      return record;
     });
     return this.serialize(created);
   }

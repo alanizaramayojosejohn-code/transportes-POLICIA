@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { withUniqueConstraintHandling } from '../../common/prisma-errors.js';
+import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CreateSparePartInput } from './dto/create-spare-part.input.js';
 import { UpdateSparePartInput } from './dto/update-spare-part.input.js';
@@ -188,6 +189,19 @@ export class InventoryService {
       }
     }
 
+    /// Spec 016 RF-11/RF-12: igual que el vehículo destino, sólo aplica a
+    /// una salida.
+    if (input.type === 'OUT' && input.maintenanceOrderId) {
+      const order = await this.prisma.maintenanceOrder.findUnique({
+        where: { id: input.maintenanceOrderId },
+      });
+      if (!order) {
+        throw new NotFoundException(
+          `Orden de mantenimiento ${input.maintenanceOrderId} no encontrada`,
+        );
+      }
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const movement = await tx.stockMovement.create({
         data: {
@@ -208,7 +222,12 @@ export class InventoryService {
                   : undefined,
               }
             : {}),
-          ...(input.type === 'OUT' ? { vehicleId: input.vehicleId } : {}),
+          ...(input.type === 'OUT'
+            ? {
+                vehicleId: input.vehicleId,
+                maintenanceOrderId: input.maintenanceOrderId,
+              }
+            : {}),
         },
       });
       await tx.sparePart.update({
@@ -219,6 +238,15 @@ export class InventoryService {
             ? { lastUnitCost: input.unitCost }
             : {}),
         },
+      });
+      /// Spec 016 RF-11/RF-12: el checklist de Entrega de refacciones se
+      /// vincula al movimiento y, si se indicó, también a la orden de
+      /// mantenimiento relacionada.
+      await saveChecklistItems(tx, input.checklistItems, {
+        stockMovementId: movement.id,
+        ...(input.type === 'OUT' && input.maintenanceOrderId
+          ? { maintenanceOrderId: input.maintenanceOrderId }
+          : {}),
       });
       return this.serialize(movement);
     });

@@ -2,6 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import {
+  assertVehicleInScope,
+  unitScopeFor,
+  type UnitScope,
+} from '../../common/unit-scope.js';
 import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { CreateIncidentInput } from './dto/create-incident.input.js';
 import { IncidentFilterArgs } from './dto/incident-filter.args.js';
@@ -19,10 +24,22 @@ export class IncidentsService {
     private readonly vehiclesService: VehiclesService,
   ) {}
 
-  async findAll(filters: IncidentFilterArgs) {
+  async findAll(filters: IncidentFilterArgs, scope: UnitScope = null) {
     const where: Prisma.IncidentWhereInput = {
       ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
       ...(filters.type ? { type: filters.type } : {}),
+      /// Alcance por unidad (spec 015, RF-12): un TRANSPORTES sólo ve
+      /// incidentes de vehículos con asignación vigente a alguna de sus
+      /// unidades.
+      ...(scope !== null
+        ? {
+            vehicle: {
+              unitAssignments: {
+                some: { unitId: { in: scope }, endDate: null },
+              },
+            },
+          }
+        : {}),
       ...(filters.search
         ? {
             OR: [
@@ -79,6 +96,14 @@ export class IncidentsService {
     if (!vehicle) {
       throw new NotFoundException(`Vehículo ${input.vehicleId} no encontrado`);
     }
+    /// RF-14 (spec 015): un TRANSPORTES sólo registra incidentes de
+    /// vehículos con asignación vigente a alguna de sus unidades.
+    await assertVehicleInScope(
+      this.prisma,
+      unitScopeFor(actingUser),
+      vehicle.id,
+    );
+
     if (input.driverId) {
       const driver = await this.prisma.personnel.findUnique({
         where: { id: input.driverId },

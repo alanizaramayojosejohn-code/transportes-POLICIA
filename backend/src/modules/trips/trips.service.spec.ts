@@ -5,11 +5,14 @@ import { TripsService } from './trips.service.js';
 import type { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
+/// ADMINISTRADOR (no TRANSPORTES): estas pruebas cubren las reglas
+/// generales de negocio (RF-1 a RF-7), no el alcance por unidad — que se
+/// cubre aparte en `common/unit-scope.spec.ts`.
 const actingUser: AuthenticatedUser = {
   id: 'user-1',
-  username: 'transportes.admin',
+  username: 'admin.pruebas',
   fullName: 'Usuario de prueba',
-  role: 'TRANSPORTES',
+  role: 'ADMINISTRADOR',
   personnelId: null,
   managedUnitIds: [],
 };

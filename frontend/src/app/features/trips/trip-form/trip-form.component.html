@@ -8,11 +8,13 @@
         <input appFieldControl value="Usted" disabled />
       </app-field>
     } @else {
-      <app-field label="Vehículo *">
+      <app-field label="Vehículo *" [errorText]="validation.error('vehicleId')">
         <select
           appFieldControl
+          [invalid]="!!validation.error('vehicleId')"
           [value]="vehicleId()"
           (change)="vehicleId.set($any($event.target).value)"
+          (blur)="validation.touch('vehicleId')"
         >
           <option value="">Seleccionar...</option>
           @for (vehicle of vehicles(); track vehicle.id) {
@@ -21,11 +23,13 @@
         </select>
       </app-field>
 
-      <app-field label="Conductor *">
+      <app-field label="Conductor *" [errorText]="validation.error('driverId')">
         <select
           appFieldControl
+          [invalid]="!!validation.error('driverId')"
           [value]="driverId()"
           (change)="driverId.set($any($event.target).value)"
+          (blur)="validation.touch('driverId')"
         >
           <option value="">Seleccionar...</option>
           @for (driver of drivers(); track driver.id) {
@@ -35,40 +39,51 @@
       </app-field>
     }
 
-    <app-field label="Destino *" full>
+    <app-field label="Destino *" full [errorText]="validation.error('destination')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('destination')"
         [value]="destination()"
         (input)="destination.set($any($event.target).value)"
+        (blur)="validation.touch('destination')"
       />
     </app-field>
 
-    <app-field label="Fecha/hora de salida *">
+    <app-field label="Fecha/hora de salida *" [errorText]="validation.error('departureAt')">
       <input
         appFieldControl
         type="datetime-local"
+        [invalid]="!!validation.error('departureAt')"
         [value]="departureAt()"
         (input)="departureAt.set($any($event.target).value)"
+        (blur)="validation.touch('departureAt')"
       />
     </app-field>
 
-    <app-field label="Kilometraje de salida *">
+    <app-field label="Kilometraje de salida *" [errorText]="validation.error('departureOdometer')">
       <input
         appFieldControl
         type="number"
+        [invalid]="!!validation.error('departureOdometer')"
         [value]="departureOdometer()"
         (input)="onOdometerInput($any($event.target).value)"
+        (blur)="validation.touch('departureOdometer')"
       />
     </app-field>
 
-    <app-field label="Nivel de combustible (%)">
+    <app-field
+      label="Nivel de combustible (%)"
+      [errorText]="validation.error('departureFuelLevel')"
+    >
       <input
         appFieldControl
         type="number"
         min="0"
         max="100"
+        [invalid]="!!validation.error('departureFuelLevel')"
         [value]="departureFuelLevel()"
         (input)="onFuelLevelInput($any($event.target).value)"
+        (blur)="validation.touch('departureFuelLevel')"
       />
     </app-field>
 

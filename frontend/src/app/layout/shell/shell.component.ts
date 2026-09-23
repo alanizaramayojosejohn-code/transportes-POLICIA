@@ -3,7 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
-import { CurrentRoleService, ROLE_LABEL } from '../../core/current-role.service';
+import { CurrentRoleService, ROLE_LABEL, Role } from '../../core/current-role.service';
+import { PwaInstallService } from '../../core/pwa-install.service';
 import { ThemeService } from '../../core/theme.service';
 import { ButtonDirective } from '../../shared/button/button.directive';
 import { IconComponent, IconName } from '../../shared/icon/icon.component';
@@ -22,11 +23,6 @@ interface NavEntry {
   readonly path?: string;
   /** Presente en los grupos colapsables; ausente en los ítems simples. */
   readonly children?: readonly NavChild[];
-}
-
-/** El navegador no expone este tipo en `lib.dom.d.ts` todavía. */
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
 }
 
 /** Árbol de navegación de la maqueta (`prototipo/index.html:297-442`). El badge de Inventario
@@ -65,6 +61,7 @@ const BASE_NAV: readonly NavEntry[] = [
     ],
   },
   { key: 'reportes', label: 'Reportes', icon: 'bar-chart', path: '/reportes' },
+  { key: 'tramites', label: 'Trámites', icon: 'clipboard-check', path: '/tramites' },
 ];
 
 const ADMIN_GROUP: NavEntry = {
@@ -86,6 +83,29 @@ const CONDUCTOR_NAV: readonly NavEntry[] = [
   { key: 'combustible', label: 'Combustible', icon: 'wrench', path: '/combustible' },
 ];
 
+/// Separación de roles por dominio: TRANSPORTES opera sólo su unidad (nada de
+/// refacciones/inventario, ni de la lista general de unidades — eso vive
+/// resumido en su propio panel de inicio); ALMACEN y COMBUSTIBLE no se pisan
+/// entre sí. Rutas ausentes de esta lista quedan igual para ese rol; los
+/// roles no listados (ADMINISTRADOR, MANTENIMIENTO, CONSULTA) ven `BASE_NAV`
+/// completo, sin cambios.
+const ROLE_EXCLUDED_PATHS: Partial<Record<Role, readonly string[]>> = {
+  TRANSPORTES: ['/unidades', '/documentacion', '/mantenimiento', '/inventario'],
+  ALMACEN: ['/combustible'],
+  COMBUSTIBLE: ['/inventario'],
+};
+
+function navForRole(role: Role | null): readonly NavEntry[] {
+  const excluded = role ? ROLE_EXCLUDED_PATHS[role] : undefined;
+  if (!excluded) return BASE_NAV;
+  const excludedSet = new Set(excluded);
+  return BASE_NAV.map((entry) =>
+    entry.children
+      ? { ...entry, children: entry.children.filter((c) => !excludedSet.has(c.path)) }
+      : entry,
+  ).filter((entry) => !entry.children || entry.children.length > 0);
+}
+
 /**
  * Sidebar + topbar del sistema (diseño en `prototipo/`). El menú replica el árbol de 5 secciones
  * de la maqueta: acordeón estricto en los grupos (`toggleGroup`) y auto-apertura + resaltado del
@@ -101,7 +121,7 @@ export class ShellComponent {
   protected readonly sidebarOpen = signal(false);
   protected readonly openGroup = signal<string | null>(null);
   protected readonly online = signal(navigator.onLine);
-  protected readonly installPrompt = signal<BeforeInstallPromptEvent | null>(null);
+  protected readonly pwaInstall = inject(PwaInstallService);
 
   private readonly router = inject(Router);
 
@@ -116,12 +136,15 @@ export class ShellComponent {
   /// Usuarios y Auditoría son exclusivos de ADMINISTRADOR (spec 004, RF-14): ningún otro rol
   /// puede consultarlos, así que el grupo "Administración" completo ni aparece para el resto.
   /// CONDUCTOR (spec 014) tiene su propio árbol reducido, no el de operaciones completo.
+  /// TRANSPORTES, ALMACEN y COMBUSTIBLE ven `BASE_NAV` con sus rutas ajenas quitadas
+  /// (`navForRole`) en vez de acciones ocultas sobre la misma pantalla.
   protected readonly nav = computed<readonly NavEntry[]>(() => {
     const role = this.currentRole.role();
     if (role === 'CONDUCTOR') {
       return CONDUCTOR_NAV;
     }
-    return role === 'ADMINISTRADOR' ? [...BASE_NAV, ADMIN_GROUP] : BASE_NAV;
+    const base = navForRole(role);
+    return role === 'ADMINISTRADOR' ? [...base, ADMIN_GROUP] : base;
   });
 
   protected readonly activeGroupKey = computed(() => this.groupKeyForPath(this.currentUrl()));
@@ -157,17 +180,11 @@ export class ShellComponent {
     const destroyRef = inject(DestroyRef);
     const onOnline = () => this.online.set(true);
     const onOffline = () => this.online.set(false);
-    const onInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      this.installPrompt.set(event as BeforeInstallPromptEvent);
-    };
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
-    window.addEventListener('beforeinstallprompt', onInstallPrompt);
     destroyRef.onDestroy(() => {
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
-      window.removeEventListener('beforeinstallprompt', onInstallPrompt);
     });
   }
 
@@ -181,10 +198,7 @@ export class ShellComponent {
   }
 
   protected async installPwa(): Promise<void> {
-    const prompt = this.installPrompt();
-    if (!prompt) return;
-    await prompt.prompt();
-    this.installPrompt.set(null);
+    await this.pwaInstall.promptInstall();
   }
 
   protected logout(): void {

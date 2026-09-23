@@ -1,5 +1,6 @@
 import { Field, Float, InputType, Int } from '@nestjs/graphql';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsInt,
@@ -7,8 +8,11 @@ import {
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { FuelType } from '../../../generated/prisma/enums.js';
+import { ProcedureChecklistItemInput } from '../../procedures/dto/procedure-checklist-item.input.js';
 
 /** RF-1: vehículo, fecha, tipo, cantidad, precio unitario y kilometraje son obligatorios. */
 @InputType()
@@ -59,4 +63,12 @@ export class CreateFuelRecordInput {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  /** Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar. */
+  @Field(() => [ProcedureChecklistItemInput], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProcedureChecklistItemInput)
+  checklistItems?: ProcedureChecklistItemInput[];
 }

@@ -2,6 +2,10 @@ import { Component, computed, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DashboardService } from './dashboard.service';
 import { DashboardSummary } from './dashboard.model';
+import { TransportesDashboardComponent } from './transportes-dashboard/transportes-dashboard.component';
+import { FuelDashboardComponent } from './fuel-dashboard/fuel-dashboard.component';
+import { InventoryDashboardComponent } from './inventory-dashboard/inventory-dashboard.component';
+import { CurrentRoleService } from '../../core/current-role.service';
 import { PageHeadComponent } from '../../shared/page-head/page-head.component';
 import { CardComponent } from '../../shared/card/card.component';
 import { StatCardComponent } from '../../shared/stat-card/stat-card.component';
@@ -33,13 +37,26 @@ const EMPTY_SUMMARY: DashboardSummary = {
   fleetStatus: { operational: 0, maintenance: 0, inoperable: 0, other: 0 },
 };
 
-/** Panel principal (spec 012): sólo lectura, agregados en tiempo real. */
+/**
+ * Panel de inicio (spec 012), ahora separado por rol: TRANSPORTES,
+ * COMBUSTIBLE y ALMACEN tienen su propio panel acotado a su dominio (ver los
+ * componentes hermanos); ADMINISTRADOR, MANTENIMIENTO y CONSULTA siguen
+ * viendo este panel general con agregados de todo el parque, sin cambios.
+ */
 @Component({
-  imports: [PageHeadComponent, CardComponent, StatCardComponent],
+  imports: [
+    PageHeadComponent,
+    CardComponent,
+    StatCardComponent,
+    TransportesDashboardComponent,
+    FuelDashboardComponent,
+    InventoryDashboardComponent,
+  ],
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent {
+  protected readonly role;
   protected readonly summary: Signal<DashboardSummary>;
 
   protected readonly maxMonthlyTrips = computed(() =>
@@ -78,7 +95,11 @@ export class DashboardComponent {
     return `conic-gradient(var(--color-green-600) 0 ${c1}%, var(--color-amber) ${c1}% ${c2}%, var(--color-red) ${c2}% ${c3}%, var(--color-gray) ${c3}% 100%)`;
   });
 
-  constructor(private readonly dashboardService: DashboardService) {
+  constructor(
+    private readonly dashboardService: DashboardService,
+    currentRole: CurrentRoleService,
+  ) {
+    this.role = currentRole.role;
     this.summary = toSignal(this.dashboardService.getSummary(), {
       initialValue: EMPTY_SUMMARY,
     });

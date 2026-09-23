@@ -1,4 +1,4 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
@@ -7,6 +7,8 @@ import { PersonnelOption, PersonnelService } from '../../personnel/personnel.ser
 import { UnitOption } from '../unit.model';
 import { UsersService } from '../../users/users.service';
 import { POLICE_RANK_OPTIONS } from '../../../shared/police-ranks';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { requiredIf, required } from '../../../shared/validation/validators';
 
 interface NewOfficerFormState {
   ci: string;
@@ -27,6 +29,19 @@ const EMPTY_NEW_OFFICER: NewOfficerFormState = {
 };
 
 type OfficerMode = 'existing' | 'new';
+
+interface ManagerAssignmentFormShape {
+  selectedUnitId: string;
+  mode: OfficerMode;
+  officerId: string;
+  newOfficerCi: string;
+  newOfficerFirstName: string;
+  newOfficerLastName: string;
+  startDate: string;
+  createAccount: boolean;
+  username: string;
+  password: string;
+}
 
 /**
  * Designa al encargado de transportes de una unidad (spec 002, RF-18 a RF-22). Reproduce el
@@ -68,6 +83,39 @@ export class ManagerAssignmentFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<ManagerAssignmentFormShape>(() => ({
+    selectedUnitId: this.selectedUnitId(),
+    mode: this.mode(),
+    officerId: this.officerId(),
+    newOfficerCi: this.newOfficer().ci,
+    newOfficerFirstName: this.newOfficer().firstName,
+    newOfficerLastName: this.newOfficer().lastName,
+    startDate: this.startDate(),
+    createAccount: this.createAccount(),
+    username: this.username(),
+    password: this.password(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    selectedUnitId: required('Debe seleccionar la unidad.'),
+    officerId: requiredIf(
+      (form) => form.mode === 'existing',
+      'Debe seleccionar a la persona designada.',
+    ),
+    newOfficerCi: requiredIf((form) => form.mode === 'new', 'La CI es obligatoria.'),
+    newOfficerFirstName: requiredIf((form) => form.mode === 'new', 'Los nombres son obligatorios.'),
+    newOfficerLastName: requiredIf(
+      (form) => form.mode === 'new',
+      'Los apellidos son obligatorios.',
+    ),
+    startDate: required('Ingrese la fecha desde.'),
+    username: requiredIf((form) => form.createAccount, 'El usuario es obligatorio.'),
+    password: (value, form) => {
+      if (!form.createAccount) return null;
+      if (!value.trim()) return 'La contraseña es obligatoria.';
+      return value.length < 8 ? 'Debe tener al menos 8 caracteres.' : null;
+    },
+  });
+
   constructor(
     private readonly unitsService: UnitsService,
     private readonly personnelService: PersonnelService,
@@ -95,14 +143,7 @@ export class ManagerAssignmentFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.selectedUnitId()) {
-      this.errorMessage.set('Debe seleccionar la unidad.');
-      return;
-    }
-    if (this.createAccount() && (!this.username().trim() || this.password().length < 8)) {
-      this.errorMessage.set(
-        'El usuario y una contraseña de al menos 8 caracteres son obligatorios para crear la cuenta.',
-      );
+    if (!this.validation.validateAll()) {
       return;
     }
 
@@ -114,13 +155,6 @@ export class ManagerAssignmentFormComponent {
 
       if (this.mode() === 'new') {
         const value = this.newOfficer();
-        if (!value.ci.trim() || !value.firstName.trim() || !value.lastName.trim()) {
-          this.errorMessage.set(
-            'CI, nombres y apellidos son obligatorios para registrar al nuevo personal.',
-          );
-          this.submitting.set(false);
-          return;
-        }
         const created = await this.personnelService.create({
           ci: value.ci,
           ciComplement: value.ciComplement || undefined,
@@ -132,10 +166,6 @@ export class ManagerAssignmentFormComponent {
         });
         officerId = created.id;
         officerFullName = `${value.firstName} ${value.lastName}`;
-      } else if (!officerId) {
-        this.errorMessage.set('Debe seleccionar a la persona designada.');
-        this.submitting.set(false);
-        return;
       } else {
         const officer = this.officers().find((o) => o.id === officerId);
         officerFullName = officer ? `${officer.firstName} ${officer.lastName}` : '';

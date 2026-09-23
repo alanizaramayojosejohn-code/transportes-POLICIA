@@ -19,7 +19,9 @@ export type IconName =
   | 'eye-off'
   | 'arrow-right'
   | 'camera'
-  | 'shield-info';
+  | 'shield-info'
+  | 'download'
+  | 'close';
 
 const SHIELD_ICONS: ReadonlySet<IconName> = new Set(['brand-shield', 'login-shield']);
 

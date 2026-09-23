@@ -26,6 +26,9 @@ function buildPrismaMock() {
     },
     stockMovement: { create: vi.fn() },
     vehicle: { findUnique: vi.fn() },
+    maintenanceOrder: { findUnique: vi.fn() },
+    procedureType: { findMany: vi.fn() },
+    procedureChecklistItem: { createMany: vi.fn() },
     $transaction: vi.fn(),
   };
   mock.$transaction.mockImplementation((arg: unknown) => {
@@ -300,6 +303,112 @@ describe('InventoryService', () => {
           data: expect.not.objectContaining({ vehicleId: expect.anything() }),
         }),
       );
+    });
+
+    it('rechaza una salida hacia una orden de mantenimiento inexistente (spec 016, RF-11)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.maintenanceOrder.findUnique).mockResolvedValue(null);
+
+      await expect(
+        service.registerMovement(
+          {
+            sparePartId: 'p1',
+            type: 'OUT',
+            quantity: 2,
+            maintenanceOrderId: 'orden-inexistente',
+          } as never,
+          actingUser,
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('vincula el checklist al movimiento y a la orden relacionada en una salida (spec 016, RF-11)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.maintenanceOrder.findUnique).mockResolvedValue({
+        id: 'o1',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 8,
+      } as never);
+      vi.mocked(prisma.procedureType.findMany).mockResolvedValue([
+        { id: 't1' },
+      ] as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'OUT',
+          quantity: 2,
+          maintenanceOrderId: 'o1',
+          checklistItems: [{ procedureTypeId: 't1', completed: true }],
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ maintenanceOrderId: 'o1' }),
+        }),
+      );
+      expect(prisma.procedureChecklistItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            procedureTypeId: 't1',
+            completed: true,
+            documentCode: undefined,
+            stockMovementId: 'm1',
+            maintenanceOrderId: 'o1',
+          },
+        ],
+      });
+    });
+
+    it('vincula el checklist sólo al movimiento cuando no hay orden relacionada (spec 016, RF-12)', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 8,
+      } as never);
+      vi.mocked(prisma.procedureType.findMany).mockResolvedValue([
+        { id: 't1' },
+      ] as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'OUT',
+          quantity: 2,
+          checklistItems: [{ procedureTypeId: 't1' }],
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.procedureChecklistItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            procedureTypeId: 't1',
+            completed: false,
+            documentCode: undefined,
+            stockMovementId: 'm1',
+          },
+        ],
+      });
     });
   });
 });

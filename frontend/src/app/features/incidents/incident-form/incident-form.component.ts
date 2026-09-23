@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { IncidentsService } from '../incidents.service';
@@ -6,6 +6,15 @@ import { INCIDENT_TYPE_LABEL, INCIDENT_TYPES, IncidentType } from '../incident.m
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
 import { VEHICLE_CONDITION_LABEL, VehicleConditionCode } from '../../vehicles/vehicle.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
+
+interface IncidentFormShape {
+  vehicleId: string;
+  occurredAt: string;
+  place: string;
+  description: string;
+}
 
 const POST_CONDITION_OPTIONS: VehicleConditionCode[] = [
   'BUENO',
@@ -43,6 +52,19 @@ export class IncidentFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<IncidentFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    occurredAt: this.occurredAt(),
+    place: this.place(),
+    description: this.description(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    occurredAt: required('Ingrese la fecha y hora del incidente.'),
+    place: required('Ingrese el lugar del incidente.'),
+    description: required('Ingrese una descripción del incidente.'),
+  });
+
   constructor(
     private readonly incidentsService: IncidentsService,
     private readonly vehiclesService: VehiclesService,
@@ -55,8 +77,7 @@ export class IncidentFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.vehicleId() || !this.place().trim() || !this.description().trim()) {
-      this.errorMessage.set('Vehículo, lugar y descripción son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

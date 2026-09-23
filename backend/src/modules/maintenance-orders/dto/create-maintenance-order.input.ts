@@ -1,5 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsInt,
@@ -7,8 +8,11 @@ import {
   IsString,
   Length,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { MaintenanceType } from '../../../generated/prisma/enums.js';
+import { ProcedureChecklistItemInput } from '../../procedures/dto/procedure-checklist-item.input.js';
 
 /** RF-1: vehículo, tipo, kilometraje y descripción son obligatorios. */
 @InputType()
@@ -45,4 +49,12 @@ export class CreateMaintenanceOrderInput {
   @IsOptional()
   @IsString()
   invoiceNumber?: string;
+
+  /** Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar. */
+  @Field(() => [ProcedureChecklistItemInput], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProcedureChecklistItemInput)
+  checklistItems?: ProcedureChecklistItemInput[];
 }

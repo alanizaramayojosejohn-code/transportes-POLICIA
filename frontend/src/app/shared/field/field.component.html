@@ -5,4 +5,7 @@
 >
   <span class="text-12 font-semibold text-ink-muted">{{ label() }}</span>
   <ng-content />
+  @if (errorText(); as error) {
+    <span class="text-11-5 font-medium text-red">{{ error }}</span>
+  }
 </label>

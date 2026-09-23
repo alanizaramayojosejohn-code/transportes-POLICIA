@@ -13,4 +13,6 @@ export class FieldComponent {
   readonly label = input.required<string>();
   readonly for = input<string>();
   readonly full = input(false, { transform: booleanAttribute });
+  /** Mensaje de validación del campo (`FormValidation.error(...)`); oculto si es `null`. */
+  readonly errorText = input<string | null>(null);
 }

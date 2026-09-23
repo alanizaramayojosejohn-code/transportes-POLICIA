@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { UnitsService } from '../units.service';
 import { CreateUnitInput, Unit, UnitOption } from '../unit.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { maxLength, required } from '../../../shared/validation/validators';
 
 /** Alta y edición de unidad (spec 002, RF-01/RF-04). Sólo el nombre es obligatorio. */
 @Component({
@@ -21,6 +23,11 @@ export class UnitFormComponent {
   protected readonly form = signal<CreateUnitInput>({ name: '' });
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly validation = new FormValidation(this.form, {
+    name: required<string, CreateUnitInput>('El nombre es obligatorio.'),
+    code: maxLength<CreateUnitInput>(30, 'El código no puede superar los 30 caracteres.'),
+  });
 
   constructor(private readonly unitsService: UnitsService) {
     // Se asigna aquí, no como inicializador de campo: un inicializador de
@@ -61,8 +68,7 @@ export class UnitFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.name.trim()) {
-      this.errorMessage.set('El nombre es obligatorio.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

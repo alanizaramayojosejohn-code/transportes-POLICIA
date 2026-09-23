@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+.git
+.claude
+.playwright-mcp
+prototipo
+*.png
+**/*.md
+backend/.env
+backend/.env.*
+!backend/.env.example

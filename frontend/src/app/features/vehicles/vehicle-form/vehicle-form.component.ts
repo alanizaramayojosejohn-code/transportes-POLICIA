@@ -1,9 +1,26 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  Signal,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { VehiclesService } from '../vehicles.service';
 import { CreateVehicleInput, VEHICLE_TYPE_LABEL, Vehicle, VehicleType } from '../vehicle.model';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { CurrentRoleService } from '../../../core/current-role.service';
+import { UnitsService } from '../../units/units.service';
+import { UnitOption } from '../../units/unit.model';
+import { UnitAssignmentsService } from '../../unit-assignments/unit-assignments.service';
+import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, max, maxLength, min, required } from '../../../shared/validation/validators';
 
 interface PhotoSlot {
   readonly key: string;
@@ -81,9 +98,17 @@ function optimizePhoto(file: File): Promise<string> {
  * fuera de alcance ("Subida de fotos del vehículo") y el backend no tiene mutación para
  * persistirlas: las fotos viven sólo en memoria mientras el formulario está abierto, igual que en
  * el prototipo (que tampoco las envía a un backend real).
+ *
+ * Alta con unidad (spec 015, RF-12): `createVehicle` no acepta `unitId` (spec 001 no lo pide) y un
+ * TRANSPORTES sólo ve vehículos con asignación vigente a alguna de sus unidades. Sin este paso, un
+ * vehículo recién creado por un TRANSPORTES quedaría huérfano — invisible en todo listado propio,
+ * incluido el selector de vehículo de «Asignaciones» (mismo filtro), sin forma de asignarlo
+ * después. Por eso, al crear (nunca al editar), si el rol es TRANSPORTES este formulario también
+ * llama a `createUnitAssignment` con la unidad a su cargo — la única unidad si tiene una sola, o la
+ * que elija si tiene varias — encadenado tras `createVehicle`.
  */
 @Component({
-  imports: [...FORM_MODAL_IMPORTS, IconComponent],
+  imports: [...FORM_MODAL_IMPORTS, IconComponent, ProcedureChecklistFieldsComponent],
   selector: 'app-vehicle-form',
   templateUrl: './vehicle-form.component.html',
 })
@@ -91,6 +116,8 @@ export class VehicleFormComponent {
   readonly vehicle = input<Vehicle | null>(null);
   readonly saved = output<void>();
   readonly cancelled = output<void>();
+
+  private readonly checklistFields = viewChild(ProcedureChecklistFieldsComponent);
 
   protected readonly types: VehicleType[] = [
     'CAMIONETA',
@@ -106,6 +133,22 @@ export class VehicleFormComponent {
   protected readonly form = signal<CreateVehicleInput>({ plate: '', type: 'CAMIONETA' });
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly validation = new FormValidation(this.form, {
+    plate: combine(
+      required<string, CreateVehicleInput>('La placa es obligatoria.'),
+      maxLength<CreateVehicleInput>(20, 'La placa no puede superar los 20 caracteres.'),
+    ),
+    type: required('Seleccione el tipo de vehículo.'),
+    year: combine(
+      min<CreateVehicleInput>(1900, 'El año no puede ser anterior a 1900.'),
+      max<CreateVehicleInput>(2200, 'El año no puede ser posterior a 2200.'),
+    ),
+  });
+
+  protected readonly isTransportes: boolean;
+  protected readonly units: Signal<UnitOption[]>;
+  protected readonly selectedUnitId = signal('');
 
   protected readonly photos = signal<Record<string, string>>({});
   protected readonly photoSlots = computed(() =>
@@ -123,12 +166,27 @@ export class VehicleFormComponent {
   constructor(
     private readonly vehiclesService: VehiclesService,
     private readonly toast: ToastService,
+    private readonly currentRole: CurrentRoleService,
+    private readonly unitsService: UnitsService,
+    private readonly unitAssignmentsService: UnitAssignmentsService,
   ) {
     // `input()` no garantiza el valor real del padre en el inicializador de
     // campo (sólo el default); un `effect` sí reacciona de forma fiable
     // cuando el padre pasa un vehículo (modo edición).
     effect(() => {
       this.form.set(this.initialValue());
+    });
+
+    this.isTransportes = this.currentRole.role() === 'TRANSPORTES';
+    // Ya viene acotada por el backend (`unitScopeFor`): para TRANSPORTES son
+    // sólo sus unidades a cargo, nunca todo el catálogo.
+    this.units = toSignal(this.unitsService.listAllActiveOptions(), { initialValue: [] });
+
+    effect(() => {
+      const units = this.units();
+      if (this.isTransportes && !this.isEdit && units.length === 1 && !this.selectedUnitId()) {
+        this.selectedUnitId.set(units[0].id);
+      }
     });
   }
 
@@ -172,8 +230,15 @@ export class VehicleFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.plate.trim() || !value.type) {
-      this.errorMessage.set('La placa y el tipo de vehículo son obligatorios.');
+    if (!this.validation.validateAll()) {
+      return;
+    }
+    if (!this.isEdit && this.isTransportes && !this.selectedUnitId()) {
+      this.errorMessage.set(
+        this.units().length === 0
+          ? 'No es encargado vigente de ninguna unidad: no puede registrar vehículos hasta que se le designe una.'
+          : 'Seleccione la unidad a la que pertenece el vehículo.',
+      );
       return;
     }
 
@@ -184,7 +249,26 @@ export class VehicleFormComponent {
       if (current) {
         await this.vehiclesService.update(current.id, value);
       } else {
-        await this.vehiclesService.create(value);
+        const created = await this.vehiclesService.create({
+          ...value,
+          checklistItems: this.checklistFields()?.items(),
+        });
+        if (this.isTransportes) {
+          try {
+            await this.unitAssignmentsService.create({
+              vehicleId: created.id,
+              unitId: this.selectedUnitId(),
+              startDate: new Date().toISOString().slice(0, 10),
+            });
+          } catch (assignError) {
+            this.errorMessage.set(
+              `El vehículo se registró, pero no se pudo asignar a la unidad automáticamente (${
+                assignError instanceof Error ? assignError.message : 'error desconocido'
+              }). Pida a un administrador que lo asigne desde Asignaciones.`,
+            );
+            return;
+          }
+        }
       }
       this.saved.emit();
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Component, effect, output, signal } from '@angular/core';
+import { Component, computed, effect, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { FuelRecordsService } from '../fuel-records.service';
@@ -8,6 +8,17 @@ import { PersonnelOption, PersonnelService } from '../../personnel/personnel.ser
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
+import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, min, required } from '../../../shared/validation/validators';
+
+interface FuelRecordFormShape {
+  vehicleId: string;
+  suppliedAt: string;
+  quantity: number | null;
+  unitPrice: number | null;
+  odometer: number | null;
+}
 
 /**
  * Registro de abastecimiento (spec 007, RF-1). Un CONDUCTOR (spec 014) sólo
@@ -15,13 +26,15 @@ import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-dr
  * no elige vehículo ni conductor.
  */
 @Component({
-  imports: [...FORM_MODAL_IMPORTS],
+  imports: [...FORM_MODAL_IMPORTS, ProcedureChecklistFieldsComponent],
   selector: 'app-fuel-record-form',
   templateUrl: './fuel-record-form.component.html',
 })
 export class FuelRecordFormComponent {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
+
+  private readonly checklistFields = viewChild(ProcedureChecklistFieldsComponent);
 
   protected readonly fuelTypes = FUEL_TYPES;
   protected readonly fuelTypeLabel = FUEL_TYPE_LABEL;
@@ -43,6 +56,30 @@ export class FuelRecordFormComponent {
   protected readonly notes = signal('');
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  private readonly formShape = computed<FuelRecordFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    suppliedAt: this.suppliedAt(),
+    quantity: this.quantity(),
+    unitPrice: this.unitPrice(),
+    odometer: this.odometer(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    suppliedAt: required('Ingrese la fecha y hora del abastecimiento.'),
+    quantity: combine<number | null, FuelRecordFormShape>(
+      required('Ingrese la cantidad cargada.'),
+      min(0.01, 'La cantidad debe ser mayor a cero.'),
+    ),
+    unitPrice: combine<number | null, FuelRecordFormShape>(
+      required('Ingrese el precio unitario.'),
+      min(0, 'El precio unitario no puede ser negativo.'),
+    ),
+    odometer: combine<number | null, FuelRecordFormShape>(
+      required('Ingrese el kilometraje.'),
+      min(0, 'El kilometraje no puede ser negativo.'),
+    ),
+  });
 
   constructor(
     private readonly fuelRecordsService: FuelRecordsService,
@@ -74,16 +111,7 @@ export class FuelRecordFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (
-      !this.vehicleId() ||
-      !this.suppliedAt() ||
-      this.quantity() === null ||
-      this.unitPrice() === null ||
-      this.odometer() === null
-    ) {
-      this.errorMessage.set(
-        'Vehículo, fecha, tipo, cantidad, precio unitario y kilometraje son obligatorios.',
-      );
+    if (!this.validation.validateAll()) {
       return;
     }
 
@@ -101,6 +129,7 @@ export class FuelRecordFormComponent {
         ticketNumber: this.ticketNumber() || undefined,
         odometer: this.odometer()!,
         notes: this.notes() || undefined,
+        checklistItems: this.checklistFields()?.items(),
       });
       this.saved.emit();
     } catch (error) {

@@ -191,17 +191,18 @@ model Vehicle {
   departmentId String?     @map("department_id")
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  conditions        VehicleCondition[]
-  unitAssignments   UnitAssignment[]
-  driverAssignments VehicleDriverAssignment[]
-  assignments       Assignment[]
-  odometerReadings  OdometerReading[]
-  maintenanceOrders MaintenanceOrder[]
-  maintenancePlans  MaintenancePlan[]
-  fuelRecords       FuelRecord[]
-  documents         VehicleDocument[]
-  incidents         Incident[]
-  stockMovements    StockMovement[]
+  conditions              VehicleCondition[]
+  unitAssignments         UnitAssignment[]
+  driverAssignments       VehicleDriverAssignment[]
+  assignments             Assignment[]
+  odometerReadings        OdometerReading[]
+  maintenanceOrders       MaintenanceOrder[]
+  maintenancePlans        MaintenancePlan[]
+  fuelRecords             FuelRecord[]
+  documents               VehicleDocument[]
+  incidents               Incident[]
+  stockMovements          StockMovement[]
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([departmentId])
   @@index([plate])
@@ -512,7 +513,12 @@ model MaintenanceOrder {
   registeredById String  @map("registered_by_id")
   registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
 
-  items MaintenanceItem[]
+  items                   MaintenanceItem[]
+  /// Salidas de repuestos registradas con esta orden como destino (spec 016,
+  /// RF-11): sólo se llena cuando la entrega de refacciones indica esta
+  /// orden como relacionada; no reemplaza `MaintenanceItem`.
+  relatedStockMovements   StockMovement[]
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([vehicleId, finishedAt])
   @@index([status])
@@ -610,6 +616,8 @@ model FuelRecord {
   trip           Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
   registeredById String     @map("registered_by_id")
   registeredBy   User       @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([vehicleId, suppliedAt])
   @@index([suppliedAt])
@@ -803,18 +811,28 @@ model StockMovement {
   lotExpiresAt DateTime?         @map("lot_expires_at") @db.Timestamptz(3)
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  sparePartId    String    @map("spare_part_id")
-  sparePart      SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
-  registeredById String    @map("registered_by_id")
-  registeredBy   User      @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  sparePartId        String            @map("spare_part_id")
+  sparePart          SparePart         @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
+  registeredById     String            @map("registered_by_id")
+  registeredBy       User              @relation(fields: [registeredById], references: [id], onDelete: Restrict)
   /// Vehículo destino de una salida, trazabilidad a nivel de movimiento, no
   /// de unidad física serializada (spec 017).
-  vehicleId      String?   @map("vehicle_id")
-  vehicle        Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  vehicleId          String?           @map("vehicle_id")
+  vehicle            Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  /// Orden de mantenimiento relacionada de una salida (spec 016, RF-11):
+  /// permite que el checklist de trámites de Entrega de refacciones se
+  /// vincule tanto al movimiento como a la orden. Opcional y sólo tiene
+  /// sentido en una salida; el servicio la ignora en una entrada, igual que
+  /// `vehicleId`.
+  maintenanceOrderId String?           @map("maintenance_order_id")
+  maintenanceOrder   MaintenanceOrder? @relation(fields: [maintenanceOrderId], references: [id], onDelete: SetNull)
+
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([sparePartId, createdAt])
   @@index([createdAt])
   @@index([vehicleId])
+  @@index([maintenanceOrderId])
   @@map("stock_movement")
 }
 
@@ -976,4 +994,76 @@ model VehicleDriverAssignment {
   @@index([vehicleId, startDate])
   @@index([driverId])
   @@map("vehicle_driver_assignment")
+}
+
+// =============================================================================
+// Spec 016 — Trámites administrativos por proceso
+// =============================================================================
+
+/// Acción del sistema a la que se asocia un tipo de trámite. Fija por tipo
+/// desde su creación (RF-4): cambiarla invalidaría los checklists ya
+/// guardados con esa definición.
+enum ProcedureAction {
+  VEHICLE_REGISTRATION
+  FUEL_VOUCHER
+  SPARE_PART_DELIVERY
+  MAINTENANCE_ORDER
+
+  @@map("procedure_action")
+}
+
+/// Catálogo configurable de tipos de trámite (RF-1 a RF-8). La unicidad de
+/// nombre es por acción, no global: el mismo nombre puede repetirse en dos
+/// acciones distintas.
+model ProcedureType {
+  id          String          @id @default(uuid(7))
+  name        String
+  description String?
+  action      ProcedureAction
+  isActive    Boolean         @default(true) @map("is_active")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  checklistItems ProcedureChecklistItem[]
+
+  @@unique([name, action])
+  @@index([action, isActive])
+  @@map("procedure_type")
+}
+
+/// Ítem de checklist guardado junto con el registro de una acción (RF-7 a
+/// RF-16). Exactamente uno de los cuatro vínculos aplica según la acción del
+/// tipo de trámite, salvo Entrega de refacciones con orden relacionada
+/// (RF-11), donde `stockMovementId` y `maintenanceOrderId` van juntos en la
+/// misma fila. `procedureTypeId` es `Restrict`: es la garantía a nivel de
+/// base de que un tipo con ítems asociados no puede borrarse (RF-8), sólo
+/// desactivarse.
+model ProcedureChecklistItem {
+  id           String   @id @default(uuid(7))
+  completed    Boolean  @default(false)
+  documentCode String?  @map("document_code")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  procedureTypeId String        @map("procedure_type_id")
+  procedureType   ProcedureType @relation(fields: [procedureTypeId], references: [id], onDelete: Restrict)
+
+  vehicleId String?  @map("vehicle_id")
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  fuelRecordId String?     @map("fuel_record_id")
+  fuelRecord   FuelRecord? @relation(fields: [fuelRecordId], references: [id], onDelete: Cascade)
+
+  stockMovementId String?        @map("stock_movement_id")
+  stockMovement   StockMovement? @relation(fields: [stockMovementId], references: [id], onDelete: Cascade)
+
+  maintenanceOrderId String?           @map("maintenance_order_id")
+  maintenanceOrder   MaintenanceOrder? @relation(fields: [maintenanceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([procedureTypeId])
+  @@index([vehicleId])
+  @@index([fuelRecordId])
+  @@index([stockMovementId])
+  @@index([maintenanceOrderId])
+  @@map("procedure_checklist_item")
 }

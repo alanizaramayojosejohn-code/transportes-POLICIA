@@ -1,13 +1,17 @@
 import { Field, Float, InputType } from '@nestjs/graphql';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { StockMovementType } from '../../../generated/prisma/enums.js';
+import { ProcedureChecklistItemInput } from '../../procedures/dto/procedure-checklist-item.input.js';
 
 /** RF-6/RF-7: artículo, tipo y cantidad son obligatorios. */
 @InputType()
@@ -64,4 +68,23 @@ export class CreateStockMovementInput {
   @IsOptional()
   @IsString()
   vehicleId?: string;
+
+  /**
+   * Spec 016 RF-11/RF-12: orden de mantenimiento relacionada de una salida,
+   * para que el checklist de trámites de Entrega de refacciones se vincule
+   * a ambos. Igual que `vehicleId`, sólo aplica a una salida; se ignora en
+   * una entrada.
+   */
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  maintenanceOrderId?: string;
+
+  /** Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar. */
+  @Field(() => [ProcedureChecklistItemInput], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProcedureChecklistItemInput)
+  checklistItems?: ProcedureChecklistItemInput[];
 }

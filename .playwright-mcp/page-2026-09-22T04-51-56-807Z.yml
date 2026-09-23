@@ -1,0 +1,21 @@
+- generic [ref=f4e4]:
+  - complementary [ref=f4e5]:
+    - generic [ref=f4e9]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f4e10]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f4e11]
+    - generic [ref=f4e12]: Sistema de información vehicular
+  - generic [ref=f4e13]:
+    - banner [ref=f4e14]:
+      - generic [ref=f4e15]:
+        - generic [ref=f4e16]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f4e17]
+      - generic [ref=f4e18]:
+        - generic [ref=f4e21]:
+          - button "Tema claro" [ref=f4e22]
+          - button "Tema oscuro" [ref=f4e25]
+        - generic [ref=f4e28]:
+          - generic:
+            - strong
+        - button "Cerrar sesión" [ref=f4e30]
+    - main [ref=f4e31]

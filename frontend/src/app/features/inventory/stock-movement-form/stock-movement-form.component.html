@@ -7,11 +7,13 @@
       </select>
     </app-field>
 
-    <app-field label="Artículo *">
+    <app-field label="Artículo *" [errorText]="validation.error('sparePartId')">
       <select
         appFieldControl
+        [invalid]="!!validation.error('sparePartId')"
         [value]="sparePartId()"
         (change)="sparePartId.set($any($event.target).value)"
+        (blur)="validation.touch('sparePartId')"
       >
         <option value="">Seleccionar...</option>
         @for (part of parts(); track part.id) {
@@ -22,12 +24,14 @@
       </select>
     </app-field>
 
-    <app-field label="Cantidad *">
+    <app-field label="Cantidad *" [errorText]="validation.error('quantity')">
       <input
         appFieldControl
         type="number"
+        [invalid]="!!validation.error('quantity')"
         [value]="quantity()"
         (input)="onNumberInput('quantity', $any($event.target).value)"
+        (blur)="validation.touch('quantity')"
       />
     </app-field>
 
@@ -66,12 +70,14 @@
     }
 
     @if (isOut) {
-      <app-field label="Para qué *" full>
+      <app-field label="Para qué *" full [errorText]="validation.error('reason')">
         <input
           appFieldControl
           placeholder="Cambio de aceite"
+          [invalid]="!!validation.error('reason')"
           [value]="reason()"
           (input)="reason.set($any($event.target).value)"
+          (blur)="validation.touch('reason')"
         />
       </app-field>
       <app-field label="Vehículo destino">
@@ -86,6 +92,18 @@
           }
         </select>
       </app-field>
+      <app-field label="Orden de mantenimiento relacionada">
+        <select
+          appFieldControl
+          [value]="maintenanceOrderId()"
+          (change)="maintenanceOrderId.set($any($event.target).value)"
+        >
+          <option value="">Sin orden relacionada</option>
+          @for (order of maintenanceOrders(); track order.id) {
+            <option [value]="order.id">{{ order.code }} · {{ order.vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
     }
 
     <app-field label="Documento / referencia" full>
@@ -96,6 +114,10 @@
       />
     </app-field>
   </div>
+
+  @if (isOut) {
+    <app-procedure-checklist-fields action="SPARE_PART_DELIVERY" />
+  }
 
   @if (errorMessage()) {
     <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>

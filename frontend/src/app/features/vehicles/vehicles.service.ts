@@ -52,6 +52,16 @@ const VEHICLE_FIELDS = `
     rank
   }
   lastOdometer
+  procedureChecklistItems {
+    id
+    completed
+    documentCode
+    procedureTypeId
+    procedureType {
+      id
+      name
+    }
+  }
 `;
 
 const VEHICLES_QUERY = gql`

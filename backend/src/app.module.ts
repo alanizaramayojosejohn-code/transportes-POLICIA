@@ -2,6 +2,7 @@ import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'node:path';
 import configuration from './config/configuration.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -20,6 +21,8 @@ import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { VehicleDocumentsModule } from './modules/vehicle-documents/vehicle-documents.module.js';
 import { IncidentsModule } from './modules/incidents/incidents.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
+import { ProceduresModule } from './modules/procedures/procedures.module.js';
+import { ReportsModule } from './modules/reports/reports.module.js';
 
 @Module({
   imports: [
@@ -52,6 +55,15 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
       }),
     }),
 
+    // Sirve el build de Angular (frontend/dist/web/browser copiado a
+    // ./public en la imagen Docker) para poder desplegar todo en un único
+    // contenedor. En desarrollo local la carpeta no existe y simplemente no
+    // hay nada que servir.
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'public'),
+      exclude: ['/graphql'],
+    }),
+
     PrismaModule,
     AuthModule,
     VehiclesModule,
@@ -68,6 +80,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
     VehicleDocumentsModule,
     IncidentsModule,
     DashboardModule,
+    ReportsModule,
+    ProceduresModule,
   ],
 })
 export class AppModule {}

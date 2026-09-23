@@ -20,6 +20,9 @@ import { UpdateUnitAssignmentNotesInput } from './dto/update-unit-assignment-not
 import { UnitAssignmentFilterArgs } from './dto/unit-assignment-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 @Resolver(() => UnitAssignment)
 export class UnitAssignmentsResolver {
@@ -30,8 +33,11 @@ export class UnitAssignmentsResolver {
   ) {}
 
   @Query(() => UnitAssignmentPage, { name: 'unitAssignments' })
-  findAll(@Args() filters: UnitAssignmentFilterArgs) {
-    return this.unitAssignmentsService.findAll(filters);
+  findAll(
+    @Args() filters: UnitAssignmentFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitAssignmentsService.findAll(filters, unitScopeFor(user));
   }
 
   @ResolveField(() => Vehicle)
@@ -47,15 +53,21 @@ export class UnitAssignmentsResolver {
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => UnitAssignment)
-  createUnitAssignment(@Args('input') input: CreateUnitAssignmentInput) {
-    return this.unitAssignmentsService.create(input);
+  createUnitAssignment(
+    @Args('input') input: CreateUnitAssignmentInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitAssignmentsService.create(input, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES')
   @Mutation(() => UnitAssignment)
-  closeUnitAssignment(@Args('input') input: CloseUnitAssignmentInput) {
-    return this.unitAssignmentsService.close(input);
+  closeUnitAssignment(
+    @Args('input') input: CloseUnitAssignmentInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.unitAssignmentsService.close(input, unitScopeFor(user));
   }
 
   @UseGuards(RolesGuard)
@@ -63,7 +75,8 @@ export class UnitAssignmentsResolver {
   @Mutation(() => UnitAssignment)
   updateUnitAssignmentNotes(
     @Args('input') input: UpdateUnitAssignmentNotesInput,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.unitAssignmentsService.updateNotes(input);
+    return this.unitAssignmentsService.updateNotes(input, unitScopeFor(user));
   }
 }

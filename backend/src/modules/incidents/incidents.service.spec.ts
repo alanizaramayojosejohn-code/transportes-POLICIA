@@ -5,11 +5,14 @@ import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { IncidentsService } from './incidents.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
+/// ADMINISTRADOR (no TRANSPORTES): estas pruebas cubren las reglas
+/// generales de negocio (RF-1 a RF-4), no el alcance por unidad — que se
+/// cubre aparte en `common/unit-scope.spec.ts`.
 const actingUser: AuthenticatedUser = {
   id: 'user-1',
-  username: 'transportes.admin',
+  username: 'admin.pruebas',
   fullName: 'Usuario de prueba',
-  role: 'TRANSPORTES',
+  role: 'ADMINISTRADOR',
   personnelId: null,
   managedUnitIds: [],
 };
@@ -106,7 +109,7 @@ describe('IncidentsService', () => {
       expect(vehiclesService.registerCondition).toHaveBeenCalledWith(
         'v1',
         expect.objectContaining({ code: 'SEPARADO_POR_INCIDENTE' }),
-        'TRANSPORTES',
+        'ADMINISTRADOR',
       );
     });
   });

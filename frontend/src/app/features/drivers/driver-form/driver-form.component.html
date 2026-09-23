@@ -1,10 +1,12 @@
 <app-modal [title]="isEdit ? 'Editar conductor' : 'Nuevo conductor'" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="CI *">
+    <app-field label="CI *" [errorText]="validation.error('ci')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('ci')"
         [value]="form().ci"
         (input)="patch({ ci: $any($event.target).value })"
+        (blur)="validation.touch('ci')"
       />
     </app-field>
 
@@ -21,19 +23,23 @@
       </select>
     </app-field>
 
-    <app-field label="Nombres *">
+    <app-field label="Nombres *" [errorText]="validation.error('firstName')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('firstName')"
         [value]="form().firstName"
         (input)="patch({ firstName: $any($event.target).value })"
+        (blur)="validation.touch('firstName')"
       />
     </app-field>
 
-    <app-field label="Apellidos *">
+    <app-field label="Apellidos *" [errorText]="validation.error('lastName')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('lastName')"
         [value]="form().lastName"
         (input)="patch({ lastName: $any($event.target).value })"
+        (blur)="validation.touch('lastName')"
       />
     </app-field>
 
@@ -74,19 +80,23 @@
     </div>
 
     @if (form().isDriver) {
-      <app-field label="Número de licencia *">
+      <app-field label="Número de licencia *" [errorText]="validation.error('licenseNumber')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('licenseNumber')"
           [value]="form().licenseNumber"
           (input)="patch({ licenseNumber: $any($event.target).value })"
+          (blur)="validation.touch('licenseNumber')"
         />
       </app-field>
 
-      <app-field label="Categoría *">
+      <app-field label="Categoría *" [errorText]="validation.error('licenseCategory')">
         <select
           appFieldControl
+          [invalid]="!!validation.error('licenseCategory')"
           [value]="form().licenseCategory"
           (change)="patch({ licenseCategory: $any($event.target).value })"
+          (blur)="validation.touch('licenseCategory')"
         >
           <option value="">Seleccionar...</option>
           <option>A</option>
@@ -97,12 +107,17 @@
         </select>
       </app-field>
 
-      <app-field label="Vencimiento de licencia *">
+      <app-field
+        label="Vencimiento de licencia *"
+        [errorText]="validation.error('licenseExpiresAt')"
+      >
         <input
           appFieldControl
           type="date"
+          [invalid]="!!validation.error('licenseExpiresAt')"
           [value]="form().licenseExpiresAt"
           (input)="patch({ licenseExpiresAt: $any($event.target).value })"
+          (blur)="validation.touch('licenseExpiresAt')"
         />
       </app-field>
     }
@@ -164,19 +179,23 @@
 
           @if (form().createAccount) {
             <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
-              <app-field label="Usuario *">
+              <app-field label="Usuario *" [errorText]="validation.error('username')">
                 <input
                   appFieldControl
+                  [invalid]="!!validation.error('username')"
                   [value]="form().username"
                   (input)="patch({ username: $any($event.target).value })"
+                  (blur)="validation.touch('username')"
                 />
               </app-field>
-              <app-field label="Contraseña *">
+              <app-field label="Contraseña *" [errorText]="validation.error('password')">
                 <input
                   appFieldControl
                   type="password"
+                  [invalid]="!!validation.error('password')"
                   [value]="form().password"
                   (input)="patch({ password: $any($event.target).value })"
+                  (blur)="validation.touch('password')"
                 />
               </app-field>
             </div>

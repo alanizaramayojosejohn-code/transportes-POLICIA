@@ -3,11 +3,13 @@
   (closed)="cancelled.emit()"
 >
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="CI *">
+    <app-field label="CI *" [errorText]="validation.error('ci')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('ci')"
         [value]="form().ci"
         (input)="patch({ ci: $any($event.target).value })"
+        (blur)="validation.touch('ci')"
       />
     </app-field>
 
@@ -20,19 +22,23 @@
       />
     </app-field>
 
-    <app-field label="Nombres *">
+    <app-field label="Nombres *" [errorText]="validation.error('firstName')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('firstName')"
         [value]="form().firstName"
         (input)="patch({ firstName: $any($event.target).value })"
+        (blur)="validation.touch('firstName')"
       />
     </app-field>
 
-    <app-field label="Apellidos *">
+    <app-field label="Apellidos *" [errorText]="validation.error('lastName')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('lastName')"
         [value]="form().lastName"
         (input)="patch({ lastName: $any($event.target).value })"
+        (blur)="validation.touch('lastName')"
       />
     </app-field>
 
@@ -60,26 +66,35 @@
     @if (canManageAccount) {
       <h4 class="font-serif text-14-5 font-semibold min-[860px]:col-span-2">Cuenta de acceso</h4>
 
-      <app-field label="Usuario">
+      <app-field label="Usuario" [errorText]="validation.error('username')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('username')"
           [value]="form().username"
           (input)="patch({ username: $any($event.target).value })"
+          (blur)="validation.touch('username')"
         />
       </app-field>
 
-      <app-field label="Contraseña">
+      <app-field label="Contraseña" [errorText]="validation.error('password')">
         <input
           appFieldControl
           type="password"
           placeholder="Mínimo 8 caracteres"
+          [invalid]="!!validation.error('password')"
           [value]="form().password"
           (input)="patch({ password: $any($event.target).value })"
+          (blur)="validation.touch('password')"
         />
       </app-field>
 
-      <app-field label="Rol de sistema" full>
-        <select appFieldControl (change)="patch({ roleId: $any($event.target).value })">
+      <app-field label="Rol de sistema" full [errorText]="validation.error('roleId')">
+        <select
+          appFieldControl
+          [invalid]="!!validation.error('roleId')"
+          (change)="patch({ roleId: $any($event.target).value })"
+          (blur)="validation.touch('roleId')"
+        >
           <option value="" [selected]="!form().roleId">Seleccionar...</option>
           @for (role of roleOptions(); track role.id) {
             <option [value]="role.id" [selected]="role.id === form().roleId">

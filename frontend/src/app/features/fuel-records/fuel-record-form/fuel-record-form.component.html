@@ -8,11 +8,13 @@
         <input appFieldControl value="Usted" disabled />
       </app-field>
     } @else {
-      <app-field label="Vehículo *">
+      <app-field label="Vehículo *" [errorText]="validation.error('vehicleId')">
         <select
           appFieldControl
+          [invalid]="!!validation.error('vehicleId')"
           [value]="vehicleId()"
           (change)="vehicleId.set($any($event.target).value)"
+          (blur)="validation.touch('vehicleId')"
         >
           <option value="">Seleccionar...</option>
           @for (vehicle of vehicles(); track vehicle.id) {
@@ -35,21 +37,25 @@
       </app-field>
     }
 
-    <app-field label="Fecha/hora *">
+    <app-field label="Fecha/hora *" [errorText]="validation.error('suppliedAt')">
       <input
         appFieldControl
         type="datetime-local"
+        [invalid]="!!validation.error('suppliedAt')"
         [value]="suppliedAt()"
         (input)="suppliedAt.set($any($event.target).value)"
+        (blur)="validation.touch('suppliedAt')"
       />
     </app-field>
 
-    <app-field label="Kilometraje *">
+    <app-field label="Kilometraje *" [errorText]="validation.error('odometer')">
       <input
         appFieldControl
         type="number"
+        [invalid]="!!validation.error('odometer')"
         [value]="odometer()"
         (input)="onNumberInput('odometer', $any($event.target).value)"
+        (blur)="validation.touch('odometer')"
       />
     </app-field>
 
@@ -74,22 +80,26 @@
       />
     </app-field>
 
-    <app-field label="Cantidad (litros) *">
+    <app-field label="Cantidad (litros) *" [errorText]="validation.error('quantity')">
       <input
         appFieldControl
         type="number"
+        [invalid]="!!validation.error('quantity')"
         [value]="quantity()"
         (input)="onNumberInput('quantity', $any($event.target).value)"
+        (blur)="validation.touch('quantity')"
       />
     </app-field>
 
-    <app-field label="Precio unitario *">
+    <app-field label="Precio unitario *" [errorText]="validation.error('unitPrice')">
       <input
         appFieldControl
         type="number"
         step="0.01"
+        [invalid]="!!validation.error('unitPrice')"
         [value]="unitPrice()"
         (input)="onNumberInput('unitPrice', $any($event.target).value)"
+        (blur)="validation.touch('unitPrice')"
       />
     </app-field>
 
@@ -110,6 +120,8 @@
       ></textarea>
     </app-field>
   </div>
+
+  <app-procedure-checklist-fields action="FUEL_VOUCHER" />
 
   @if (errorMessage()) {
     <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>

@@ -1,0 +1,52 @@
+<app-modal
+  [title]="isEdit ? 'Editar tipo de trámite' : 'Nuevo tipo de trámite'"
+  (closed)="cancelled.emit()"
+>
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Nombre *" [errorText]="validation.error('name')">
+      <input
+        appFieldControl
+        [invalid]="!!validation.error('name')"
+        [value]="form().name"
+        (input)="patch({ name: $any($event.target).value })"
+        (blur)="validation.touch('name')"
+      />
+    </app-field>
+
+    <app-field label="Acción *">
+      @if (isEdit) {
+        <input appFieldControl [value]="actionLabels[form().action]" disabled />
+      } @else {
+        <select
+          appFieldControl
+          [value]="form().action"
+          (change)="patch({ action: $any($event.target).value })"
+        >
+          @for (a of actions; track a) {
+            <option [value]="a">{{ actionLabels[a] }}</option>
+          }
+        </select>
+      }
+    </app-field>
+
+    <app-field label="Descripción" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="form().description || ''"
+        (input)="patch({ description: $any($event.target).value })"
+      ></textarea>
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar
+    </button>
+  </app-form-actions>
+</app-modal>

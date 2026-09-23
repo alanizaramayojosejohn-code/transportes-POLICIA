@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { NoticeComponent } from '../../../shared/notice/notice.component';
@@ -6,6 +6,14 @@ import { UnitAssignmentsService } from '../unit-assignments.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { UnitOption } from '../../units/unit.model';
 import { UnitsService } from '../../units/units.service';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
+
+interface UnitAssignmentFormShape {
+  vehicleId: string;
+  unitId: string;
+  startDate: string;
+}
 
 /** Nueva asignación de vehículo a unidad (spec 003, RF-01/RF-02). */
 @Component({
@@ -29,6 +37,17 @@ export class UnitAssignmentFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<UnitAssignmentFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    unitId: this.unitId(),
+    startDate: this.startDate(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    unitId: required('Seleccione una unidad.'),
+    startDate: required('Ingrese la fecha de inicio.'),
+  });
+
   constructor(
     private readonly unitAssignmentsService: UnitAssignmentsService,
     private readonly vehiclesService: VehiclesService,
@@ -39,8 +58,7 @@ export class UnitAssignmentFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.vehicleId() || !this.unitId()) {
-      this.errorMessage.set('Debe seleccionar vehículo y unidad.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

@@ -1,89 +1,106 @@
-<app-page-head
-  title="Panel principal"
-  description="Vista general de la información vehicular."
-></app-page-head>
+@switch (role()) {
+  @case ('TRANSPORTES') {
+    <app-transportes-dashboard />
+  }
+  @case ('COMBUSTIBLE') {
+    <app-fuel-dashboard />
+  }
+  @case ('ALMACEN') {
+    <app-inventory-dashboard />
+  }
+  @default {
+    <app-page-head
+      title="Panel principal"
+      description="Vista general de la información vehicular."
+    ></app-page-head>
 
-<div class="mb-4 grid grid-cols-2 gap-4 min-[1080px]:grid-cols-4">
-  <app-stat-card icon="V" [value]="summary().vehicleCount" label="Vehículos registrados" />
-  <app-stat-card
-    icon="✓"
-    [value]="summary().operationalVehicleCount"
-    label="Vehículos operativos"
-  />
-  <app-stat-card icon="C" [value]="summary().activeDriverCount" label="Conductores activos" />
-  <app-stat-card icon="KM" [value]="summary().tripsThisMonthCount" label="Recorridos este mes" />
-</div>
+    <div class="mb-4 grid grid-cols-2 gap-4 min-[1080px]:grid-cols-4">
+      <app-stat-card icon="V" [value]="summary().vehicleCount" label="Vehículos registrados" />
+      <app-stat-card
+        icon="✓"
+        [value]="summary().operationalVehicleCount"
+        label="Vehículos operativos"
+      />
+      <app-stat-card icon="C" [value]="summary().activeDriverCount" label="Conductores activos" />
+      <app-stat-card
+        icon="KM"
+        [value]="summary().tripsThisMonthCount"
+        label="Recorridos este mes"
+      />
+    </div>
 
-<div class="mb-4 grid grid-cols-1 gap-4 min-[1080px]:grid-cols-[1.4fr_1fr]">
-  <app-card heading="Recorridos por mes">
-    <div class="flex h-[170px] items-end gap-2 pt-2.5">
-      @for (bar of monthlyBars(); track $index) {
-        <div class="flex flex-1 flex-col items-center gap-1">
+    <div class="mb-4 grid grid-cols-1 gap-4 min-[1080px]:grid-cols-[1.4fr_1fr]">
+      <app-card heading="Recorridos por mes">
+        <div class="flex h-[170px] items-end gap-2 pt-2.5">
+          @for (bar of monthlyBars(); track $index) {
+            <div class="flex flex-1 flex-col items-center gap-1">
+              <div
+                class="w-full rounded-t bg-gradient-to-b from-green-500 to-green-700"
+                [style.height.%]="bar.heightPercent"
+                [title]="bar.label + ': ' + bar.count"
+              ></div>
+              <span class="text-[10px] text-ink-faint">{{ bar.label }}</span>
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <app-card heading="Estado del parque automotor">
+        <div class="flex items-center gap-5.5">
           <div
-            class="w-full rounded-t bg-gradient-to-b from-green-500 to-green-700"
-            [style.height.%]="bar.heightPercent"
-            [title]="bar.label + ': ' + bar.count"
-          ></div>
-          <span class="text-[10px] text-ink-faint">{{ bar.label }}</span>
+            class="relative h-[120px] w-[120px] flex-none rounded-full"
+            [style.background]="donutGradient()"
+          >
+            <div class="absolute inset-4 rounded-full bg-surface"></div>
+          </div>
+          <div class="flex flex-col gap-2 text-12-5 text-ink-muted">
+            <div>
+              <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-green-600"></i>Operativos
+              {{ fleetPercents().operational }}%
+            </div>
+            <div>
+              <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-amber"></i>Mantenimiento
+              {{ fleetPercents().maintenance }}%
+            </div>
+            <div>
+              <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red"></i>Inoperables
+              {{ fleetPercents().inoperable }}%
+            </div>
+            <div>
+              <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gray"></i>Otros
+              {{ fleetPercents().other }}%
+            </div>
+          </div>
         </div>
-      }
+      </app-card>
     </div>
-  </app-card>
 
-  <app-card heading="Estado del parque automotor">
-    <div class="flex items-center gap-5.5">
-      <div
-        class="relative h-[120px] w-[120px] flex-none rounded-full"
-        [style.background]="donutGradient()"
-      >
-        <div class="absolute inset-4 rounded-full bg-surface"></div>
+    <app-card heading="Seguimiento">
+      <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <div
+          class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
+        >
+          <strong class="font-serif text-17 text-ink">{{ summary().lowStockCount }}</strong>
+          <br />
+          artículos bajo stock mínimo
+        </div>
+        <div
+          class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
+        >
+          <strong class="font-serif text-17 text-ink">{{
+            summary().inProgressMaintenanceCount
+          }}</strong>
+          <br />
+          mantenimientos en proceso
+        </div>
+        <div
+          class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
+        >
+          <strong class="font-serif text-17 text-ink">{{ summary().openTripsCount }}</strong>
+          <br />
+          recorridos abiertos
+        </div>
       </div>
-      <div class="flex flex-col gap-2 text-12-5 text-ink-muted">
-        <div>
-          <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-green-600"></i>Operativos
-          {{ fleetPercents().operational }}%
-        </div>
-        <div>
-          <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-amber"></i>Mantenimiento
-          {{ fleetPercents().maintenance }}%
-        </div>
-        <div>
-          <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red"></i>Inoperables
-          {{ fleetPercents().inoperable }}%
-        </div>
-        <div>
-          <i class="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gray"></i>Otros
-          {{ fleetPercents().other }}%
-        </div>
-      </div>
-    </div>
-  </app-card>
-</div>
-
-<app-card heading="Seguimiento">
-  <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-    <div
-      class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
-    >
-      <strong class="font-serif text-17 text-ink">{{ summary().lowStockCount }}</strong>
-      <br />
-      artículos bajo stock mínimo
-    </div>
-    <div
-      class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
-    >
-      <strong class="font-serif text-17 text-ink">{{
-        summary().inProgressMaintenanceCount
-      }}</strong>
-      <br />
-      mantenimientos en proceso
-    </div>
-    <div
-      class="rounded-sm border border-edge bg-surface-2 p-3 text-center text-12-5 text-ink-muted"
-    >
-      <strong class="font-serif text-17 text-ink">{{ summary().openTripsCount }}</strong>
-      <br />
-      recorridos abiertos
-    </div>
-  </div>
-</app-card>
+    </app-card>
+  }
+}

@@ -29,6 +29,18 @@ export const routes: Routes = [
       },
       {
         path: 'unidades',
+        // TRANSPORTES no ve el catálogo general de unidades: la suya vive
+        // resumida en su propio panel de inicio.
+        canActivate: [
+          roleGuard([
+            'ADMINISTRADOR',
+            'COMBUSTIBLE',
+            'MANTENIMIENTO',
+            'ALMACEN',
+            'CONSULTA',
+            'CONDUCTOR',
+          ]),
+        ],
         loadComponent: () =>
           import('./features/units/units-list/units-list.component').then(
             (m) => m.UnitsListComponent,
@@ -63,13 +75,53 @@ export const routes: Routes = [
       },
       {
         path: 'combustible',
+        // ALMACEN no opera combustible: es dominio de COMBUSTIBLE.
+        canActivate: [
+          roleGuard([
+            'ADMINISTRADOR',
+            'TRANSPORTES',
+            'COMBUSTIBLE',
+            'MANTENIMIENTO',
+            'CONSULTA',
+            'CONDUCTOR',
+          ]),
+        ],
         loadComponent: () =>
           import('./features/fuel-records/fuel-records-list/fuel-records-list.component').then(
             (m) => m.FuelRecordsListComponent,
           ),
       },
       {
+        path: 'combustible/bitacora',
+        canActivate: [
+          roleGuard([
+            'ADMINISTRADOR',
+            'TRANSPORTES',
+            'COMBUSTIBLE',
+            'MANTENIMIENTO',
+            'CONSULTA',
+            'CONDUCTOR',
+          ]),
+        ],
+        loadComponent: () =>
+          import('./features/fuel-records/fuel-logbook/fuel-logbook-report.component').then(
+            (m) => m.FuelLogbookReportComponent,
+          ),
+      },
+      {
         path: 'mantenimiento',
+        // Sin refacciones/mantenimiento para TRANSPORTES: es dominio de
+        // MANTENIMIENTO/ALMACEN, no de la operación de su unidad.
+        canActivate: [
+          roleGuard([
+            'ADMINISTRADOR',
+            'COMBUSTIBLE',
+            'MANTENIMIENTO',
+            'ALMACEN',
+            'CONSULTA',
+            'CONDUCTOR',
+          ]),
+        ],
         loadComponent: () =>
           import('./features/maintenance-orders/maintenance-orders-list/maintenance-orders-list.component').then(
             (m) => m.MaintenanceOrdersListComponent,
@@ -77,6 +129,11 @@ export const routes: Routes = [
       },
       {
         path: 'inventario',
+        // Tampoco para COMBUSTIBLE: cada uno opera su propio dominio, sin
+        // pisarse (ver `ROLE_EXCLUDED_PATHS` en el shell).
+        canActivate: [
+          roleGuard(['ADMINISTRADOR', 'MANTENIMIENTO', 'ALMACEN', 'CONSULTA', 'CONDUCTOR']),
+        ],
         loadComponent: () =>
           import('./features/inventory/spare-parts-list/spare-parts-list.component').then(
             (m) => m.SparePartsListComponent,
@@ -84,6 +141,16 @@ export const routes: Routes = [
       },
       {
         path: 'documentacion',
+        canActivate: [
+          roleGuard([
+            'ADMINISTRADOR',
+            'COMBUSTIBLE',
+            'MANTENIMIENTO',
+            'ALMACEN',
+            'CONSULTA',
+            'CONDUCTOR',
+          ]),
+        ],
         loadComponent: () =>
           import('./features/vehicle-documents/vehicle-documents-list/vehicle-documents-list.component').then(
             (m) => m.VehicleDocumentsListComponent,
@@ -94,6 +161,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/incidents/incidents-list/incidents-list.component').then(
             (m) => m.IncidentsListComponent,
+          ),
+      },
+      {
+        path: 'tramites',
+        loadComponent: () =>
+          import('./features/procedure-types/procedure-types-list/procedure-types-list.component').then(
+            (m) => m.ProcedureTypesListComponent,
           ),
       },
       {

@@ -9,6 +9,8 @@ import {
   SparePartCategory,
   SparePartType,
 } from '../spare-part.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
 
 interface SparePartFormState {
   code: string;
@@ -56,6 +58,13 @@ export class SparePartFormComponent {
   protected readonly types = SPARE_PART_TYPES;
   protected readonly typeLabels = SPARE_PART_TYPE_LABELS;
 
+  protected readonly validation = new FormValidation(this.form, {
+    code: required<string, SparePartFormState>('El código es obligatorio.'),
+    name: required('El nombre es obligatorio.'),
+    categoryId: required('Seleccione una categoría.'),
+    unit: required('Ingrese la unidad de medida.'),
+  });
+
   constructor(private readonly inventoryService: InventoryService) {
     this.categories = toSignal(this.inventoryService.listCategories(), { initialValue: [] });
 
@@ -94,8 +103,7 @@ export class SparePartFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.code.trim() || !value.name.trim() || !value.categoryId || !value.unit.trim()) {
-      this.errorMessage.set('Código, nombre, categoría y unidad de medida son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

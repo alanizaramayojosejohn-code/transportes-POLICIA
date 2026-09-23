@@ -1,20 +1,24 @@
 <app-modal [title]="isEdit ? 'Editar unidad' : 'Registro de unidad'" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Código">
+    <app-field label="Código" [errorText]="validation.error('code')">
       <input
         appFieldControl
         placeholder="EPI-03"
+        [invalid]="!!validation.error('code')"
         [value]="form().code ?? ''"
         (input)="patch({ code: $any($event.target).value })"
+        (blur)="validation.touch('code')"
       />
     </app-field>
 
-    <app-field label="Nombre *">
+    <app-field label="Nombre *" [errorText]="validation.error('name')">
       <input
         appFieldControl
         placeholder="EPI 3"
+        [invalid]="!!validation.error('name')"
         [value]="form().name"
         (input)="patch({ name: $any($event.target).value })"
+        (blur)="validation.touch('name')"
       />
     </app-field>
 

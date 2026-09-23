@@ -176,7 +176,7 @@
           </button>
         </div>
 
-        @if (installPrompt()) {
+        @if (pwaInstall.canInstall()) {
           <button type="button" appButton variant="soft" (click)="installPwa()">
             Instalar PWA
           </button>

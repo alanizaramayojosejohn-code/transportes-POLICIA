@@ -20,6 +20,9 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { ProceduresService } from '../procedures/procedures.service.js';
+import { ProcedureChecklistItem } from '../procedures/entities/procedure-checklist-item.entity.js';
+import { UpdateProcedureChecklistItemInput } from '../procedures/dto/update-procedure-checklist-item.input.js';
 
 /**
  * Puerta GraphQL del módulo (spec 009). La consulta está abierta a
@@ -27,7 +30,10 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
  */
 @Resolver(() => SparePart)
 export class InventoryResolver {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    private readonly inventoryService: InventoryService,
+    private readonly proceduresService: ProceduresService,
+  ) {}
 
   @Query(() => SparePartPage, { name: 'spareParts' })
   findAll(@Args() filters: SparePartFilterArgs) {
@@ -88,5 +94,33 @@ export class InventoryResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.inventoryService.registerMovement(input, user);
+  }
+
+  /// Spec 016 RF-15/RF-20: mismo permiso que registrar el movimiento.
+  @UseGuards(RolesGuard)
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'ALMACEN')
+  @Mutation(() => [ProcedureChecklistItem])
+  updateStockMovementChecklist(
+    @Args('stockMovementId') stockMovementId: string,
+    @Args({ name: 'items', type: () => [UpdateProcedureChecklistItemInput] })
+    items: UpdateProcedureChecklistItemInput[],
+  ) {
+    return this.proceduresService.updateItems(
+      'stockMovementId',
+      stockMovementId,
+      items,
+    );
+  }
+}
+
+/// Spec 016 RF-17: campo resuelto aparte porque `InventoryResolver` está
+/// declarado sobre `SparePart`, no sobre `StockMovement`.
+@Resolver(() => StockMovement)
+export class StockMovementResolver {
+  constructor(private readonly proceduresService: ProceduresService) {}
+
+  @ResolveField(() => [ProcedureChecklistItem])
+  procedureChecklistItems(@Parent() movement: StockMovement) {
+    return this.proceduresService.listItems('stockMovementId', movement.id);
   }
 }

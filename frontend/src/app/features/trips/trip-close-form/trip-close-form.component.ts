@@ -1,7 +1,15 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { TripsService } from '../trips.service';
 import { Trip } from '../trip.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, max, min, minField, required } from '../../../shared/validation/validators';
+
+interface TripCloseFormShape {
+  returnOdometer: number | null;
+  returnFuelLevel: number | null;
+  departureOdometer: number;
+}
 
 /** Registro de llegada de un recorrido abierto (spec 006, RF-5). */
 @Component({
@@ -22,6 +30,26 @@ export class TripCloseFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<TripCloseFormShape>(() => ({
+    returnOdometer: this.returnOdometer(),
+    returnFuelLevel: this.returnFuelLevel(),
+    departureOdometer: this.trip().departureOdometer,
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    returnOdometer: combine<number | null, TripCloseFormShape>(
+      required('Ingrese el kilometraje de llegada.'),
+      min(0, 'El kilometraje no puede ser negativo.'),
+      minField(
+        (form) => form.departureOdometer,
+        (departure) => `No puede ser menor al kilometraje de salida (${departure}).`,
+      ),
+    ),
+    returnFuelLevel: combine<number | null, TripCloseFormShape>(
+      min(0, 'El nivel de combustible no puede ser menor a 0%.'),
+      max(100, 'El nivel de combustible no puede ser mayor a 100%.'),
+    ),
+  });
+
   protected onOdometerInput(value: string): void {
     this.returnOdometer.set(value === '' ? null : Number(value));
   }
@@ -33,8 +61,7 @@ export class TripCloseFormComponent {
   constructor(private readonly tripsService: TripsService) {}
 
   protected async submit(): Promise<void> {
-    if (this.returnOdometer() === null) {
-      this.errorMessage.set('El kilometraje de llegada es obligatorio.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

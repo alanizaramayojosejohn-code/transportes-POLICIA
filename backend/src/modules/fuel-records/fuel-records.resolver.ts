@@ -16,8 +16,12 @@ import { CreateFuelRecordInput } from './dto/create-fuel-record.input.js';
 import { FuelRecordFilterArgs } from './dto/fuel-record-filter.args.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { unitScopeFor } from '../../common/unit-scope.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { ProceduresService } from '../procedures/procedures.service.js';
+import { ProcedureChecklistItem } from '../procedures/entities/procedure-checklist-item.entity.js';
+import { UpdateProcedureChecklistItemInput } from '../procedures/dto/update-procedure-checklist-item.input.js';
 
 /**
  * Puerta GraphQL del módulo (spec 007). La consulta está abierta a
@@ -26,11 +30,17 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
  */
 @Resolver(() => FuelRecord)
 export class FuelRecordsResolver {
-  constructor(private readonly fuelRecordsService: FuelRecordsService) {}
+  constructor(
+    private readonly fuelRecordsService: FuelRecordsService,
+    private readonly proceduresService: ProceduresService,
+  ) {}
 
   @Query(() => FuelRecordPage, { name: 'fuelRecords' })
-  findAll(@Args() filters: FuelRecordFilterArgs) {
-    return this.fuelRecordsService.findAll(filters);
+  findAll(
+    @Args() filters: FuelRecordFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.fuelRecordsService.findAll(filters, unitScopeFor(user));
   }
 
   @Query(() => FuelRecord, { name: 'fuelRecord' })
@@ -48,6 +58,12 @@ export class FuelRecordsResolver {
     return this.fuelRecordsService.getDriver(record.driverId);
   }
 
+  /// Spec 016 RF-17.
+  @ResolveField(() => [ProcedureChecklistItem])
+  procedureChecklistItems(@Parent() record: FuelRecord) {
+    return this.proceduresService.listItems('fuelRecordId', record.id);
+  }
+
   @UseGuards(RolesGuard)
   @Roles('ADMINISTRADOR', 'TRANSPORTES', 'COMBUSTIBLE', 'CONDUCTOR')
   @Mutation(() => FuelRecord)
@@ -56,5 +72,21 @@ export class FuelRecordsResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.fuelRecordsService.create(input, user);
+  }
+
+  /// Spec 016 RF-15/RF-20: mismo permiso que registrar el abastecimiento.
+  @UseGuards(RolesGuard)
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'COMBUSTIBLE', 'CONDUCTOR')
+  @Mutation(() => [ProcedureChecklistItem])
+  updateFuelRecordChecklist(
+    @Args('fuelRecordId') fuelRecordId: string,
+    @Args({ name: 'items', type: () => [UpdateProcedureChecklistItemInput] })
+    items: UpdateProcedureChecklistItemInput[],
+  ) {
+    return this.proceduresService.updateItems(
+      'fuelRecordId',
+      fuelRecordId,
+      items,
+    );
   }
 }

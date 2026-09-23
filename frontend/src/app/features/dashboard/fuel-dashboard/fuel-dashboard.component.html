@@ -1,0 +1,53 @@
+<app-page-head
+  title="Combustible"
+  description="Resumen de abastecimientos del parque."
+></app-page-head>
+
+<div class="mb-4 grid grid-cols-2 gap-4 min-[1080px]:grid-cols-3">
+  <app-stat-card icon="#" [value]="recent().total" label="Abastecimientos registrados" />
+  <app-stat-card icon="L" [value]="recentQuantity()" label="Litros cargados (recientes)" />
+  <app-stat-card
+    icon="Bs"
+    [value]="'Bs. ' + recentCost().toFixed(2)"
+    label="Costo total (reciente)"
+  />
+</div>
+
+<app-card>
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-14-5 font-semibold">Últimos abastecimientos</h2>
+    <a
+      routerLink="/combustible"
+      class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+      >Ir a combustible</a
+    >
+  </div>
+  <app-table>
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Litros</th>
+        <th appTableHeadCell>Costo total</th>
+        <th appTableHeadCell>Vale</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (record of tableItems(); track record.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ record.vehicle.plate }}</td>
+          <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+          <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+          <td appTableCell>{{ record.quantity }}</td>
+          <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+          <td appTableCell>{{ record.ticketNumber || '—' }}</td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="6">
+          Sin abastecimientos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>

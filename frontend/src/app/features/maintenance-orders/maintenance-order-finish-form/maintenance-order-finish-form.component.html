@@ -7,13 +7,15 @@
       {{ order().description }}
     </div>
 
-    <app-field label="Costo total (Bs.) *">
+    <app-field label="Costo total (Bs.) *" [errorText]="validation.error('totalCost')">
       <input
         appFieldControl
         type="number"
         step="0.01"
+        [invalid]="!!validation.error('totalCost')"
         [value]="totalCost()"
         (input)="onCostInput($any($event.target).value)"
+        (blur)="validation.touch('totalCost')"
       />
     </app-field>
   </div>

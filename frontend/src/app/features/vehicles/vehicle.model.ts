@@ -1,3 +1,8 @@
+import {
+  ProcedureChecklistItem,
+  ProcedureChecklistItemDraft,
+} from '../procedure-types/procedure-type.model';
+
 export type VehicleType =
   'AUTOMOVIL' | 'CAMIONETA' | 'MOTOCICLETA' | 'MINIBUS' | 'CAMION' | 'AMBULANCIA' | 'OTRO';
 
@@ -108,6 +113,8 @@ export interface Vehicle {
   /// Mayor kilometraje conocido entre recorridos, combustible y lecturas
   /// sueltas (spec 014); null si el vehículo no tiene ninguna todavía.
   lastOdometer: number | null;
+  /// Checklist de trámites de su registro (spec 016, RF-17).
+  procedureChecklistItems: ProcedureChecklistItem[];
 }
 
 export interface VehiclePage {
@@ -137,6 +144,8 @@ export interface CreateVehicleInput {
   origin?: string;
   receptionSource?: string;
   observations?: string;
+  /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
+  checklistItems?: ProcedureChecklistItemDraft[];
 }
 
 export type UpdateVehicleInput = Partial<CreateVehicleInput>;

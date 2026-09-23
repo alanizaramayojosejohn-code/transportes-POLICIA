@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, VehicleConditionCode } from '../../generated/prisma/client.js';
 import { withUniqueConstraintHandling } from '../../common/prisma-errors.js';
 import { type UnitScope } from '../../common/unit-scope.js';
+import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import { CreateVehicleInput } from './dto/create-vehicle.input.js';
 import { UpdateVehicleInput } from './dto/update-vehicle.input.js';
 import { VehicleFilterArgs } from './dto/vehicle-filter.args.js';
@@ -82,14 +83,23 @@ export class VehiclesService {
     return vehicle;
   }
 
+  /// Spec 016 RF-9/RF-10: el alta y el checklist de trámites de la acción
+  /// «Registrar vehículo» se guardan en una sola transacción.
   async create(input: CreateVehicleInput) {
+    const { checklistItems, ...data } = input;
     return withUniqueConstraintHandling(
       () =>
-        this.prisma.vehicle.create({
-          data: {
-            ...input,
-            plate: this.normalizePlate(input.plate),
-          },
+        this.prisma.$transaction(async (tx) => {
+          const vehicle = await tx.vehicle.create({
+            data: {
+              ...data,
+              plate: this.normalizePlate(input.plate),
+            },
+          });
+          await saveChecklistItems(tx, checklistItems, {
+            vehicleId: vehicle.id,
+          });
+          return vehicle;
         }),
       'Ya existe un vehículo con ese',
     );

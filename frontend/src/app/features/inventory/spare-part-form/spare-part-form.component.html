@@ -3,24 +3,33 @@
   (closed)="cancelled.emit()"
 >
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Código *">
+    <app-field label="Código *" [errorText]="validation.error('code')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('code')"
         [value]="form().code"
         (input)="patch({ code: $any($event.target).value })"
+        (blur)="validation.touch('code')"
       />
     </app-field>
 
-    <app-field label="Nombre *">
+    <app-field label="Nombre *" [errorText]="validation.error('name')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('name')"
         [value]="form().name"
         (input)="patch({ name: $any($event.target).value })"
+        (blur)="validation.touch('name')"
       />
     </app-field>
 
-    <app-field label="Categoría *">
-      <select appFieldControl (change)="patch({ categoryId: $any($event.target).value })">
+    <app-field label="Categoría *" [errorText]="validation.error('categoryId')">
+      <select
+        appFieldControl
+        [invalid]="!!validation.error('categoryId')"
+        (change)="patch({ categoryId: $any($event.target).value })"
+        (blur)="validation.touch('categoryId')"
+      >
         <option value="" [selected]="!form().categoryId">Seleccionar...</option>
         @for (category of categories(); track category.id) {
           <option [value]="category.id" [selected]="category.id === form().categoryId">
@@ -38,12 +47,14 @@
       </select>
     </app-field>
 
-    <app-field label="Unidad de medida *">
+    <app-field label="Unidad de medida *" [errorText]="validation.error('unit')">
       <input
         appFieldControl
         placeholder="Galón, unidad, juego..."
+        [invalid]="!!validation.error('unit')"
         [value]="form().unit"
         (input)="patch({ unit: $any($event.target).value })"
+        (blur)="validation.touch('unit')"
       />
     </app-field>
 

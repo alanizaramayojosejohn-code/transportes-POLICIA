@@ -38,6 +38,9 @@ import { VehicleDocumentsService } from '../../vehicle-documents/vehicle-documen
 import { DOCUMENT_TYPE_LABEL } from '../../vehicle-documents/vehicle-document.model';
 import { IncidentsService } from '../../incidents/incidents.service';
 import { INCIDENT_TYPE_LABEL } from '../../incidents/incident.model';
+import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
+import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
+import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
 
 const CONDITION_CODES: VehicleConditionCode[] = [
   'BUENO',
@@ -103,6 +106,7 @@ interface DriverSummary {
     TableRowDirective,
     TableCellDirective,
     TableEmptyRowComponent,
+    ProcedureChecklistModalComponent,
   ],
   selector: 'app-vehicle-detail',
   templateUrl: './vehicle-detail.component.html',
@@ -131,6 +135,11 @@ export class VehicleDetailComponent {
   protected readonly newCode = signal<VehicleConditionCode>('BUENO');
   protected readonly newReason = signal('');
   protected readonly submitting = signal(false);
+
+  /// Spec 016 RF-15/RF-17: completar el checklist de trámites después del alta.
+  protected readonly showChecklist = signal(false);
+  protected readonly saveChecklist = (items: UpdateProcedureChecklistItemInput[]) =>
+    this.procedureTypesService.updateVehicleChecklist(this.vehicleId(), items);
 
   private readonly vehicleId$ = toObservable(this.vehicleId);
 
@@ -215,6 +224,7 @@ export class VehicleDetailComponent {
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
     private readonly vehicleDocumentsService: VehicleDocumentsService,
     private readonly incidentsService: IncidentsService,
+    private readonly procedureTypesService: ProcedureTypesService,
   ) {}
 
   protected isExpired(expiresAt: string): boolean {

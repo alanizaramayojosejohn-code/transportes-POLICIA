@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { UsersService } from '../users.service';
 import { CreateUserInput, Role, User } from '../user.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { email, required } from '../../../shared/validation/validators';
 
 interface UserFormState {
   username: string;
@@ -37,6 +39,18 @@ export class UserFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  protected readonly validation = new FormValidation(this.form, {
+    username: required<string, UserFormState>('El nombre de usuario es obligatorio.'),
+    fullName: required('El nombre completo es obligatorio.'),
+    roleId: required('Seleccione un rol.'),
+    password: (value) => {
+      if (!this.isEdit && !value.trim()) return 'La contraseña es obligatoria.';
+      if (value && value.length < 8) return 'Debe tener al menos 8 caracteres.';
+      return null;
+    },
+    email: email<UserFormState>(),
+  });
+
   constructor(private readonly usersService: UsersService) {
     this.roles = toSignal(this.usersService.listRoles(), { initialValue: [] });
 
@@ -68,12 +82,7 @@ export class UserFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.username.trim() || !value.fullName.trim() || !value.roleId) {
-      this.errorMessage.set('El nombre de usuario, el nombre completo y el rol son obligatorios.');
-      return;
-    }
-    if ((!this.isEdit || value.password) && value.password.length < 8) {
-      this.errorMessage.set('La contraseña debe tener al menos 8 caracteres.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

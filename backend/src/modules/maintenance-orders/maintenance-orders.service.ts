@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import { CreateMaintenanceOrderInput } from './dto/create-maintenance-order.input.js';
 import { FinishMaintenanceOrderInput } from './dto/finish-maintenance-order.input.js';
 import { MaintenanceOrderFilterArgs } from './dto/maintenance-order-filter.args.js';
@@ -88,19 +89,27 @@ export class MaintenanceOrdersService {
 
     const actingUserId = actingUser.id;
 
-    const created = await this.prisma.maintenanceOrder.create({
-      data: {
-        code: this.generateCode(),
-        type: input.type,
-        status: 'IN_PROGRESS',
-        description: input.description,
-        workshopName: input.workshopName,
-        odometer: input.odometer,
-        startedAt: input.startedAt ? new Date(input.startedAt) : new Date(),
-        invoiceNumber: input.invoiceNumber,
-        vehicleId: input.vehicleId,
-        registeredById: actingUserId,
-      },
+    /// Spec 016 RF-9/RF-10: el alta y el checklist de trámites de la acción
+    /// «Orden de mantenimiento» se guardan en una sola transacción.
+    const created = await this.prisma.$transaction(async (tx) => {
+      const order = await tx.maintenanceOrder.create({
+        data: {
+          code: this.generateCode(),
+          type: input.type,
+          status: 'IN_PROGRESS',
+          description: input.description,
+          workshopName: input.workshopName,
+          odometer: input.odometer,
+          startedAt: input.startedAt ? new Date(input.startedAt) : new Date(),
+          invoiceNumber: input.invoiceNumber,
+          vehicleId: input.vehicleId,
+          registeredById: actingUserId,
+        },
+      });
+      await saveChecklistItems(tx, input.checklistItems, {
+        maintenanceOrderId: order.id,
+      });
+      return order;
     });
     return this.serialize(created);
   }

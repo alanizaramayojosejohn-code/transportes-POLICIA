@@ -1,3 +1,8 @@
+import {
+  ProcedureChecklistItem,
+  ProcedureChecklistItemDraft,
+} from '../procedure-types/procedure-type.model';
+
 export type MaintenanceType = 'PREVENTIVE' | 'CORRECTIVE';
 export type MaintenanceStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
@@ -33,6 +38,8 @@ export interface MaintenanceOrder {
   totalCost: number;
   invoiceNumber: string | null;
   vehicle: MaintenanceOrderVehicle;
+  /// Checklist de trámites de su registro (spec 016, RF-17).
+  procedureChecklistItems: ProcedureChecklistItem[];
 }
 
 export interface MaintenanceOrderPage {
@@ -57,6 +64,8 @@ export interface CreateMaintenanceOrderInput {
   startedAt?: string;
   description: string;
   invoiceNumber?: string;
+  /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
+  checklistItems?: ProcedureChecklistItemDraft[];
 }
 
 export interface FinishMaintenanceOrderInput {

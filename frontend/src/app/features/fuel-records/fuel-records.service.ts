@@ -29,6 +29,16 @@ const FUEL_RECORD_FIELDS = `
     firstName
     lastName
   }
+  procedureChecklistItems {
+    id
+    completed
+    documentCode
+    procedureTypeId
+    procedureType {
+      id
+      name
+    }
+  }
 `;
 
 const FUEL_RECORDS_QUERY = gql`

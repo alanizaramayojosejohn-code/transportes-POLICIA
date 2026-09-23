@@ -4,23 +4,27 @@
       Salida: {{ trip().destination }} · KM {{ trip().departureOdometer }}
     </div>
 
-    <app-field label="Kilometraje de llegada *">
+    <app-field label="Kilometraje de llegada *" [errorText]="validation.error('returnOdometer')">
       <input
         appFieldControl
         type="number"
+        [invalid]="!!validation.error('returnOdometer')"
         [value]="returnOdometer()"
         (input)="onOdometerInput($any($event.target).value)"
+        (blur)="validation.touch('returnOdometer')"
       />
     </app-field>
 
-    <app-field label="Nivel de combustible (%)">
+    <app-field label="Nivel de combustible (%)" [errorText]="validation.error('returnFuelLevel')">
       <input
         appFieldControl
         type="number"
         min="0"
         max="100"
+        [invalid]="!!validation.error('returnFuelLevel')"
         [value]="returnFuelLevel()"
         (input)="onFuelLevelInput($any($event.target).value)"
+        (blur)="validation.touch('returnFuelLevel')"
       />
     </app-field>
 

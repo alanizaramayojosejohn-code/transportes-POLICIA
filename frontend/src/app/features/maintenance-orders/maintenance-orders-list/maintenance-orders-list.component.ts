@@ -16,6 +16,9 @@ import { MaintenanceOrderFinishFormComponent } from '../maintenance-order-finish
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
+import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
+import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
 
 /** Órdenes de mantenimiento (spec 008). */
 @Component({
@@ -23,6 +26,7 @@ import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
     ...LIST_PAGE_IMPORTS,
     MaintenanceOrderFormComponent,
     MaintenanceOrderFinishFormComponent,
+    ProcedureChecklistModalComponent,
   ],
   selector: 'app-maintenance-orders-list',
   templateUrl: './maintenance-orders-list.component.html',
@@ -53,8 +57,17 @@ export class MaintenanceOrdersListComponent {
   protected readonly finishingOrderId = signal<string | null>(null);
   protected readonly formatDateTime = formatDateTimeEs;
 
+  /// Spec 016 RF-15/RF-17: completar el checklist de trámites después del alta.
+  protected readonly checklistOrderId = signal<string | null>(null);
+  protected readonly checklistItems = computed(
+    () =>
+      this.page().items.find((o) => o.id === this.checklistOrderId())?.procedureChecklistItems ??
+      [],
+  );
+
   constructor(
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
+    private readonly procedureTypesService: ProcedureTypesService,
     protected readonly currentRole: CurrentRoleService,
   ) {}
 
@@ -74,4 +87,10 @@ export class MaintenanceOrdersListComponent {
     const id = this.finishingOrderId();
     return id ? (this.page().items.find((o) => o.id === id) ?? null) : null;
   }
+
+  protected saveChecklist = (items: UpdateProcedureChecklistItemInput[]) => {
+    const orderId = this.checklistOrderId();
+    if (!orderId) return Promise.resolve([]);
+    return this.procedureTypesService.updateMaintenanceOrderChecklist(orderId, items);
+  };
 }

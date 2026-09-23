@@ -1,7 +1,13 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { MaintenanceOrdersService } from '../maintenance-orders.service';
 import { MaintenanceOrder } from '../maintenance-order.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, min, required } from '../../../shared/validation/validators';
+
+interface FinishFormShape {
+  totalCost: number | null;
+}
 
 /** Registro de finalización de una orden en proceso (spec 008, RF-4). */
 @Component({
@@ -18,6 +24,14 @@ export class MaintenanceOrderFinishFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<FinishFormShape>(() => ({ totalCost: this.totalCost() }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    totalCost: combine<number | null, FinishFormShape>(
+      required('Ingrese el costo total.'),
+      min(0, 'El costo total no puede ser negativo.'),
+    ),
+  });
+
   constructor(private readonly maintenanceOrdersService: MaintenanceOrdersService) {}
 
   protected onCostInput(value: string): void {
@@ -25,8 +39,7 @@ export class MaintenanceOrderFinishFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (this.totalCost() === null) {
-      this.errorMessage.set('El costo total es obligatorio.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

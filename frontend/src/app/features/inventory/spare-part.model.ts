@@ -1,3 +1,5 @@
+import { ProcedureChecklistItemDraft } from '../procedure-types/procedure-type.model';
+
 export type StockMovementType = 'IN' | 'OUT';
 
 export type SparePartType = 'LIQUIDO' | 'LLANTA' | 'PIEZA' | 'OTRO';
@@ -72,4 +74,8 @@ export interface CreateStockMovementInput {
   lotNumber?: string;
   lotExpiresAt?: string;
   vehicleId?: string;
+  /// Spec 016 RF-11/RF-12: orden de mantenimiento relacionada, sólo en salida.
+  maintenanceOrderId?: string;
+  /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
+  checklistItems?: ProcedureChecklistItemDraft[];
 }

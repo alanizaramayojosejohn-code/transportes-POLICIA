@@ -29,11 +29,13 @@
     </div>
 
     <div class="grid grid-cols-1 gap-x-[15px] gap-y-[13px] p-[17px] min-[860px]:grid-cols-2">
-      <app-field label="Placa *">
+      <app-field label="Placa *" [errorText]="validation.error('plate')">
         <input
           appFieldControl
+          [invalid]="!!validation.error('plate')"
           [value]="form().plate"
           (input)="patch({ plate: $any($event.target).value })"
+          (blur)="validation.touch('plate')"
         />
       </app-field>
 
@@ -45,13 +47,39 @@
         />
       </app-field>
 
-      <app-field label="Tipo de vehículo *">
-        <select appFieldControl (change)="patch({ type: $any($event.target).value })">
+      <app-field label="Tipo de vehículo *" [errorText]="validation.error('type')">
+        <select
+          appFieldControl
+          [invalid]="!!validation.error('type')"
+          (change)="patch({ type: $any($event.target).value })"
+          (blur)="validation.touch('type')"
+        >
           @for (type of types; track type) {
             <option [value]="type" [selected]="type === form().type">{{ typeLabels[type] }}</option>
           }
         </select>
       </app-field>
+
+      @if (!isEdit && isTransportes) {
+        <app-field label="Unidad *">
+          @if (units().length > 1) {
+            <select
+              appFieldControl
+              [value]="selectedUnitId()"
+              (change)="selectedUnitId.set($any($event.target).value)"
+            >
+              <option value="" disabled>Seleccione una unidad</option>
+              @for (u of units(); track u.id) {
+                <option [value]="u.id">{{ u.name }}</option>
+              }
+            </select>
+          } @else if (units().length === 1) {
+            <input appFieldControl [value]="units()[0].name" disabled />
+          } @else {
+            <input appFieldControl value="Sin unidad a cargo" disabled />
+          }
+        </app-field>
+      }
 
       <app-field label="Marca">
         <input
@@ -69,14 +97,16 @@
         />
       </app-field>
 
-      <app-field label="Año">
+      <app-field label="Año" [errorText]="validation.error('year')">
         <input
           appFieldControl
           type="number"
+          [invalid]="!!validation.error('year')"
           [value]="form().year ?? ''"
           (input)="
             patch({ year: $any($event.target).value ? +$any($event.target).value : undefined })
           "
+          (blur)="validation.touch('year')"
         />
       </app-field>
 
@@ -231,13 +261,23 @@
     </div>
   </section>
 
+  @if (!isEdit) {
+    <app-procedure-checklist-fields action="VEHICLE_REGISTRATION" />
+  }
+
   @if (errorMessage()) {
     <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
   }
 
   <app-form-actions>
     <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
-    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+    <button
+      type="button"
+      appButton
+      variant="primary"
+      [disabled]="submitting() || (!isEdit && isTransportes && units().length === 0)"
+      (click)="submit()"
+    >
       {{ isEdit ? 'Guardar cambios' : 'Guardar vehículo' }}
     </button>
   </app-form-actions>

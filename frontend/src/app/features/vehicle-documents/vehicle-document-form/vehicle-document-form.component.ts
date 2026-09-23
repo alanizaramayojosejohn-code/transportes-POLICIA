@@ -1,9 +1,16 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { VehicleDocumentsService } from '../vehicle-documents.service';
 import { DOCUMENT_TYPE_LABEL, DOCUMENT_TYPES, DocumentType } from '../vehicle-document.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
+
+interface VehicleDocumentFormShape {
+  vehicleId: string;
+  expiresAt: string;
+}
 
 /** Registro de un documento en el expediente vehicular (spec 010, RF-1). */
 @Component({
@@ -28,6 +35,15 @@ export class VehicleDocumentFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<VehicleDocumentFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    expiresAt: this.expiresAt(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    expiresAt: required('Ingrese la fecha de vencimiento.'),
+  });
+
   constructor(
     private readonly vehicleDocumentsService: VehicleDocumentsService,
     private readonly vehiclesService: VehiclesService,
@@ -36,8 +52,7 @@ export class VehicleDocumentFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.vehicleId() || !this.expiresAt()) {
-      this.errorMessage.set('Vehículo, tipo y fecha de vencimiento son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

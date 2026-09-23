@@ -18,6 +18,9 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { ProceduresService } from '../procedures/procedures.service.js';
+import { ProcedureChecklistItem } from '../procedures/entities/procedure-checklist-item.entity.js';
+import { UpdateProcedureChecklistItemInput } from '../procedures/dto/update-procedure-checklist-item.input.js';
 
 /**
  * Puerta GraphQL del módulo (spec 008). La consulta está abierta a
@@ -28,6 +31,7 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 export class MaintenanceOrdersResolver {
   constructor(
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
+    private readonly proceduresService: ProceduresService,
   ) {}
 
   @Query(() => MaintenanceOrderPage, { name: 'maintenanceOrders' })
@@ -43,6 +47,12 @@ export class MaintenanceOrdersResolver {
   @ResolveField(() => Vehicle)
   vehicle(@Parent() order: MaintenanceOrder) {
     return this.maintenanceOrdersService.getVehicle(order.vehicleId);
+  }
+
+  /// Spec 016 RF-17.
+  @ResolveField(() => [ProcedureChecklistItem])
+  procedureChecklistItems(@Parent() order: MaintenanceOrder) {
+    return this.proceduresService.listItems('maintenanceOrderId', order.id);
   }
 
   @UseGuards(RolesGuard)
@@ -63,5 +73,21 @@ export class MaintenanceOrdersResolver {
     @Args('input') input: FinishMaintenanceOrderInput,
   ) {
     return this.maintenanceOrdersService.finish(id, input);
+  }
+
+  /// Spec 016 RF-15/RF-20: mismo permiso que registrar la orden.
+  @UseGuards(RolesGuard)
+  @Roles('ADMINISTRADOR', 'TRANSPORTES', 'MANTENIMIENTO')
+  @Mutation(() => [ProcedureChecklistItem])
+  updateMaintenanceOrderChecklist(
+    @Args('maintenanceOrderId') maintenanceOrderId: string,
+    @Args({ name: 'items', type: () => [UpdateProcedureChecklistItemInput] })
+    items: UpdateProcedureChecklistItemInput[],
+  ) {
+    return this.proceduresService.updateItems(
+      'maintenanceOrderId',
+      maintenanceOrderId,
+      items,
+    );
   }
 }

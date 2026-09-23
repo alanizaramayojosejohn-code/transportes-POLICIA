@@ -25,6 +25,16 @@ const MAINTENANCE_ORDER_FIELDS = `
     id
     plate
   }
+  procedureChecklistItems {
+    id
+    completed
+    documentCode
+    procedureTypeId
+    procedureType {
+      id
+      name
+    }
+  }
 `;
 
 const MAINTENANCE_ORDERS_QUERY = gql`

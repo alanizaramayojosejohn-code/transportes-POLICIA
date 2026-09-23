@@ -1,33 +1,47 @@
 <app-modal [title]="isEdit ? 'Editar usuario' : 'Nuevo usuario'" (closed)="cancelled.emit()">
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
-    <app-field label="Nombre de usuario *">
+    <app-field label="Nombre de usuario *" [errorText]="validation.error('username')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('username')"
         [value]="form().username"
         (input)="patch({ username: $any($event.target).value })"
+        (blur)="validation.touch('username')"
       />
     </app-field>
 
-    <app-field [label]="'Contraseña ' + (isEdit ? '' : '*')">
+    <app-field
+      [label]="'Contraseña ' + (isEdit ? '' : '*')"
+      [errorText]="validation.error('password')"
+    >
       <input
         appFieldControl
         type="password"
+        [invalid]="!!validation.error('password')"
         [placeholder]="isEdit ? 'Dejar en blanco para no cambiarla' : 'Mínimo 8 caracteres'"
         [value]="form().password"
         (input)="patch({ password: $any($event.target).value })"
+        (blur)="validation.touch('password')"
       />
     </app-field>
 
-    <app-field label="Nombre completo *">
+    <app-field label="Nombre completo *" [errorText]="validation.error('fullName')">
       <input
         appFieldControl
+        [invalid]="!!validation.error('fullName')"
         [value]="form().fullName"
         (input)="patch({ fullName: $any($event.target).value })"
+        (blur)="validation.touch('fullName')"
       />
     </app-field>
 
-    <app-field label="Rol *">
-      <select appFieldControl (change)="patch({ roleId: $any($event.target).value })">
+    <app-field label="Rol *" [errorText]="validation.error('roleId')">
+      <select
+        appFieldControl
+        [invalid]="!!validation.error('roleId')"
+        (change)="patch({ roleId: $any($event.target).value })"
+        (blur)="validation.touch('roleId')"
+      >
         <option value="" [selected]="!form().roleId">Seleccionar rol...</option>
         @for (role of roles(); track role.id) {
           <option [value]="role.id" [selected]="role.id === form().roleId">
@@ -54,12 +68,14 @@
       />
     </app-field>
 
-    <app-field label="Correo">
+    <app-field label="Correo" [errorText]="validation.error('email')">
       <input
         appFieldControl
         type="email"
+        [invalid]="!!validation.error('email')"
         [value]="form().email ?? ''"
         (input)="patch({ email: $any($event.target).value })"
+        (blur)="validation.touch('email')"
       />
     </app-field>
   </div>

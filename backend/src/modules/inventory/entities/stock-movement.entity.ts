@@ -44,6 +44,11 @@ export class StockMovement {
   @Field(() => String, { nullable: true })
   vehicleId!: string | null;
 
+  /// Spec 016 RF-11/RF-12: orden de mantenimiento relacionada, sólo en una
+  /// salida de Entrega de refacciones.
+  @Field(() => String, { nullable: true })
+  maintenanceOrderId!: string | null;
+
   @Field(() => Date)
   createdAt!: Date;
 }

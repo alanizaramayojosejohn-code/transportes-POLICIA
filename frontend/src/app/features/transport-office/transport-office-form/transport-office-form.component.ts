@@ -6,6 +6,8 @@ import { CreatePersonnelInput, Personnel } from '../../personnel/personnel.model
 import { UsersService } from '../../users/users.service';
 import { Role } from '../../users/user.model';
 import { POLICE_RANK_OPTIONS } from '../../../shared/police-ranks';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { requiredIf, required } from '../../../shared/validation/validators';
 
 /// Roles de sistema que se asignan desde esta pantalla (spec 015, RF-2): los
 /// roles operativos (TRANSPORTES, CONDUCTOR) se asignan desde Unidades y
@@ -22,6 +24,10 @@ interface TransportOfficeFormState {
   username: string;
   password: string;
   roleId: string;
+}
+
+function wantsAccount(form: TransportOfficeFormState): boolean {
+  return !!(form.username || form.password || form.roleId);
 }
 
 const EMPTY_FORM: TransportOfficeFormState = {
@@ -58,6 +64,25 @@ export class TransportOfficeFormComponent {
       (ADMIN_OFFICE_ROLE_CODES as readonly string[]).includes(role.code),
     ),
   );
+
+  protected readonly validation = new FormValidation(this.form, {
+    ci: required<string, TransportOfficeFormState>('La CI es obligatoria.'),
+    firstName: required('Los nombres son obligatorios.'),
+    lastName: required('Los apellidos son obligatorios.'),
+    username: requiredIf(
+      (form) => this.canManageAccount && wantsAccount(form),
+      'El usuario es obligatorio para crear la cuenta.',
+    ),
+    password: (value, form) => {
+      if (!this.canManageAccount || !wantsAccount(form)) return null;
+      if (!value.trim()) return 'La contraseña es obligatoria para crear la cuenta.';
+      return value.length < 8 ? 'Debe tener al menos 8 caracteres.' : null;
+    },
+    roleId: requiredIf(
+      (form) => this.canManageAccount && wantsAccount(form),
+      'Seleccione un rol de sistema para crear la cuenta.',
+    ),
+  });
 
   constructor(
     private readonly personnelService: PersonnelService,
@@ -101,18 +126,10 @@ export class TransportOfficeFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.ci.trim() || !value.firstName.trim() || !value.lastName.trim()) {
-      this.errorMessage.set('CI, nombres y apellidos son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
-    const wantsAccount =
-      this.canManageAccount && (value.username || value.password || value.roleId);
-    if (wantsAccount && (!value.username.trim() || value.password.length < 8 || !value.roleId)) {
-      this.errorMessage.set(
-        'Usuario, contraseña de al menos 8 caracteres y rol son obligatorios para crear la cuenta.',
-      );
-      return;
-    }
+    const createsAccount = this.canManageAccount && wantsAccount(value);
 
     this.submitting.set(true);
     this.errorMessage.set(null);
@@ -131,7 +148,7 @@ export class TransportOfficeFormComponent {
         ? await this.personnelService.update(current.id, payload)
         : await this.personnelService.create(payload);
 
-      if (wantsAccount) {
+      if (createsAccount) {
         await this.usersService.create({
           username: value.username,
           password: value.password,

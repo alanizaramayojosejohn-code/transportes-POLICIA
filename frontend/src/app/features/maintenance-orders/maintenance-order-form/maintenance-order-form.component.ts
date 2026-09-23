@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { MaintenanceOrdersService } from '../maintenance-orders.service';
@@ -8,16 +8,27 @@ import {
   MaintenanceType,
 } from '../maintenance-order.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
+import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, min, required } from '../../../shared/validation/validators';
+
+interface MaintenanceOrderFormShape {
+  vehicleId: string;
+  odometer: number | null;
+  description: string;
+}
 
 /** Registro de ingreso a mantenimiento (spec 008, RF-1). */
 @Component({
-  imports: [...FORM_MODAL_IMPORTS],
+  imports: [...FORM_MODAL_IMPORTS, ProcedureChecklistFieldsComponent],
   selector: 'app-maintenance-order-form',
   templateUrl: './maintenance-order-form.component.html',
 })
 export class MaintenanceOrderFormComponent {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
+
+  private readonly checklistFields = viewChild(ProcedureChecklistFieldsComponent);
 
   protected readonly types = MAINTENANCE_TYPES;
   protected readonly typeLabel = MAINTENANCE_TYPE_LABEL;
@@ -33,6 +44,20 @@ export class MaintenanceOrderFormComponent {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  private readonly formShape = computed<MaintenanceOrderFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    odometer: this.odometer(),
+    description: this.description(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    odometer: combine<number | null, MaintenanceOrderFormShape>(
+      required('Ingrese el kilometraje de ingreso.'),
+      min(0, 'El kilometraje no puede ser negativo.'),
+    ),
+    description: required('Ingrese una descripción o diagnóstico.'),
+  });
+
   constructor(
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
     private readonly vehiclesService: VehiclesService,
@@ -45,8 +70,7 @@ export class MaintenanceOrderFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.vehicleId() || this.odometer() === null || !this.description().trim()) {
-      this.errorMessage.set('Vehículo, kilometraje y descripción son obligatorios.');
+    if (!this.validation.validateAll()) {
       return;
     }
 
@@ -61,6 +85,7 @@ export class MaintenanceOrderFormComponent {
         startedAt: new Date(this.startedAt()).toISOString(),
         description: this.description(),
         invoiceNumber: this.invoiceNumber() || undefined,
+        checklistItems: this.checklistFields()?.items(),
       });
       this.saved.emit();
     } catch (error) {

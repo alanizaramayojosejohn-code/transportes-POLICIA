@@ -1,0 +1,27 @@
+@if (types().length > 0) {
+  <div class="border-t border-edge px-6 py-5">
+    <h3 class="mb-3 text-13 font-semibold text-ink">Trámites de este registro</h3>
+    <div class="flex flex-col gap-3">
+      @for (type of types(); track type.id) {
+        <div class="grid grid-cols-1 items-center gap-2 min-[640px]:grid-cols-[1fr_auto]">
+          <label class="flex items-center gap-2 text-13 text-ink">
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-edge-strong"
+              [checked]="itemFor(type.id).completed"
+              (change)="toggle(type.id)"
+            />
+            {{ type.name }}
+          </label>
+          <input
+            appFieldControl
+            placeholder="Código físico (opcional)"
+            class="min-[640px]:w-56"
+            [value]="itemFor(type.id).documentCode || ''"
+            (input)="setDocumentCode(type.id, $any($event.target).value)"
+          />
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -1,5 +1,6 @@
 import { Component, computed, Signal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { FuelRecordsService } from '../fuel-records.service';
 import { FUEL_TYPE_LABEL, FUEL_TYPES, FuelRecordFilter, FuelType } from '../fuel-record.model';
@@ -9,13 +10,21 @@ import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignment
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
+import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
+import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
 
 /**
  * Abastecimientos de combustible (spec 007). Un CONDUCTOR (spec 014) sólo ve
  * y carga combustible de su propio vehículo a cargo, igual que en Recorridos.
  */
 @Component({
-  imports: [...LIST_PAGE_IMPORTS, FuelRecordFormComponent],
+  imports: [
+    ...LIST_PAGE_IMPORTS,
+    FuelRecordFormComponent,
+    RouterLink,
+    ProcedureChecklistModalComponent,
+  ],
   selector: 'app-fuel-records-list',
   templateUrl: './fuel-records-list.component.html',
 })
@@ -49,8 +58,17 @@ export class FuelRecordsListComponent {
   protected readonly showForm = signal(false);
   protected readonly formatDateTime = formatDateTimeEs;
 
+  /// Spec 016 RF-15/RF-17: completar el checklist de trámites después del alta.
+  protected readonly checklistRecordId = signal<string | null>(null);
+  protected readonly checklistItems = computed(
+    () =>
+      this.page().items.find((r) => r.id === this.checklistRecordId())?.procedureChecklistItems ??
+      [],
+  );
+
   constructor(
     private readonly fuelRecordsService: FuelRecordsService,
+    private readonly procedureTypesService: ProcedureTypesService,
     protected readonly currentRole: CurrentRoleService,
     vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
   ) {
@@ -63,4 +81,10 @@ export class FuelRecordsListComponent {
   protected closeForm(): void {
     this.showForm.set(false);
   }
+
+  protected saveChecklist = (items: UpdateProcedureChecklistItemInput[]) => {
+    const recordId = this.checklistRecordId();
+    if (!recordId) return Promise.resolve([]);
+    return this.procedureTypesService.updateFuelRecordChecklist(recordId, items);
+  };
 }

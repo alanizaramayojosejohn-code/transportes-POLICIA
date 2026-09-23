@@ -60,17 +60,30 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            @if (order.status === 'IN_PROGRESS' && currentRole.canWriteMaintenance()) {
-              <button
-                type="button"
-                appButton
-                size="sm"
-                variant="soft"
-                (click)="openFinish(order.id)"
-              >
-                Finalizar
-              </button>
-            }
+            <div class="flex justify-end gap-2">
+              @if (order.procedureChecklistItems.length > 0) {
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  variant="soft"
+                  (click)="checklistOrderId.set(order.id)"
+                >
+                  Trámites
+                </button>
+              }
+              @if (order.status === 'IN_PROGRESS' && currentRole.canWriteMaintenance()) {
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  variant="soft"
+                  (click)="openFinish(order.id)"
+                >
+                  Finalizar
+                </button>
+              }
+            </div>
           </td>
         </tr>
       } @empty {
@@ -91,5 +104,14 @@
     [order]="finishingOrder!"
     (saved)="closeFinishForm()"
     (cancelled)="closeFinishForm()"
+  />
+}
+
+@if (checklistOrderId()) {
+  <app-procedure-checklist-modal
+    [items]="checklistItems()"
+    [editable]="currentRole.canWriteMaintenance()"
+    [onSave]="saveChecklist"
+    (closed)="checklistOrderId.set(null)"
   />
 }

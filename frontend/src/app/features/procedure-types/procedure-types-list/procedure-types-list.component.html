@@ -1,0 +1,106 @@
+<app-page-head
+  title="Trámites"
+  description="Catálogo de tipos de trámite por acción y su checklist en cada registro."
+>
+  @if (currentRole.canWrite()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Tipo de trámite
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por nombre..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="action()" (change)="action.set($any($event.target).value)">
+      <option value="">Todas las acciones</option>
+      @for (a of actions; track a) {
+        <option [value]="a">{{ actionLabels[a] }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="isActive()"
+      (change)="isActive.set($any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [footer]="page().total + ' tipo(s) de trámite en total.'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Nombre</th>
+        <th appTableHeadCell>Acción</th>
+        <th appTableHeadCell>Descripción</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (type of page().items; track type.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ type.name }}</td>
+          <td appTableCell>{{ actionLabels[type.action] }}</td>
+          <td appTableCell>{{ type.description || '—' }}</td>
+          <td appTableCell>
+            @if (type.isActive) {
+              <app-badge tone="green">Activo</app-badge>
+            } @else {
+              <app-badge tone="gray">Inactivo</app-badge>
+            }
+          </td>
+          <td appTableCell class="text-right">
+            @if (currentRole.canWrite()) {
+              <div class="flex justify-end gap-2">
+                <button type="button" appButton size="sm" variant="soft" (click)="edit(type.id)">
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="toggleActive(type.id, type.isActive)"
+                >
+                  {{ type.isActive ? 'Desactivar' : 'Reactivar' }}
+                </button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  variant="danger"
+                  (click)="remove(type.id)"
+                >
+                  Eliminar
+                </button>
+              </div>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="5">
+          Sin tipos de trámite registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>
+
+@if (showForm()) {
+  <app-procedure-type-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingId()) {
+  <app-procedure-type-form
+    [procedureType]="editingType"
+    (saved)="closeForm()"
+    (cancelled)="closeForm()"
+  />
+}

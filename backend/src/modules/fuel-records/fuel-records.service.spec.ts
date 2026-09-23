@@ -25,10 +25,22 @@ function buildPrismaMock() {
       create: vi.fn(),
       count: vi.fn(),
     },
-    $transaction: vi.fn((operations: Promise<unknown>[]) =>
-      Promise.all(operations),
-    ),
+    procedureType: {
+      findMany: vi.fn(),
+    },
+    procedureChecklistItem: {
+      createMany: vi.fn(),
+    },
+    $transaction: vi.fn(),
   };
+  // Soporta las dos formas de $transaction: un arreglo de promesas (findAll)
+  // y una función de callback con `tx` (create).
+  mock.$transaction.mockImplementation((arg: unknown) => {
+    if (typeof arg === 'function') {
+      return (arg as (tx: typeof mock) => Promise<unknown>)(mock);
+    }
+    return Promise.all(arg as Promise<unknown>[]);
+  });
   return mock as unknown as PrismaService & typeof mock;
 }
 
@@ -152,6 +164,47 @@ describe('FuelRecordsService', () => {
           data: expect.objectContaining({ efficiencyKmPerUnit: 10 }),
         }),
       );
+    });
+
+    it('guarda el checklist de trámites junto con el abastecimiento (spec 016, RF-9/RF-10)', async () => {
+      vi.mocked(prisma.vehicle.findUnique).mockResolvedValue({
+        id: 'v1',
+      } as never);
+      vi.mocked(prisma.fuelRecord.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.fuelRecord.create).mockResolvedValue({
+        id: 'f1',
+        quantity: 60,
+        unitPrice: 3.74,
+        totalCost: 224.4,
+        efficiencyKmPerUnit: null,
+      } as never);
+      vi.mocked(prisma.procedureType.findMany).mockResolvedValue([
+        { id: 't1' },
+      ] as never);
+
+      await service.create(
+        {
+          vehicleId: 'v1',
+          suppliedAt: '2026-09-10T10:00:00.000Z',
+          fuelType: 'DIESEL',
+          quantity: 60,
+          unitPrice: 3.74,
+          odometer: 12000,
+          checklistItems: [{ procedureTypeId: 't1', completed: false }],
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.procedureChecklistItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            procedureTypeId: 't1',
+            completed: false,
+            documentCode: undefined,
+            fuelRecordId: 'f1',
+          },
+        ],
+      });
     });
   });
 

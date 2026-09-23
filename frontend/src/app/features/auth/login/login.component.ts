@@ -1,23 +1,42 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
+import { PwaInstallService } from '../../../core/pwa-install.service';
 import { ThemeService } from '../../../core/theme.service';
+import { ButtonDirective } from '../../../shared/button/button.directive';
 import { IconComponent } from '../../../shared/icon/icon.component';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
+
+interface LoginForm {
+  username: string;
+  password: string;
+}
 
 /** Login del sistema (spec 013, H1/H3). Única ruta pública. */
 @Component({
-  imports: [IconComponent],
+  imports: [IconComponent, ButtonDirective],
   selector: 'app-login',
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   protected readonly themeService = inject(ThemeService);
+  protected readonly pwaInstall = inject(PwaInstallService);
 
   protected readonly username = signal('');
   protected readonly password = signal('');
   protected readonly passwordVisible = signal(false);
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  private readonly form = computed<LoginForm>(() => ({
+    username: this.username(),
+    password: this.password(),
+  }));
+  protected readonly validation = new FormValidation(this.form, {
+    username: required('Ingrese su nombre de usuario.'),
+    password: required('Ingrese su contraseña.'),
+  });
 
   constructor(
     private readonly authService: AuthService,
@@ -29,9 +48,16 @@ export class LoginComponent {
     this.passwordVisible.update((visible) => !visible);
   }
 
+  protected async installPwa(): Promise<void> {
+    await this.pwaInstall.promptInstall();
+  }
+
+  protected dismissInstall(): void {
+    this.pwaInstall.dismiss();
+  }
+
   protected async submit(): Promise<void> {
-    if (!this.username().trim() || !this.password()) {
-      this.errorMessage.set('Ingrese su nombre de usuario y su contraseña.');
+    if (!this.validation.validateAll()) {
       return;
     }
 

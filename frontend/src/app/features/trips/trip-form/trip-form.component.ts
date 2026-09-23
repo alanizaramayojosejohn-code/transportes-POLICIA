@@ -1,4 +1,4 @@
-import { Component, effect, output, signal } from '@angular/core';
+import { Component, computed, effect, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { TripsService } from '../trips.service';
@@ -7,6 +7,17 @@ import { PersonnelOption, PersonnelService } from '../../personnel/personnel.ser
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { combine, max, min, required } from '../../../shared/validation/validators';
+
+interface TripFormShape {
+  vehicleId: string;
+  driverId: string;
+  destination: string;
+  departureAt: string;
+  departureOdometer: number | null;
+  departureFuelLevel: number | null;
+}
 
 /**
  * Registro de salida de un recorrido (spec 006, RF-1). Un CONDUCTOR (spec
@@ -37,6 +48,29 @@ export class TripFormComponent {
   protected readonly departureConditionNotes = signal('');
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  private readonly formShape = computed<TripFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    driverId: this.driverId(),
+    destination: this.destination(),
+    departureAt: this.departureAt(),
+    departureOdometer: this.departureOdometer(),
+    departureFuelLevel: this.departureFuelLevel(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    driverId: required('Seleccione un conductor.'),
+    destination: required('Ingrese el destino del recorrido.'),
+    departureAt: required('Ingrese la fecha y hora de salida.'),
+    departureOdometer: combine<number | null, TripFormShape>(
+      required('Ingrese el kilometraje de salida.'),
+      min(0, 'El kilometraje no puede ser negativo.'),
+    ),
+    departureFuelLevel: combine<number | null, TripFormShape>(
+      min(0, 'El nivel de combustible no puede ser menor a 0%.'),
+      max(100, 'El nivel de combustible no puede ser mayor a 100%.'),
+    ),
+  });
 
   constructor(
     private readonly tripsService: TripsService,
@@ -71,15 +105,7 @@ export class TripFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (
-      !this.vehicleId() ||
-      !this.driverId() ||
-      !this.destination().trim() ||
-      this.departureOdometer() === null
-    ) {
-      this.errorMessage.set(
-        'Vehículo, conductor, destino y kilometraje de salida son obligatorios.',
-      );
+    if (!this.validation.validateAll()) {
       return;
     }
 
