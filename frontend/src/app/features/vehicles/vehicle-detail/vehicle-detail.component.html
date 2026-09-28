@@ -1,389 +1,443 @@
 @if (vehicle(); as v) {
-  <app-drawer
+  <app-modal
     eyebrow="EXPEDIENTE VEHICULAR"
     [title]="title()"
-    subtitle="Información centralizada e historial de la movilidad"
+    description="Información centralizada e historial de la movilidad"
+    wide
     (closed)="closed.emit()"
   >
-    <div class="-mx-[22px] -mt-5">
-      <app-drawer-tabs
-        [tabs]="tabs"
-        [active]="activeTab()"
-        (activeChange)="activeTab.set($event)"
-      />
-    </div>
+    <app-tabs [tabs]="tabs" [active]="activeTab()" (activeChange)="activeTab.set($event)" />
 
-    <div class="pt-5">
-      @switch (activeTab()) {
-        @case ('general') {
-          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Información general</h4>
-          <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
-            <app-data-cell label="Placa">{{ v.plate }}</app-data-cell>
-            <app-data-cell label="Placa DNFR">{{ v.plateDnfr || '—' }}</app-data-cell>
-            <app-data-cell label="Tipo">{{ typeLabels[v.type] }}</app-data-cell>
-            <app-data-cell label="Marca">{{ v.brand || '—' }}</app-data-cell>
-            <app-data-cell label="Modelo">{{ v.model || '—' }}</app-data-cell>
-            <app-data-cell label="Año">{{ v.year || '—' }}</app-data-cell>
-            <app-data-cell label="Chasis">{{ v.chassisNumber || '—' }}</app-data-cell>
-            <app-data-cell label="Motor">{{ v.engineNumber || '—' }}</app-data-cell>
-            <app-data-cell label="Color">{{ v.color || '—' }}</app-data-cell>
-            <app-data-cell label="Unidad">{{ v.currentUnit?.name || 'Sin asignar' }}</app-data-cell>
-            <app-data-cell label="Estado">
-              @if (v.currentCondition; as c) {
-                <app-badge [tone]="conditionBadge[c.code]">{{ conditionLabels[c.code] }}</app-badge>
-              } @else {
-                <app-badge tone="gray">Sin evaluar</app-badge>
-              }
-            </app-data-cell>
-            <app-data-cell label="Último KM">{{ v.lastOdometer ?? '—' }}</app-data-cell>
-            <app-data-cell label="Conductor encargado">
-              {{
-                v.currentDriver
-                  ? (v.currentDriver.rank ? v.currentDriver.rank + ' ' : '') +
-                    v.currentDriver.firstName +
-                    ' ' +
-                    v.currentDriver.lastName
-                  : 'Sin conductor asignado'
-              }}
-            </app-data-cell>
-            <app-data-cell label="Encargado de transportes">
-              @if (v.currentUnit?.currentManager?.officer; as m) {
-                {{ (m.rank ? m.rank + ' ' : '') + m.firstName + ' ' + m.lastName }}
-              } @else {
-                Sin encargado
-              }
-            </app-data-cell>
+    <div class="px-[22px] pb-5">
+      @if (activePhoto(); as photo) {
+        <div class="relative mt-4 overflow-hidden rounded-xl border border-edge bg-surface-2">
+          <div class="relative aspect-[16/9] w-full">
+            <img
+              [src]="photo.dataUrl"
+              [alt]="photoSlotLabel[photo.slotKey] || 'Fotografía del vehículo'"
+              class="h-full w-full object-cover"
+            />
+            <span
+              class="absolute left-2 top-2 rounded-[7px] bg-black/[78%] px-2 py-1 text-[10px] font-extrabold text-white backdrop-blur-[8px]"
+            >
+              {{ photoSlotLabel[photo.slotKey] || 'Foto' }}
+            </span>
+            @if (orderedPhotos().length > 1) {
+              <button
+                type="button"
+                class="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/[55%] text-white backdrop-blur-[8px] transition-colors hover:bg-black/[75%]"
+                aria-label="Fotografía anterior"
+                (click)="previousPhoto()"
+              >
+                <app-icon name="chevron-down" class="h-4 w-4 rotate-90" />
+              </button>
+              <button
+                type="button"
+                class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/[55%] text-white backdrop-blur-[8px] transition-colors hover:bg-black/[75%]"
+                aria-label="Fotografía siguiente"
+                (click)="nextPhoto()"
+              >
+                <app-icon name="chevron-down" class="h-4 w-4 -rotate-90" />
+              </button>
+              <span
+                class="absolute bottom-2 right-2 rounded-full bg-black/[78%] px-2 py-0.5 text-[10px] font-bold text-white"
+              >
+                {{ activePhotoIndex() + 1 }} / {{ orderedPhotos().length }}
+              </span>
+            }
           </div>
-
-          @if (v.observations) {
-            <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Observaciones</h4>
-            <div class="rounded-sm border border-edge bg-surface-2 p-3 text-12-5 text-ink-muted">
-              {{ v.observations }}
-            </div>
-          }
-
-          @if (v.procedureChecklistItems.length > 0) {
-            <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Trámites</h4>
-            <div class="flex flex-wrap items-center gap-2">
-              @for (item of v.procedureChecklistItems; track item.id) {
-                <app-badge [tone]="item.completed ? 'green' : 'gray'">
-                  {{ item.procedureType.name }}
-                </app-badge>
-              }
-              @if (canWrite()) {
+          @if (orderedPhotos().length > 1) {
+            <div class="flex justify-center gap-1.5 py-2">
+              @for (p of orderedPhotos(); track p.id; let i = $index) {
                 <button
                   type="button"
-                  appButton
-                  size="sm"
-                  variant="soft"
-                  (click)="showChecklist.set(true)"
-                >
-                  Completar trámites
-                </button>
+                  class="h-1.5 rounded-full transition-all"
+                  [class]="i === activePhotoIndex() ? 'w-4 bg-accent' : 'w-1.5 bg-edge-strong'"
+                  [attr.aria-label]="'Ver fotografía ' + (i + 1)"
+                  (click)="activePhotoIndex.set(i)"
+                ></button>
               }
             </div>
           }
-
-          @if (canWrite()) {
-            <div class="mt-5">
-              @if (!showConditionForm()) {
-                <button
-                  type="button"
-                  appButton
-                  variant="primary"
-                  size="sm"
-                  (click)="showConditionForm.set(true)"
-                >
-                  Registrar condición
-                </button>
-              } @else {
-                <div class="rounded-sm border border-edge bg-surface-2 p-4">
-                  <app-field label="Condición *" class="mb-3">
-                    <select appFieldControl (change)="newCode.set($any($event.target).value)">
-                      @for (code of conditionCodes; track code) {
-                        <option [value]="code" [selected]="code === newCode()">
-                          {{ conditionLabels[code] }}
-                        </option>
-                      }
-                    </select>
-                  </app-field>
-                  <app-field label="Motivo" class="mb-3">
-                    <textarea
-                      appFieldControl
-                      [value]="newReason()"
-                      (input)="newReason.set($any($event.target).value)"
-                    ></textarea>
-                  </app-field>
-                  <div class="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      appButton
-                      size="sm"
-                      (click)="showConditionForm.set(false)"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="button"
-                      appButton
-                      variant="primary"
-                      size="sm"
-                      [disabled]="submitting()"
-                      (click)="registerCondition()"
-                    >
-                      Guardar
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-
-          <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Historial de condición</h4>
-          @if (v.conditionHistory.length === 0) {
-            <p class="text-12-5 text-ink-muted">Sin evaluar todavía.</p>
-          } @else {
-            <div class="flex flex-col gap-2">
-              @for (entry of v.conditionHistory; track entry.id) {
-                <app-timeline-item>
-                  <div class="flex items-center justify-between">
-                    <app-badge [tone]="conditionBadge[entry.code]">{{
-                      conditionLabels[entry.code]
-                    }}</app-badge>
-                    <span class="text-ink-faint">{{ formatDate(entry.changedAt) }}</span>
-                  </div>
-                  @if (entry.reason) {
-                    <p class="mt-1.5 text-ink-muted">{{ entry.reason }}</p>
-                  }
-                </app-timeline-item>
-              }
-            </div>
-          }
-        }
-
-        @case ('asignaciones') {
-          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Historial de asignaciones</h4>
-          @if (v.unitAssignmentHistory.length === 0) {
-            <p class="text-12-5 text-ink-muted">Sin asignaciones registradas.</p>
-          } @else {
-            <div class="flex flex-col gap-2">
-              @for (assignment of v.unitAssignmentHistory; track assignment.id) {
-                <app-timeline-item>
-                  <strong>{{ assignment.unit.name }}</strong>
-                  <span class="text-ink-faint">
-                    · {{ formatDate(assignment.startDate) }} –
-                    {{ assignment.endDate ? formatDate(assignment.endDate) : 'vigente' }}
-                  </span>
-                </app-timeline-item>
-              }
-            </div>
-          }
-        }
-
-        @case ('conductores') {
-          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Encargos de conductor</h4>
-          @if (v.driverAssignmentHistory.length === 0) {
-            <p class="mb-5 text-12-5 text-ink-muted">Sin encargos registrados.</p>
-          } @else {
-            <div class="mb-5 flex flex-col gap-2">
-              @for (assignment of v.driverAssignmentHistory; track assignment.id) {
-                <app-timeline-item>
-                  <strong
-                    >{{ assignment.driver.rank ? assignment.driver.rank + ' ' : '' }}
-                    {{ assignment.driver.firstName }} {{ assignment.driver.lastName }}</strong
-                  >
-                  <span class="text-ink-faint">
-                    · {{ formatDate(assignment.startDate) }} –
-                    {{ assignment.endDate ? formatDate(assignment.endDate) : 'vigente' }}
-                  </span>
-                </app-timeline-item>
-              }
-            </div>
-          }
-
-          <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Uso por recorridos</h4>
-          <app-table [footer]="drivers().length + ' conductor(es) con recorridos registrados.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Conductor</th>
-                <th appTableHeadCell>Viajes</th>
-                <th appTableHeadCell>Último recorrido</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (driver of drivers(); track driver.id) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">{{ driver.name }}</td>
-                  <td appTableCell>{{ driver.tripCount }}</td>
-                  <td appTableCell>{{ formatDate(driver.lastTripAt) }}</td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="3">
-                  Sin recorridos registrados para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
-
-        @case ('recorridos') {
-          <app-table [footer]="trips().total + ' recorrido(s) en total.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Conductor</th>
-                <th appTableHeadCell>Destino</th>
-                <th appTableHeadCell>Salida</th>
-                <th appTableHeadCell>Llegada</th>
-                <th appTableHeadCell>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (trip of trips().items; track trip.id) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">
-                    {{ trip.driver.firstName }} {{ trip.driver.lastName }}
-                  </td>
-                  <td appTableCell>{{ trip.destination }}</td>
-                  <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
-                  <td appTableCell>{{ formatDateTime(trip.returnAt) }}</td>
-                  <td appTableCell>
-                    <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
-                      {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
-                    </app-badge>
-                  </td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="5">
-                  Sin recorridos registrados para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
-
-        @case ('combustible') {
-          <app-table [footer]="fuelRecords().total + ' abastecimiento(s) en total.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Fecha</th>
-                <th appTableHeadCell>Tipo</th>
-                <th appTableHeadCell>Litros</th>
-                <th appTableHeadCell>Costo total</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (record of fuelRecords().items; track record.id) {
-                <tr appTableRow>
-                  <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
-                  <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
-                  <td appTableCell>{{ record.quantity }}</td>
-                  <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="4">
-                  Sin abastecimientos registrados para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
-
-        @case ('mantenimiento') {
-          <app-table [footer]="maintenanceOrders().total + ' orden(es) en total.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Código</th>
-                <th appTableHeadCell>Tipo</th>
-                <th appTableHeadCell>Taller</th>
-                <th appTableHeadCell>Costo</th>
-                <th appTableHeadCell>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (order of maintenanceOrders().items; track order.id) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">{{ order.code }}</td>
-                  <td appTableCell>{{ maintenanceTypeLabel[order.type] }}</td>
-                  <td appTableCell>{{ order.workshopName || '—' }}</td>
-                  <td appTableCell>
-                    {{ order.status === 'COMPLETED' ? 'Bs. ' + order.totalCost.toFixed(2) : '—' }}
-                  </td>
-                  <td appTableCell>
-                    <app-badge [tone]="order.status === 'COMPLETED' ? 'gray' : 'amber'">
-                      {{ maintenanceStatusLabel[order.status] }}
-                    </app-badge>
-                  </td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="5">
-                  Sin órdenes de mantenimiento registradas para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
-
-        @case ('documentos') {
-          <app-table [footer]="documents().total + ' documento(s) en total.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Tipo</th>
-                <th appTableHeadCell>Número</th>
-                <th appTableHeadCell>Vencimiento</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (document of documents().items; track document.id) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">{{ documentTypeLabel[document.type] }}</td>
-                  <td appTableCell>{{ document.documentNumber || '—' }}</td>
-                  <td appTableCell>
-                    <div class="flex items-center gap-1.5">
-                      {{ formatDate(document.expiresAt) }}
-                      @if (isExpired(document.expiresAt)) {
-                        <app-badge tone="red">Vencido</app-badge>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="3">
-                  Sin documentos registrados para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
-
-        @case ('incidentes') {
-          <app-table [footer]="incidents().total + ' incidente(s) en total.'">
-            <thead>
-              <tr appTableHeadRow>
-                <th appTableHeadCell>Fecha</th>
-                <th appTableHeadCell>Tipo</th>
-                <th appTableHeadCell>Lugar</th>
-                <th appTableHeadCell>Referencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (incident of incidents().items; track incident.id) {
-                <tr appTableRow>
-                  <td appTableCell>{{ formatDateTime(incident.occurredAt) }}</td>
-                  <td appTableCell>{{ incidentTypeLabel[incident.type] }}</td>
-                  <td appTableCell>{{ incident.place }}</td>
-                  <td appTableCell>{{ incident.policeReportNumber || incident.code }}</td>
-                </tr>
-              } @empty {
-                <tr appTableEmpty [colspan]="4">
-                  Sin incidentes registrados para este vehículo.
-                </tr>
-              }
-            </tbody>
-          </app-table>
-        }
+        </div>
       }
+
+      <div class="pt-5">
+        @switch (activeTab()) {
+          @case ('general') {
+            <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Información general</h4>
+            <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
+              <app-data-cell label="Placa">{{ v.plate }}</app-data-cell>
+              <app-data-cell label="Placa DNFR">{{ v.plateDnfr || '—' }}</app-data-cell>
+              <app-data-cell label="Tipo">{{ typeLabels[v.type] }}</app-data-cell>
+              <app-data-cell label="Marca">{{ v.brand || '—' }}</app-data-cell>
+              <app-data-cell label="Modelo">{{ v.model || '—' }}</app-data-cell>
+              <app-data-cell label="Año">{{ v.year || '—' }}</app-data-cell>
+              <app-data-cell label="Chasis">{{ v.chassisNumber || '—' }}</app-data-cell>
+              <app-data-cell label="Motor">{{ v.engineNumber || '—' }}</app-data-cell>
+              <app-data-cell label="Color">{{ v.color || '—' }}</app-data-cell>
+              <app-data-cell label="Unidad">{{
+                v.currentUnit?.name || 'Sin asignar'
+              }}</app-data-cell>
+              <app-data-cell label="Estado">
+                @if (v.currentCondition; as c) {
+                  <app-badge [tone]="conditionBadge[c.code]">{{
+                    conditionLabels[c.code]
+                  }}</app-badge>
+                } @else {
+                  <app-badge tone="gray">Sin evaluar</app-badge>
+                }
+              </app-data-cell>
+              <app-data-cell label="Último KM">{{ v.lastOdometer ?? '—' }}</app-data-cell>
+              <app-data-cell label="Conductor encargado">
+                {{
+                  v.currentDriver
+                    ? (v.currentDriver.rank ? v.currentDriver.rank + ' ' : '') +
+                      v.currentDriver.firstName +
+                      ' ' +
+                      v.currentDriver.lastName
+                    : 'Sin conductor asignado'
+                }}
+              </app-data-cell>
+              <app-data-cell label="Encargado de transportes">
+                @if (v.currentUnit?.currentManager?.officer; as m) {
+                  {{ (m.rank ? m.rank + ' ' : '') + m.firstName + ' ' + m.lastName }}
+                } @else {
+                  Sin encargado
+                }
+              </app-data-cell>
+            </div>
+
+            @if (v.observations) {
+              <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Observaciones</h4>
+              <div class="rounded-sm border border-edge bg-surface-2 p-3 text-12-5 text-ink-muted">
+                {{ v.observations }}
+              </div>
+            }
+
+            @if (v.procedureChecklistItems.length > 0) {
+              <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Trámites</h4>
+              <div class="flex flex-wrap items-center gap-2">
+                @for (item of v.procedureChecklistItems; track item.id) {
+                  <app-badge [tone]="item.completed ? 'green' : 'gray'">
+                    {{ item.procedureType.name }}
+                  </app-badge>
+                }
+                @if (canWrite()) {
+                  <button
+                    type="button"
+                    appButton
+                    size="sm"
+                    variant="soft"
+                    (click)="showChecklist.set(true)"
+                  >
+                    Completar trámites
+                  </button>
+                }
+              </div>
+            }
+
+            @if (canWrite()) {
+              <div class="mt-5">
+                @if (!showConditionForm()) {
+                  <button
+                    type="button"
+                    appButton
+                    variant="primary"
+                    size="sm"
+                    (click)="showConditionForm.set(true)"
+                  >
+                    Registrar condición
+                  </button>
+                } @else {
+                  <div class="rounded-sm border border-edge bg-surface-2 p-4">
+                    <app-field label="Condición *" class="mb-3">
+                      <select appFieldControl (change)="newCode.set($any($event.target).value)">
+                        @for (code of conditionCodes; track code) {
+                          <option [value]="code" [selected]="code === newCode()">
+                            {{ conditionLabels[code] }}
+                          </option>
+                        }
+                      </select>
+                    </app-field>
+                    <app-field label="Motivo" class="mb-3">
+                      <textarea
+                        appFieldControl
+                        [value]="newReason()"
+                        (input)="newReason.set($any($event.target).value)"
+                      ></textarea>
+                    </app-field>
+                    <div class="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        appButton
+                        size="sm"
+                        (click)="showConditionForm.set(false)"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        appButton
+                        variant="primary"
+                        size="sm"
+                        [disabled]="submitting()"
+                        (click)="registerCondition()"
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Historial de condición</h4>
+            @if (v.conditionHistory.length === 0) {
+              <p class="text-12-5 text-ink-muted">Sin evaluar todavía.</p>
+            } @else {
+              <div class="flex flex-col gap-2">
+                @for (entry of v.conditionHistory; track entry.id) {
+                  <app-timeline-item>
+                    <div class="flex items-center justify-between">
+                      <app-badge [tone]="conditionBadge[entry.code]">{{
+                        conditionLabels[entry.code]
+                      }}</app-badge>
+                      <span class="text-ink-faint">{{ formatDate(entry.changedAt) }}</span>
+                    </div>
+                    @if (entry.reason) {
+                      <p class="mt-1.5 text-ink-muted">{{ entry.reason }}</p>
+                    }
+                  </app-timeline-item>
+                }
+              </div>
+            }
+          }
+
+          @case ('asignaciones') {
+            <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Historial de asignaciones</h4>
+            @if (v.unitAssignmentHistory.length === 0) {
+              <p class="text-12-5 text-ink-muted">Sin asignaciones registradas.</p>
+            } @else {
+              <div class="flex flex-col gap-2">
+                @for (assignment of v.unitAssignmentHistory; track assignment.id) {
+                  <app-timeline-item>
+                    <strong>{{ assignment.unit.name }}</strong>
+                    <span class="text-ink-faint">
+                      · {{ formatDate(assignment.startDate) }} –
+                      {{ assignment.endDate ? formatDate(assignment.endDate) : 'vigente' }}
+                    </span>
+                  </app-timeline-item>
+                }
+              </div>
+            }
+          }
+
+          @case ('conductores') {
+            <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Encargos de conductor</h4>
+            @if (v.driverAssignmentHistory.length === 0) {
+              <p class="mb-5 text-12-5 text-ink-muted">Sin encargos registrados.</p>
+            } @else {
+              <div class="mb-5 flex flex-col gap-2">
+                @for (assignment of v.driverAssignmentHistory; track assignment.id) {
+                  <app-timeline-item>
+                    <strong
+                      >{{ assignment.driver.rank ? assignment.driver.rank + ' ' : '' }}
+                      {{ assignment.driver.firstName }} {{ assignment.driver.lastName }}</strong
+                    >
+                    <span class="text-ink-faint">
+                      · {{ formatDate(assignment.startDate) }} –
+                      {{ assignment.endDate ? formatDate(assignment.endDate) : 'vigente' }}
+                    </span>
+                  </app-timeline-item>
+                }
+              </div>
+            }
+
+            <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Uso por recorridos</h4>
+            <app-table [footer]="drivers().length + ' conductor(es) con recorridos registrados.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Conductor</th>
+                  <th appTableHeadCell>Viajes</th>
+                  <th appTableHeadCell>Último recorrido</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (driver of drivers(); track driver.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium">{{ driver.name }}</td>
+                    <td appTableCell>{{ driver.tripCount }}</td>
+                    <td appTableCell>{{ formatDate(driver.lastTripAt) }}</td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="3">
+                    Sin recorridos registrados para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+
+          @case ('recorridos') {
+            <app-table [footer]="trips().total + ' recorrido(s) en total.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Conductor</th>
+                  <th appTableHeadCell>Destino</th>
+                  <th appTableHeadCell>Salida</th>
+                  <th appTableHeadCell>Llegada</th>
+                  <th appTableHeadCell>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (trip of trips().items; track trip.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium">
+                      {{ trip.driver.firstName }} {{ trip.driver.lastName }}
+                    </td>
+                    <td appTableCell>{{ trip.destination }}</td>
+                    <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
+                    <td appTableCell>{{ formatDateTime(trip.returnAt) }}</td>
+                    <td appTableCell>
+                      <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
+                        {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
+                      </app-badge>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="5">
+                    Sin recorridos registrados para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+
+          @case ('combustible') {
+            <app-table [footer]="fuelRecords().total + ' abastecimiento(s) en total.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Fecha</th>
+                  <th appTableHeadCell>Tipo</th>
+                  <th appTableHeadCell>Litros</th>
+                  <th appTableHeadCell>Costo total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (record of fuelRecords().items; track record.id) {
+                  <tr appTableRow>
+                    <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+                    <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+                    <td appTableCell>{{ record.quantity }}</td>
+                    <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="4">
+                    Sin abastecimientos registrados para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+
+          @case ('mantenimiento') {
+            <app-table [footer]="maintenanceOrders().total + ' orden(es) en total.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Código</th>
+                  <th appTableHeadCell>Tipo</th>
+                  <th appTableHeadCell>Taller</th>
+                  <th appTableHeadCell>Costo</th>
+                  <th appTableHeadCell>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of maintenanceOrders().items; track order.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium">{{ order.code }}</td>
+                    <td appTableCell>{{ maintenanceTypeLabel[order.type] }}</td>
+                    <td appTableCell>{{ order.workshopName || '—' }}</td>
+                    <td appTableCell>
+                      {{ order.status === 'COMPLETED' ? 'Bs. ' + order.totalCost.toFixed(2) : '—' }}
+                    </td>
+                    <td appTableCell>
+                      <app-badge [tone]="order.status === 'COMPLETED' ? 'gray' : 'amber'">
+                        {{ maintenanceStatusLabel[order.status] }}
+                      </app-badge>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="5">
+                    Sin órdenes de mantenimiento registradas para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+
+          @case ('documentos') {
+            <app-table [footer]="documents().total + ' documento(s) en total.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Tipo</th>
+                  <th appTableHeadCell>Número</th>
+                  <th appTableHeadCell>Vencimiento</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (document of documents().items; track document.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium">{{ documentTypeLabel[document.type] }}</td>
+                    <td appTableCell>{{ document.documentNumber || '—' }}</td>
+                    <td appTableCell>
+                      <div class="flex items-center gap-1.5">
+                        {{ formatDate(document.expiresAt) }}
+                        @if (isExpired(document.expiresAt)) {
+                          <app-badge tone="red">Vencido</app-badge>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="3">
+                    Sin documentos registrados para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+
+          @case ('incidentes') {
+            <app-table [footer]="incidents().total + ' incidente(s) en total.'">
+              <thead>
+                <tr appTableHeadRow>
+                  <th appTableHeadCell>Fecha</th>
+                  <th appTableHeadCell>Tipo</th>
+                  <th appTableHeadCell>Lugar</th>
+                  <th appTableHeadCell>Referencia</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (incident of incidents().items; track incident.id) {
+                  <tr appTableRow>
+                    <td appTableCell>{{ formatDateTime(incident.occurredAt) }}</td>
+                    <td appTableCell>{{ incidentTypeLabel[incident.type] }}</td>
+                    <td appTableCell>{{ incident.place }}</td>
+                    <td appTableCell>{{ incident.policeReportNumber || incident.code }}</td>
+                  </tr>
+                } @empty {
+                  <tr appTableEmpty [colspan]="4">
+                    Sin incidentes registrados para este vehículo.
+                  </tr>
+                }
+              </tbody>
+            </app-table>
+          }
+        }
+      </div>
     </div>
-  </app-drawer>
+  </app-modal>
 
   @if (showChecklist()) {
     <app-procedure-checklist-modal

@@ -29,11 +29,10 @@
   --shadow-1: 0 2px 8px rgba(8, 20, 15, 0.06);
   --shadow-2: 0 22px 55px -28px rgba(8, 20, 15, 0.38);
 
-  /* Animaciones de entrada de modal/drawer/toast (la maqueta las dispara al togglear una clase
+  /* Animaciones de entrada de modal/toast (la maqueta las dispara al togglear una clase
      `.show`; aquí Angular monta/desmonta el componente, así que una única animación de entrada
      al crear el nodo produce el mismo efecto — la maqueta tampoco anima la salida). */
   --animate-pop: pop 0.18s ease;
-  --animate-drawer-in: drawer-in 0.25s ease;
   --animate-toast-in: toast-in 0.2s ease;
 
   /* Escala tipográfica: tamaños reales de la maqueta, nombrados por su valor en px para no
@@ -208,15 +207,6 @@ p {
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes drawer-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
   }
 }
 

@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { UsersService } from '../users.service';
@@ -6,6 +6,7 @@ import { Role, User, UserFilter } from '../user.model';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 /// Agrupación visual (spec 015, RF-9 a RF-11): la consulta y los filtros
 /// siguen siendo los mismos de `users`; sólo cambia cómo se presenta.
@@ -23,15 +24,23 @@ export class UsersListComponent {
   protected readonly roleId = signal('');
   protected readonly isActive = signal<'true' | 'false' | ''>('');
 
-  private readonly filter = computed<UserFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     roleId: this.roleId() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<UserFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.usersService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.usersService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

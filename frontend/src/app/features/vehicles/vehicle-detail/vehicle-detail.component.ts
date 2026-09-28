@@ -1,8 +1,8 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
-import { DrawerComponent } from '../../../shared/drawer/drawer.component';
-import { DrawerTabsComponent } from '../../../shared/tabs/drawer-tabs.component';
+import { ModalComponent } from '../../../shared/modal/modal.component';
+import { TabsComponent } from '../../../shared/tabs/tabs.component';
 import { TabItem } from '../../../shared/tabs/tab-item';
 import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { ButtonDirective } from '../../../shared/button/button.directive';
@@ -10,6 +10,7 @@ import { DataCellComponent } from '../../../shared/data-cell/data-cell.component
 import { TimelineItemComponent } from '../../../shared/timeline-item/timeline-item.component';
 import { FieldComponent } from '../../../shared/field/field.component';
 import { FieldControlDirective } from '../../../shared/field/field-control.directive';
+import { IconComponent } from '../../../shared/icon/icon.component';
 import { TableComponent } from '../../../shared/table/table.component';
 import {
   TableCellDirective,
@@ -19,11 +20,13 @@ import {
 } from '../../../shared/table/table-parts.directive';
 import { TableEmptyRowComponent } from '../../../shared/table/table-empty-row.component';
 import { VehiclesService } from '../vehicles.service';
+import { VehiclePhotosService } from '../vehicle-photos.service';
 import {
   VEHICLE_CONDITION_BADGE,
   VEHICLE_CONDITION_LABEL,
   VEHICLE_TYPE_LABEL,
   VehicleConditionCode,
+  VehiclePhoto,
 } from '../vehicle.model';
 import { formatDateEs, formatDateTimeEs } from '../../../shared/date-format';
 import { TripsService } from '../../trips/trips.service';
@@ -67,6 +70,29 @@ const TABS: readonly TabItem[] = [
 
 const RELATED_TAKE = 20;
 
+/// Mismo orden y etiquetas que los slots de `vehicle-form.component.ts`
+/// (01 a 07); el backend no impone orden (`vehiclePhotos` llega alfabético
+/// por `slotKey`), así que el carrusel lo reordena acá.
+const PHOTO_SLOT_ORDER = [
+  'frontal',
+  'trasero',
+  'lateralIzquierdo',
+  'lateralDerecho',
+  'interior',
+  'motor',
+  'chasis',
+];
+
+const PHOTO_SLOT_LABEL: Record<string, string> = {
+  frontal: 'Frontal',
+  trasero: 'Trasero',
+  lateralIzquierdo: 'Lateral izquierdo',
+  lateralDerecho: 'Lateral derecho',
+  interior: 'Interior',
+  motor: 'Motor',
+  chasis: 'Chasis',
+};
+
 interface DriverSummary {
   readonly id: string;
   readonly name: string;
@@ -75,13 +101,11 @@ interface DriverSummary {
 }
 
 /**
- * Ficha del vehículo (spec 001, RF-10): datos, condición vigente e historial. Reproduce el
- * drawer dinámico real del prototipo (`prototipo/index.html:9549-9568`, `vehicleDrawer` +
- * `drawerData` en `js/app.js:1339-1575`) — no el modal estático `vehiculoDetalleModal` que
- * aparece más arriba en el mismo archivo: ese modal nunca se abre en la práctica, porque la
- * tabla de vehículos se re-renderiza por JS con botones `.vehicle-detail-btn` que abren este
- * drawer, no el modal (`data-open="vehiculoDetalleModal"` sólo existe en el HTML estático que
- * `renderVehiculos()` reemplaza al cargar la página).
+ * Ficha del vehículo (spec 001, RF-10): datos, condición vigente e historial. El prototipo la
+ * muestra en un drawer lateral (`prototipo/index.html:9549-9568`, `vehicleDrawer` + `drawerData`
+ * en `js/app.js:1339-1575`); aquí usa `app-modal`, igual que el resto de las fichas de detalle
+ * (unidad, conductor) y que los formularios, para que todo componente de detalle sea la misma
+ * ventana en vez de mezclar drawer lateral y modal centrado.
  *
  * En el prototipo sólo la pestaña "General" tiene contenido real; las otras 7 son un `<h4>` +
  * una frase genérica sin datos. Aquí sí están conectadas: mismas consultas que usan las listas
@@ -92,14 +116,15 @@ interface DriverSummary {
  */
 @Component({
   imports: [
-    DrawerComponent,
-    DrawerTabsComponent,
+    ModalComponent,
+    TabsComponent,
     BadgeComponent,
     ButtonDirective,
     DataCellComponent,
     TimelineItemComponent,
     FieldComponent,
     FieldControlDirective,
+    IconComponent,
     TableComponent,
     TableHeadRowDirective,
     TableHeadCellDirective,
@@ -146,6 +171,21 @@ export class VehicleDetailComponent {
   protected readonly vehicle = toSignal(
     this.vehicleId$.pipe(switchMap((id) => this.vehiclesService.get(id))),
     { initialValue: null },
+  );
+
+  protected readonly photoSlotLabel = PHOTO_SLOT_LABEL;
+  private readonly photos = toSignal(
+    this.vehicleId$.pipe(switchMap((id) => this.vehiclePhotosService.list(id))),
+    { initialValue: [] as VehiclePhoto[] },
+  );
+  protected readonly orderedPhotos = computed(() =>
+    [...this.photos()].sort(
+      (a, b) => PHOTO_SLOT_ORDER.indexOf(a.slotKey) - PHOTO_SLOT_ORDER.indexOf(b.slotKey),
+    ),
+  );
+  protected readonly activePhotoIndex = signal(0);
+  protected readonly activePhoto = computed(
+    () => this.orderedPhotos()[this.activePhotoIndex()] ?? null,
   );
 
   /// "{{plate}} · {{marca}} {{modelo}}" (`js/app.js:1607-1611`); a diferencia del resto de la
@@ -219,13 +259,33 @@ export class VehicleDetailComponent {
 
   constructor(
     private readonly vehiclesService: VehiclesService,
+    private readonly vehiclePhotosService: VehiclePhotosService,
     private readonly tripsService: TripsService,
     private readonly fuelRecordsService: FuelRecordsService,
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
     private readonly vehicleDocumentsService: VehicleDocumentsService,
     private readonly incidentsService: IncidentsService,
     private readonly procedureTypesService: ProcedureTypesService,
-  ) {}
+  ) {
+    // Cambiar de vehículo (o recargar sus fotos) no debe dejar el carrusel
+    // apuntando a un índice que ya no existe.
+    effect(() => {
+      this.vehicleId();
+      this.activePhotoIndex.set(0);
+    });
+  }
+
+  protected previousPhoto(): void {
+    const total = this.orderedPhotos().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i - 1 + total) % total);
+  }
+
+  protected nextPhoto(): void {
+    const total = this.orderedPhotos().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i + 1) % total);
+  }
 
   protected isExpired(expiresAt: string): boolean {
     return new Date(expiresAt).getTime() < Date.now();

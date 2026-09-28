@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { InventoryService } from '../inventory.service';
@@ -12,6 +12,7 @@ import { SparePartFormComponent } from '../spare-part-form/spare-part-form.compo
 import { StockMovementFormComponent } from '../stock-movement-form/stock-movement-form.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 /** Catálogo de repuestos y movimientos de inventario (spec 009). */
 @Component({
@@ -27,16 +28,24 @@ export class SparePartsListComponent {
   protected readonly types: SparePartType[] = ['LIQUIDO', 'LLANTA', 'PIEZA', 'OTRO'];
   protected readonly typeLabels = SPARE_PART_TYPE_LABELS;
 
-  private readonly filter = computed<SparePartFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     categoryId: this.categoryId() || undefined,
     type: this.type() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<SparePartFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.inventoryService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.inventoryService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

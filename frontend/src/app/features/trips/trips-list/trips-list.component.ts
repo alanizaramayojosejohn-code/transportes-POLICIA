@@ -1,4 +1,4 @@
-import { Component, computed, Signal, signal } from '@angular/core';
+import { Component, computed, linkedSignal, Signal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { of, switchMap } from 'rxjs';
 import { TripsService } from '../trips.service';
@@ -10,6 +10,7 @@ import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignment
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 /**
  * Registro de salida/llegada de vehículos (spec 006). Un CONDUCTOR (spec
@@ -28,15 +29,23 @@ export class TripsListComponent {
   protected readonly isConductor: boolean;
   private readonly myAssignment: Signal<MyVehicleAssignment | null>;
 
-  private readonly filter = computed<TripFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     open: this.open() === '' ? undefined : this.open() === 'true',
     vehicleId: this.isConductor ? this.myAssignment()?.vehicleId : undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<TripFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(
+    toObservable(this.query).pipe(
       switchMap((filter) =>
         this.isConductor && !filter.vehicleId
           ? of({ items: [], total: 0 })

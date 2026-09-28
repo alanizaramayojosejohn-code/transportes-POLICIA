@@ -8,6 +8,8 @@ import {
   SparePartCategory,
   SparePartFilter,
   SparePartPage,
+  StockMovementFilter,
+  StockMovementPage,
   UpdateSparePartInput,
 } from './spare-part.model';
 
@@ -95,8 +97,63 @@ const REGISTER_STOCK_MOVEMENT_MUTATION = gql`
   }
 `;
 
+const STOCK_MOVEMENTS_QUERY = gql`
+  query StockMovements(
+    $sparePartId: String
+    $vehicleId: String
+    $type: StockMovementType
+    $fromDate: String
+    $toDate: String
+    $skip: Int
+    $take: Int
+  ) {
+    stockMovements(
+      sparePartId: $sparePartId
+      vehicleId: $vehicleId
+      type: $type
+      fromDate: $fromDate
+      toDate: $toDate
+      skip: $skip
+      take: $take
+    ) {
+      total
+      items {
+        id
+        type
+        quantity
+        unitCost
+        balanceAfter
+        reason
+        supplier
+        reference
+        lotNumber
+        lotExpiresAt
+        createdAt
+        sparePart {
+          id
+          code
+          name
+          unit
+        }
+        vehicle {
+          id
+          plate
+        }
+        maintenanceOrder {
+          id
+          code
+        }
+      }
+    }
+  }
+`;
+
 interface SparePartsQueryResult {
   spareParts: SparePartPage;
+}
+
+interface StockMovementsQueryResult {
+  stockMovements: StockMovementPage;
 }
 
 interface SparePartCategoriesResult {
@@ -170,6 +227,21 @@ export class InventoryService {
         refetchQueries: ['SpareParts'],
       }),
     );
+  }
+
+  /// Reporte «Movimientos de almacén» (spec 018).
+  listMovements(filter: StockMovementFilter): Observable<StockMovementPage> {
+    return this.apollo
+      .watchQuery<StockMovementsQueryResult>({
+        query: STOCK_MOVEMENTS_QUERY,
+        variables: filter,
+        fetchPolicy: 'cache-and-network',
+      })
+      .valueChanges.pipe(
+        map(
+          (result) => (result.data?.stockMovements as StockMovementPage) ?? { items: [], total: 0 },
+        ),
+      );
   }
 
   async registerMovement(input: CreateStockMovementInput): Promise<void> {

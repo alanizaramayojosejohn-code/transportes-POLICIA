@@ -1,0 +1,19 @@
+<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+  <p class="text-12 text-ink-faint">
+    {{ total() }} {{ noun() }} en total.
+    @if (totalPages() > 1) {
+      <span>· Página {{ currentPage() }} de {{ totalPages() }}</span>
+    }
+  </p>
+
+  @if (totalPages() > 1) {
+    <div class="flex gap-1.5">
+      <button type="button" appButton size="sm" [disabled]="!canGoPrev()" (click)="prev()">
+        ← Anterior
+      </button>
+      <button type="button" appButton size="sm" [disabled]="!canGoNext()" (click)="next()">
+        Siguiente →
+      </button>
+    </div>
+  }
+</div>

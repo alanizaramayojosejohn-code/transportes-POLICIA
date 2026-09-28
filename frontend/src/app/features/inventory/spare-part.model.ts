@@ -1,6 +1,12 @@
 import { ProcedureChecklistItemDraft } from '../procedure-types/procedure-type.model';
 
-export type StockMovementType = 'IN' | 'OUT';
+export type StockMovementType = 'IN' | 'OUT' | 'ADJUSTMENT';
+
+export const STOCK_MOVEMENT_TYPE_LABEL: Record<StockMovementType, string> = {
+  IN: 'Entrada',
+  OUT: 'Salida',
+  ADJUSTMENT: 'Ajuste',
+};
 
 export type SparePartType = 'LIQUIDO' | 'LLANTA' | 'PIEZA' | 'OTRO';
 
@@ -78,4 +84,54 @@ export interface CreateStockMovementInput {
   maintenanceOrderId?: string;
   /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
   checklistItems?: ProcedureChecklistItemDraft[];
+}
+
+/** Reporte «Movimientos de almacén» (spec 018): no existía como listado propio. */
+export interface StockMovementSparePart {
+  id: string;
+  code: string;
+  name: string;
+  unit: string;
+}
+
+export interface StockMovementVehicle {
+  id: string;
+  plate: string;
+}
+
+export interface StockMovementOrder {
+  id: string;
+  code: string;
+}
+
+export interface StockMovement {
+  id: string;
+  type: StockMovementType;
+  quantity: number;
+  unitCost: number | null;
+  balanceAfter: number;
+  reason: string | null;
+  supplier: string | null;
+  reference: string | null;
+  lotNumber: string | null;
+  lotExpiresAt: string | null;
+  createdAt: string;
+  sparePart: StockMovementSparePart;
+  vehicle: StockMovementVehicle | null;
+  maintenanceOrder: StockMovementOrder | null;
+}
+
+export interface StockMovementPage {
+  items: StockMovement[];
+  total: number;
+}
+
+export interface StockMovementFilter {
+  sparePartId?: string;
+  vehicleId?: string;
+  type?: StockMovementType;
+  fromDate?: string;
+  toDate?: string;
+  skip?: number;
+  take?: number;
 }

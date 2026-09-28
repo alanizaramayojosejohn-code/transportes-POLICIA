@@ -22,6 +22,9 @@
 
     <div class="mt-5 flex flex-wrap gap-2">
       <button type="button" appButton (click)="toggleOdometerPanel()">Registrar kilometraje</button>
+      <button type="button" appButton variant="soft" routerLink="/reportes/historial-vehiculo">
+        Ver historial completo
+      </button>
     </div>
 
     @if (errorMessage()) {

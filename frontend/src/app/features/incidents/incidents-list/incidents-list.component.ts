@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { IncidentsService } from '../incidents.service';
@@ -12,6 +12,7 @@ import { IncidentFormComponent } from '../incident-form/incident-form.component'
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { NoticeComponent } from '../../../shared/notice/notice.component';
 
 /** Incidentes vehiculares (spec 011). */
@@ -26,14 +27,22 @@ export class IncidentsListComponent {
   protected readonly types = INCIDENT_TYPES;
   protected readonly typeLabel = INCIDENT_TYPE_LABEL;
 
-  private readonly filter = computed<IncidentFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     type: this.type() || undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<IncidentFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.incidentsService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.incidentsService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

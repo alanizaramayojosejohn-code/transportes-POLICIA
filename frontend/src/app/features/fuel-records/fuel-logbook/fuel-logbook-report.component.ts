@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
@@ -11,6 +11,7 @@ import { UnitsService } from '../../units/units.service';
 import { UnitOption } from '../../units/unit.model';
 import { formatDateEs, formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 const VEHICLE_TYPE_OPTIONS: VehicleType[] = [
   'CAMIONETA',
@@ -25,10 +26,10 @@ const VEHICLE_TYPE_OPTIONS: VehicleType[] = [
 /**
  * Bitácora de conductores (reporte del módulo Combustible): recorridos y
  * cargas de combustible combinados en una sola línea de tiempo, filtrable
- * por conductor, unidad, tipo de vehículo y rango de fechas. Sin spec propio
- * — pedido directamente sobre Combustible (spec 007 lo deja fuera de
- * alcance como "módulo de Reportes", que hoy es sólo el placeholder de
- * `features/reports`).
+ * por conductor, unidad, tipo de vehículo y rango de fechas. Nació sin spec
+ * propio — pedido directamente sobre Combustible (spec 007 lo deja fuera de
+ * alcance como "módulo de Reportes"); hoy el spec 018 ya lo lista como uno de
+ * los reportes del módulo y `features/reports` lo enlaza.
  */
 @Component({
   imports: [...LIST_PAGE_IMPORTS, RouterLink],
@@ -57,17 +58,25 @@ export class FuelLogbookReportComponent {
     initialValue: [] as UnitOption[],
   });
 
-  private readonly filter = computed<LogbookFilter>(() => ({
+  private readonly filters = computed(() => ({
     driverId: this.driverId() || undefined,
     unitId: this.unitId() || undefined,
     vehicleType: this.vehicleType() || undefined,
     fromDate: this.fromDate() || undefined,
     toDate: this.toDate() || undefined,
-    take: 100,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<LogbookFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.fuelLogbookService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.fuelLogbookService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

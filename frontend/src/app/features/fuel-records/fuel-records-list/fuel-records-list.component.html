@@ -34,7 +34,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table [footer]="page().total + ' abastecimiento(s) en total.'">
+  <app-table>
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -86,6 +86,13 @@
       }
     </tbody>
   </app-table>
+
+  <app-pagination
+    noun="abastecimiento(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
 </app-card>
 
 @if (showForm()) {

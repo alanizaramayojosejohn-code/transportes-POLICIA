@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { PersonnelService } from '../../personnel/personnel.service';
@@ -10,6 +10,7 @@ import { UnitsService } from '../../units/units.service';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 /** Padrón de conductores (spec 005), sobre el personal unificado (isDriver = true). */
 @Component({
@@ -22,16 +23,24 @@ export class DriversListComponent {
   protected readonly unitId = signal('');
   protected readonly isActive = signal<'true' | 'false' | ''>('');
 
-  private readonly filter = computed<PersonnelFilter>(() => ({
+  private readonly filters = computed(() => ({
     isDriver: true,
     search: this.search() || undefined,
     unitId: this.unitId() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<PersonnelFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.personnelService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.personnelService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

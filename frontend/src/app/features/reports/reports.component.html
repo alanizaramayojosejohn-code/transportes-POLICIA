@@ -1,0 +1,18 @@
+<app-page-head
+  title="Reportes"
+  description="Consultas consolidadas para seguimiento, control interno y toma de decisiones."
+></app-page-head>
+
+<div class="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[960px]:grid-cols-3">
+  @for (card of cards(); track card.key) {
+    <app-card>
+      <h3 class="mb-1.5 text-14-5 font-semibold">{{ card.title }}</h3>
+      <p class="mb-4 text-13 text-ink-muted">{{ card.description }}</p>
+      <button type="button" appButton variant="primary" size="sm" [routerLink]="card.path">
+        Generar reporte
+      </button>
+    </app-card>
+  } @empty {
+    <app-notice>No hay reportes disponibles para su rol.</app-notice>
+  }
+</div>

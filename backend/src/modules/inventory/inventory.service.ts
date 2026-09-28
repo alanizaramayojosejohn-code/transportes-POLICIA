@@ -13,6 +13,7 @@ import { CreateSparePartInput } from './dto/create-spare-part.input.js';
 import { UpdateSparePartInput } from './dto/update-spare-part.input.js';
 import { SparePartFilterArgs } from './dto/spare-part-filter.args.js';
 import { CreateStockMovementInput } from './dto/create-stock-movement.input.js';
+import { StockMovementFilterArgs } from './dto/stock-movement-filter.args.js';
 
 type DecimalRow = Record<string, unknown> & {
   minStock?: Prisma.Decimal;
@@ -250,6 +251,37 @@ export class InventoryService {
       });
       return this.serialize(movement);
     });
+  }
+
+  /// Reporte «Movimientos de almacén» (spec 018): no existía como listado
+  /// propio, sólo se leía anidado bajo un artículo (`SparePart.movements`).
+  async findAllMovements(filters: StockMovementFilterArgs) {
+    const dateRange =
+      filters.fromDate || filters.toDate
+        ? {
+            ...(filters.fromDate ? { gte: new Date(filters.fromDate) } : {}),
+            ...(filters.toDate ? { lte: new Date(filters.toDate) } : {}),
+          }
+        : undefined;
+
+    const where: Prisma.StockMovementWhereInput = {
+      ...(filters.sparePartId ? { sparePartId: filters.sparePartId } : {}),
+      ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
+      ...(filters.type ? { type: filters.type } : {}),
+      ...(dateRange ? { createdAt: dateRange } : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.stockMovement.findMany({
+        where,
+        skip: filters.skip ?? 0,
+        take: filters.take ?? 20,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.stockMovement.count({ where }),
+    ]);
+
+    return { items: items.map((item) => this.serialize(item)), total };
   }
 
   private async findCategoryOrThrow(categoryId: string) {

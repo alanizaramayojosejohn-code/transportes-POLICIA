@@ -4,6 +4,7 @@ import { CardComponent } from './card/card.component';
 import { FilterControlDirective } from './filter-bar/filter-control.directive';
 import { FilterBarComponent } from './filter-bar/filter-bar.component';
 import { PageHeadComponent } from './page-head/page-head.component';
+import { PaginationComponent } from './pagination/pagination.component';
 import { TableEmptyRowComponent } from './table/table-empty-row.component';
 import {
   TableCellDirective,
@@ -25,6 +26,7 @@ export const LIST_PAGE_IMPORTS = [
   TableRowDirective,
   TableCellDirective,
   TableEmptyRowComponent,
+  PaginationComponent,
   ButtonDirective,
   BadgeComponent,
 ] as const;

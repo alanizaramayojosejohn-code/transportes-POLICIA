@@ -9,8 +9,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { VehiclesService } from '../vehicles.service';
 import { CreateVehicleInput, VEHICLE_TYPE_LABEL, Vehicle, VehicleType } from '../vehicle.model';
+import { VehiclePhotosService } from '../vehicle-photos.service';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -94,10 +96,11 @@ function optimizePhoto(file: File): Promise<string> {
  * Sin librería de formularios (no está aprobada en este proyecto): estado
  * en un signal simple, igual que el resto de la feature.
  *
- * El registro fotográfico (sección 02) reproduce la UI del prototipo, pero el spec 001 lo deja
- * fuera de alcance ("Subida de fotos del vehículo") y el backend no tiene mutación para
- * persistirlas: las fotos viven sólo en memoria mientras el formulario está abierto, igual que en
- * el prototipo (que tampoco las envía a un backend real).
+ * El registro fotográfico (sección 02) reproduce la UI del prototipo. El spec 001 lo deja fuera de
+ * alcance ("Subida de fotos del vehículo"), pero se persiste igual (módulo `vehicle-photos`, sin
+ * spec propio): cada foto es un data URL guardado en la misma base, upsert por (vehicleId,
+ * slotKey). Igual que el resto del formulario, sólo se sincroniza con el backend al enviar
+ * (`submit`), no foto por foto — cancelar el modal no deja cambios sueltos.
  *
  * Alta con unidad (spec 015, RF-12): `createVehicle` no acepta `unitId` (spec 001 no lo pide) y un
  * TRANSPORTES sólo ve vehículos con asignación vigente a alguna de sus unidades. Sin este paso, un
@@ -151,6 +154,9 @@ export class VehicleFormComponent {
   protected readonly selectedUnitId = signal('');
 
   protected readonly photos = signal<Record<string, string>>({});
+  /// Snapshot de lo que ya está guardado (modo edición), para saber en
+  /// `submit` qué slots hay que borrar (los que estaban y ya no están).
+  private readonly initialPhotos = signal<Record<string, string>>({});
   protected readonly photoSlots = computed(() =>
     this.form().type === 'MOTOCICLETA' ? PHOTO_SLOTS_MOTORCYCLE : PHOTO_SLOTS_VEHICLE,
   );
@@ -165,6 +171,7 @@ export class VehicleFormComponent {
 
   constructor(
     private readonly vehiclesService: VehiclesService,
+    private readonly vehiclePhotosService: VehiclePhotosService,
     private readonly toast: ToastService,
     private readonly currentRole: CurrentRoleService,
     private readonly unitsService: UnitsService,
@@ -175,6 +182,16 @@ export class VehicleFormComponent {
     // cuando el padre pasa un vehículo (modo edición).
     effect(() => {
       this.form.set(this.initialValue());
+    });
+
+    effect(() => {
+      const vehicle = this.vehicle();
+      if (vehicle) {
+        this.loadPhotos(vehicle.id);
+      } else {
+        this.photos.set({});
+        this.initialPhotos.set({});
+      }
     });
 
     this.isTransportes = this.currentRole.role() === 'TRANSPORTES';
@@ -220,6 +237,29 @@ export class VehicleFormComponent {
     });
   }
 
+  private async loadPhotos(vehicleId: string): Promise<void> {
+    const list = await firstValueFrom(this.vehiclePhotosService.list(vehicleId));
+    const record = Object.fromEntries(list.map((photo) => [photo.slotKey, photo.dataUrl]));
+    this.photos.set(record);
+    this.initialPhotos.set(record);
+  }
+
+  /// Sólo escribe lo que cambió respecto al snapshot cargado: evita
+  /// reenviar de vuelta al backend fotos que ya estaban y no se tocaron.
+  private async persistPhotos(vehicleId: string): Promise<void> {
+    const current = this.photos();
+    const initial = this.initialPhotos();
+    const keys = new Set([...Object.keys(current), ...Object.keys(initial)]);
+    for (const key of keys) {
+      const value = current[key];
+      if (value && value !== initial[key]) {
+        await this.vehiclePhotosService.set({ vehicleId, slotKey: key, dataUrl: value });
+      } else if (!value && initial[key]) {
+        await this.vehiclePhotosService.remove(vehicleId, key);
+      }
+    }
+  }
+
   protected get isEdit(): boolean {
     return this.vehicle() !== null;
   }
@@ -248,11 +288,31 @@ export class VehicleFormComponent {
       const current = this.vehicle();
       if (current) {
         await this.vehiclesService.update(current.id, value);
+        try {
+          await this.persistPhotos(current.id);
+        } catch (photoError) {
+          this.errorMessage.set(
+            `Los datos del vehículo se guardaron, pero no se pudieron actualizar las fotografías (${
+              photoError instanceof Error ? photoError.message : 'error desconocido'
+            }).`,
+          );
+          return;
+        }
       } else {
         const created = await this.vehiclesService.create({
           ...value,
           checklistItems: this.checklistFields()?.items(),
         });
+        try {
+          await this.persistPhotos(created.id);
+        } catch (photoError) {
+          this.errorMessage.set(
+            `El vehículo se registró, pero no se pudieron guardar las fotografías (${
+              photoError instanceof Error ? photoError.message : 'error desconocido'
+            }).`,
+          );
+          return;
+        }
         if (this.isTransportes) {
           try {
             await this.unitAssignmentsService.create({

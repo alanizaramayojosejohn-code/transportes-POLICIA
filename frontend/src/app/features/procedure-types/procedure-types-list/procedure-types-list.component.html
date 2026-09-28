@@ -34,7 +34,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table [footer]="page().total + ' tipo(s) de trámite en total.'">
+  <app-table>
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Nombre</th>
@@ -91,6 +91,14 @@
       }
     </tbody>
   </app-table>
+
+  <app-pagination
+    noun="tipo(s) de trámite"
+    [total]="page().total"
+    [skip]="skip()"
+    [pageSize]="pageSize"
+    (skipChange)="skip.set($event)"
+  />
 </app-card>
 
 @if (showForm()) {

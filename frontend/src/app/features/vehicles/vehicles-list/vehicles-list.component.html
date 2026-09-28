@@ -35,7 +35,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table [footer]="page().total + ' vehículo(s) en total.'">
+  <app-table>
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Placa</th>
@@ -102,6 +102,13 @@
       }
     </tbody>
   </app-table>
+
+  <app-pagination
+    noun="vehículo(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
 </app-card>
 
 @if (showCreateForm()) {

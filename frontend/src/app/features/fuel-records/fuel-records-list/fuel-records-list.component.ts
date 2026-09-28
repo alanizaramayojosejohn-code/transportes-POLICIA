@@ -1,4 +1,4 @@
-import { Component, computed, Signal, signal } from '@angular/core';
+import { Component, computed, linkedSignal, Signal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
@@ -10,6 +10,7 @@ import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignment
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
 import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
 import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
@@ -37,15 +38,23 @@ export class FuelRecordsListComponent {
   protected readonly isConductor: boolean;
   private readonly myAssignment: Signal<MyVehicleAssignment | null>;
 
-  private readonly filter = computed<FuelRecordFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     fuelType: this.fuelType() || undefined,
     vehicleId: this.isConductor ? this.myAssignment()?.vehicleId : undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<FuelRecordFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(
+    toObservable(this.query).pipe(
       switchMap((filter) =>
         this.isConductor && !filter.vehicleId
           ? of({ items: [], total: 0 })

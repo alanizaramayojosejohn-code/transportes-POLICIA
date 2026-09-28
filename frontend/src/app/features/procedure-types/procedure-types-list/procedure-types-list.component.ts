@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { ProcedureTypesService } from '../procedure-types.service';
@@ -26,15 +26,27 @@ export class ProcedureTypesListComponent {
   protected readonly actions = PROCEDURE_ACTIONS;
   protected readonly actionLabels = PROCEDURE_ACTION_LABELS;
 
-  private readonly filter = computed<ProcedureTypeFilter>(() => ({
+  /// Catálogo corto y de referencia: cabe casi siempre en una sola página, de
+  /// ahí el tamaño mayor al de los demás listados.
+  protected readonly pageSize = 50;
+
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     action: this.action() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
-    take: 50,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<ProcedureTypeFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: this.pageSize,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.procedureTypesService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.procedureTypesService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

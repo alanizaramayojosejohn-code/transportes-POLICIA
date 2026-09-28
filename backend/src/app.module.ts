@@ -19,10 +19,12 @@ import { OdometerReadingsModule } from './modules/odometer-readings/odometer-rea
 import { MaintenanceOrdersModule } from './modules/maintenance-orders/maintenance-orders.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { VehicleDocumentsModule } from './modules/vehicle-documents/vehicle-documents.module.js';
+import { VehiclePhotosModule } from './modules/vehicle-photos/vehicle-photos.module.js';
 import { IncidentsModule } from './modules/incidents/incidents.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { ProceduresModule } from './modules/procedures/procedures.module.js';
 import { ReportsModule } from './modules/reports/reports.module.js';
+import { AuditModule } from './modules/audit/audit.module.js';
 
 @Module({
   imports: [
@@ -78,10 +80,14 @@ import { ReportsModule } from './modules/reports/reports.module.js';
     MaintenanceOrdersModule,
     InventoryModule,
     VehicleDocumentsModule,
+    VehiclePhotosModule,
     IncidentsModule,
     DashboardModule,
     ReportsModule,
     ProceduresModule,
+    // Transversal (spec 019): registra los eventos de todos los módulos
+    // anteriores vía interceptor global, sin que ninguno lo importe.
+    AuditModule,
   ],
 })
 export class AppModule {}

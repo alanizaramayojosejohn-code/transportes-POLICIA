@@ -24,7 +24,7 @@ function buildPrismaMock() {
       update: vi.fn(),
       count: vi.fn(),
     },
-    stockMovement: { create: vi.fn() },
+    stockMovement: { create: vi.fn(), findMany: vi.fn(), count: vi.fn() },
     vehicle: { findUnique: vi.fn() },
     maintenanceOrder: { findUnique: vi.fn() },
     procedureType: { findMany: vi.fn() },
@@ -409,6 +409,54 @@ describe('InventoryService', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('findAllMovements', () => {
+    it('aplica los filtros de artículo, vehículo, tipo y fecha (spec 018)', async () => {
+      vi.mocked(prisma.stockMovement.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.stockMovement.count).mockResolvedValue(0);
+
+      await service.findAllMovements({
+        sparePartId: 'p1',
+        vehicleId: 'v1',
+        type: 'OUT',
+        fromDate: '2026-01-01',
+        toDate: '2026-01-31',
+      } as never);
+
+      expect(prisma.stockMovement.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            sparePartId: 'p1',
+            vehicleId: 'v1',
+            type: 'OUT',
+            createdAt: {
+              gte: new Date('2026-01-01'),
+              lte: new Date('2026-01-31'),
+            },
+          },
+        }),
+      );
+    });
+
+    it('convierte los Decimal (cantidad, costo, saldo) a number', async () => {
+      vi.mocked(prisma.stockMovement.findMany).mockResolvedValue([
+        {
+          id: 'm1',
+          quantity: { toString: () => '4' },
+          unitCost: { toString: () => '12.5' },
+          balanceAfter: { toString: () => '20' },
+        } as never,
+      ]);
+      vi.mocked(prisma.stockMovement.count).mockResolvedValue(1);
+
+      const result = await service.findAllMovements({} as never);
+
+      expect(result.items[0].quantity).toBe(4);
+      expect(result.items[0].unitCost).toBe(12.5);
+      expect(result.items[0].balanceAfter).toBe(20);
+      expect(result.total).toBe(1);
     });
   });
 });

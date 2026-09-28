@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { UnitsService } from '../units.service';
@@ -9,6 +9,7 @@ import { ManagerAssignmentFormComponent } from '../manager-assignment-form/manag
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 @Component({
   imports: [
@@ -24,14 +25,22 @@ export class UnitsListComponent {
   protected readonly search = signal('');
   protected readonly isActive = signal<'true' | 'false' | ''>('');
 
-  private readonly filter = computed<UnitFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     isActive: this.isActive() === '' ? undefined : this.isActive() === 'true',
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<UnitFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.unitsService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.unitsService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

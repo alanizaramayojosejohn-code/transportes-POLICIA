@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { VehiclesService } from '../vehicles.service';
@@ -14,6 +14,7 @@ import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleDetailComponent } from '../vehicle-detail/vehicle-detail.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({
@@ -49,17 +50,26 @@ export class VehiclesListComponent {
   protected readonly condition = signal<VehicleConditionCode | ''>('');
   protected readonly type = signal<VehicleType | ''>('');
 
-  private readonly filter = computed<VehicleFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     condition: this.condition() || undefined,
     type: this.type() || undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro: filtrar estando en la página 3
+  /// dejaría la tabla vacía aunque el nuevo filtro sí tenga resultados.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<VehicleFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   /// El listado es reactivo al filtro: cada cambio dispara una nueva
   /// consulta vía `switchMap`, cancelando la anterior si seguía en vuelo.
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.vehiclesService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.vehiclesService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

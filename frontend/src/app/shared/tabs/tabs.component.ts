@@ -1,9 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { TabItem } from './tab-item';
 
-/** Pestañas rectangulares (`.tabs`/`.tab`) — encabezado de un modal/panel con secciones.
- * Distinto de `app-drawer-tabs` (píldora, sólo dentro del drawer): no son variantes de un mismo
- * componente, la maqueta los trata como dos piezas visuales distintas. */
+/** Pestañas rectangulares (`.tabs`/`.tab`) — encabezado de un `app-modal` con secciones. */
 @Component({
   selector: 'app-tabs',
   templateUrl: './tabs.component.html',

@@ -154,3 +154,16 @@ export interface RegisterVehicleConditionInput {
   code: VehicleConditionCode;
   reason?: string;
 }
+
+export interface VehiclePhoto {
+  id: string;
+  slotKey: string;
+  dataUrl: string;
+  vehicleId: string;
+}
+
+export interface SetVehiclePhotoInput {
+  vehicleId: string;
+  slotKey: string;
+  dataUrl: string;
+}

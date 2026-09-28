@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { UnitAssignmentsService } from '../unit-assignments.service';
@@ -7,6 +7,7 @@ import { UnitAssignmentFormComponent } from '../unit-assignment-form/unit-assign
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { FieldComponent } from '../../../shared/field/field.component';
 import { FieldControlDirective } from '../../../shared/field/field-control.directive';
 import { NoticeComponent } from '../../../shared/notice/notice.component';
@@ -27,14 +28,22 @@ export class UnitAssignmentsListComponent {
   protected readonly search = signal('');
   protected readonly status = signal<'' | 'ACTUAL' | 'HISTORICA'>('');
 
-  private readonly filter = computed<UnitAssignmentFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     current: this.status() === '' ? undefined : this.status() === 'ACTUAL',
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<UnitAssignmentFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(switchMap((filter) => this.unitAssignmentsService.list(filter))),
+    toObservable(this.query).pipe(switchMap((filter) => this.unitAssignmentsService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

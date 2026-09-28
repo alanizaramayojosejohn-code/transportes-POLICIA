@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { VehicleDocumentsService } from '../vehicle-documents.service';
@@ -12,6 +12,7 @@ import { VehicleDocumentFormComponent } from '../vehicle-document-form/vehicle-d
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 /** Expediente documental de vehículos (spec 010). */
 @Component({
@@ -25,16 +26,22 @@ export class VehicleDocumentsListComponent {
   protected readonly types = DOCUMENT_TYPES;
   protected readonly typeLabel = DOCUMENT_TYPE_LABEL;
 
-  private readonly filter = computed<VehicleDocumentFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     type: this.type() || undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<VehicleDocumentFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(
-      switchMap((filter) => this.vehicleDocumentsService.list(filter)),
-    ),
+    toObservable(this.query).pipe(switchMap((filter) => this.vehicleDocumentsService.list(filter))),
     { initialValue: { items: [], total: 0 } },
   );
 

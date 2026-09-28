@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-/** Celda de datos de una ficha (grid de 2 columnas en `app-drawer`): etiqueta + valor. */
+/** Celda de datos de una ficha (grid de 2 columnas en `app-modal`): etiqueta + valor. */
 @Component({
   selector: 'app-data-cell',
   template: `

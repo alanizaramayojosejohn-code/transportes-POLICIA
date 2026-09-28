@@ -1,0 +1,193 @@
+<app-page-head
+  title="Historial integral del vehículo"
+  description="Consolida asignaciones, recorridos, combustible, mantenimientos, incidentes y movimientos de almacén de un vehículo."
+>
+  <a
+    routerLink="/reportes"
+    class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+    >← Volver a Reportes</a
+  >
+</app-page-head>
+
+<app-card>
+  @if (needsVehiclePicker()) {
+    <app-filter-bar>
+      <select
+        appFilterControl
+        [value]="vehicleId()"
+        (change)="setVehicle($any($event.target).value)"
+      >
+        <option value="">Seleccione un vehículo</option>
+        @for (vehicle of vehicleOptions(); track vehicle.id) {
+          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+        }
+      </select>
+      <input
+        appFilterControl
+        type="date"
+        title="Fecha desde"
+        [value]="fromDate()"
+        (input)="setFromDate($any($event.target).value)"
+      />
+      <input
+        appFilterControl
+        type="date"
+        title="Fecha hasta"
+        [value]="toDate()"
+        (input)="setToDate($any($event.target).value)"
+      />
+      <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
+    </app-filter-bar>
+  } @else {
+    <app-filter-bar>
+      <input
+        appFilterControl
+        type="date"
+        title="Fecha desde"
+        [value]="fromDate()"
+        (input)="setFromDate($any($event.target).value)"
+      />
+      <input
+        appFilterControl
+        type="date"
+        title="Fecha hasta"
+        [value]="toDate()"
+        (input)="setToDate($any($event.target).value)"
+      />
+      <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
+    </app-filter-bar>
+  }
+
+  <div class="mb-4 flex flex-wrap gap-1.5">
+    @for (type of entryTypes; track type) {
+      <button
+        type="button"
+        appButton
+        size="sm"
+        [variant]="selectedTypes().includes(type) ? 'primary' : 'soft'"
+        (click)="toggleType(type)"
+      >
+        {{ entryTypeLabel[type] }}
+      </button>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p class="mb-3 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  @if (needsVehiclePicker() && !vehicleId()) {
+    <app-notice>Seleccione un vehículo para generar el historial.</app-notice>
+  } @else {
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Fecha</th>
+          <th appTableHeadCell>Tipo</th>
+          <th appTableHeadCell>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of page().items; track entry.id) {
+          <tr appTableRow>
+            <td appTableCell>{{ formatDateTime(entry.occurredAt) }}</td>
+            <td appTableCell>
+              <app-badge [tone]="entryTypeBadgeTone[entry.type]">
+                {{ entryTypeLabel[entry.type] }}
+              </app-badge>
+            </td>
+            <td appTableCell>
+              @switch (entry.type) {
+                @case ('UNIT_ASSIGNMENT') {
+                  Asignado a {{ entry.unitName || 'unidad sin nombre' }}
+                  @if (entry.description) {
+                    <span class="text-ink-faint"> · {{ entry.description }}</span>
+                  }
+                }
+                @case ('DRIVER_ASSIGNMENT') {
+                  Encargado:
+                  {{
+                    entry.driver
+                      ? (entry.driver.rank ? entry.driver.rank + ' ' : '') +
+                        entry.driver.firstName +
+                        ' ' +
+                        entry.driver.lastName
+                      : 'Sin conductor'
+                  }}
+                }
+                @case ('TRIP') {
+                  {{ entry.destination || 'Sin destino' }} ·
+                  {{
+                    entry.driver
+                      ? entry.driver.firstName + ' ' + entry.driver.lastName
+                      : 'Sin conductor'
+                  }}
+                  @if (entry.returnAt) {
+                    <span class="text-ink-faint">
+                      · retorno {{ formatDateTime(entry.returnAt) }}</span
+                    >
+                  } @else {
+                    <span class="text-ink-faint"> · en curso</span>
+                  }
+                  @if (entry.distanceKm !== null) {
+                    <span class="text-ink-faint"> · {{ entry.distanceKm }} km</span>
+                  }
+                }
+                @case ('FUEL') {
+                  {{ entry.fuelType ? fuelTypeLabel[entry.fuelType] : '—' }} ·
+                  {{ entry.quantity }} L · Bs. {{ entry.amount?.toFixed(2) }}
+                  @if (entry.station) {
+                    <span class="text-ink-faint"> · {{ entry.station }}</span>
+                  }
+                }
+                @case ('MAINTENANCE') {
+                  {{ entry.maintenanceType ? maintenanceTypeLabel[entry.maintenanceType] : '—' }} ·
+                  {{
+                    entry.maintenanceStatus ? maintenanceStatusLabel[entry.maintenanceStatus] : '—'
+                  }}
+                  @if (entry.workshopName) {
+                    <span class="text-ink-faint"> · {{ entry.workshopName }}</span>
+                  }
+                  @if (entry.amount !== null) {
+                    <span class="text-ink-faint"> · Bs. {{ entry.amount.toFixed(2) }}</span>
+                  }
+                }
+                @case ('INCIDENT') {
+                  {{ entry.incidentType ? incidentTypeLabel[entry.incidentType] : '—' }}
+                  @if (entry.incidentSeverity) {
+                    <span class="text-ink-faint">
+                      · {{ incidentSeverityLabel[entry.incidentSeverity] }}</span
+                    >
+                  }
+                  @if (entry.place) {
+                    <span class="text-ink-faint"> · {{ entry.place }}</span>
+                  }
+                }
+                @case ('STOCK_MOVEMENT') {
+                  {{
+                    entry.stockMovementType ? stockMovementTypeLabel[entry.stockMovementType] : '—'
+                  }}
+                  · {{ entry.sparePartName || 'Artículo' }} · {{ entry.quantity }}
+                  @if (entry.description) {
+                    <span class="text-ink-faint"> · {{ entry.description }}</span>
+                  }
+                }
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="3">
+            Sin eventos para los filtros seleccionados.
+          </tr>
+        }
+      </tbody>
+    </app-table>
+
+    <app-pagination
+      noun="evento(s)"
+      [total]="page().total"
+      [skip]="skip()"
+      (skipChange)="skip.set($event)"
+    />
+  }
+</app-card>

@@ -1,0 +1,114 @@
+<app-page-head
+  title="Auditoría"
+  description="Trazabilidad de las operaciones realizadas dentro del Sistema de Información Vehicular."
+/>
+
+<app-notice>
+  Los registros de auditoría son únicamente de consulta. No pueden modificarse ni eliminarse desde
+  esta interfaz.
+</app-notice>
+
+<div class="mb-4 mt-4 grid grid-cols-1 gap-3.5 min-[560px]:grid-cols-2 min-[900px]:grid-cols-4">
+  <app-stat-card icon="AU" [value]="summary().total" label="Eventos registrados" />
+  <app-stat-card icon="HOY" [value]="summary().today" label="Eventos de hoy" />
+  <app-stat-card icon="+" [value]="summary().created" label="Registros creados" />
+  <app-stat-card icon="~" [value]="summary().updated" label="Registros modificados" />
+</div>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por usuario, módulo o entidad..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="module()" (change)="module.set($any($event.target).value)">
+      <option value="">Todos los módulos</option>
+      @for (m of modules; track m) {
+        <option [value]="m">{{ moduleLabel[m] }}</option>
+      }
+    </select>
+    <select appFilterControl [value]="action()" (change)="action.set($any($event.target).value)">
+      <option value="">Todas las acciones</option>
+      @for (a of actions; track a) {
+        <option [value]="a">{{ actionLabel[a] }}</option>
+      }
+    </select>
+    <input
+      appFilterControl
+      type="date"
+      title="Filtrar por fecha"
+      [value]="date()"
+      (input)="date.set($any($event.target).value)"
+    />
+    @if (hasFilters()) {
+      <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
+    }
+  </app-filter-bar>
+
+  <app-table>
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha / hora</th>
+        <th appTableHeadCell>Usuario</th>
+        <th appTableHeadCell>Acción</th>
+        <th appTableHeadCell>Módulo</th>
+        <th appTableHeadCell>Entidad</th>
+        <th appTableHeadCell>Descripción</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of page().items; track entry.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(entry.createdAt) }}</td>
+          <td appTableCell>
+            @if (entry.user; as u) {
+              <strong class="font-medium">{{ u.username }}</strong>
+            } @else {
+              <span class="text-ink-faint">Usuario eliminado</span>
+            }
+          </td>
+          <td appTableCell>
+            <app-badge [tone]="actionTone[entry.action]">{{ actionLabel[entry.action] }}</app-badge>
+          </td>
+          <td appTableCell>{{ moduleLabel[entry.module] || entry.module }}</td>
+          <td appTableCell>{{ entry.entityLabel || entry.entity }}</td>
+          <td appTableCell>{{ entry.description }}</td>
+          <td appTableCell class="text-right">
+            <button
+              type="button"
+              appButton
+              size="sm"
+              variant="soft"
+              (click)="detailEntry.set(entry)"
+            >
+              Ver
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7">
+          @if (hasFilters()) {
+            Sin eventos para los filtros seleccionados.
+          } @else {
+            Todavía no hay eventos registrados. La auditoría registra las operaciones desde su
+            puesta en marcha.
+          }
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="evento(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (detailEntry(); as entry) {
+  <app-audit-detail [entry]="entry" (closed)="detailEntry.set(null)" />
+}

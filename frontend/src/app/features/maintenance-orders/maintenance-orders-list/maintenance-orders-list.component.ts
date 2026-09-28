@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { MaintenanceOrdersService } from '../maintenance-orders.service';
@@ -16,6 +16,7 @@ import { MaintenanceOrderFinishFormComponent } from '../maintenance-order-finish
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
 import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
 import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
@@ -39,15 +40,23 @@ export class MaintenanceOrdersListComponent {
   protected readonly typeLabel = MAINTENANCE_TYPE_LABEL;
   protected readonly statusLabel = MAINTENANCE_STATUS_LABEL;
 
-  private readonly filter = computed<MaintenanceOrderFilter>(() => ({
+  private readonly filters = computed(() => ({
     search: this.search() || undefined,
     type: this.type() || undefined,
     status: this.status() || undefined,
-    take: 20,
+  }));
+
+  /// Vuelve a la primera página cuando cambia cualquier filtro.
+  protected readonly skip = linkedSignal({ source: this.filters, computation: () => 0 });
+
+  private readonly query = computed<MaintenanceOrderFilter>(() => ({
+    ...this.filters(),
+    skip: this.skip(),
+    take: PAGE_SIZE,
   }));
 
   protected readonly page = toSignal(
-    toObservable(this.filter).pipe(
+    toObservable(this.query).pipe(
       switchMap((filter) => this.maintenanceOrdersService.list(filter)),
     ),
     { initialValue: { items: [], total: 0 } },

@@ -1,7 +1,10 @@
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ReportsService } from './reports.service.js';
 import { LogbookEntryType } from './entities/logbook-entry.entity.js';
+import { VehicleHistoryEntryType } from './entities/vehicle-history-entry.entity.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 function buildPrismaMock() {
   const mock = {
@@ -137,5 +140,274 @@ describe('ReportsService.driverLogbook', () => {
     expect(result.total).toBe(3);
     expect(result.items).toHaveLength(1);
     expect(result.items[0].id).toBe('fuel:f1');
+  });
+});
+
+function buildVehicleHistoryPrismaMock() {
+  const mock = {
+    unitAssignment: {
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    vehicleDriverAssignment: {
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    trip: { findMany: vi.fn().mockResolvedValue([]) },
+    fuelRecord: { findMany: vi.fn().mockResolvedValue([]) },
+    maintenanceOrder: { findMany: vi.fn().mockResolvedValue([]) },
+    incident: { findMany: vi.fn().mockResolvedValue([]) },
+    stockMovement: { findMany: vi.fn().mockResolvedValue([]) },
+  };
+  return { prisma: mock as unknown as PrismaService, mock };
+}
+
+function buildUser(
+  overrides: Partial<AuthenticatedUser> = {},
+): AuthenticatedUser {
+  return {
+    id: 'u1',
+    username: 'admin',
+    fullName: 'Administrador',
+    role: 'ADMINISTRADOR',
+    personnelId: null,
+    managedUnitIds: [],
+    ...overrides,
+  };
+}
+
+describe('ReportsService.vehicleHistory', () => {
+  it('exige seleccionar un vehículo para ADMINISTRADOR y CONSULTA (RF-12)', async () => {
+    const { prisma } = buildVehicleHistoryPrismaMock();
+    const service = new ReportsService(prisma);
+
+    await expect(service.vehicleHistory({}, buildUser())).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(
+      service.vehicleHistory({}, buildUser({ role: 'CONSULTA' })),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('rechaza a TRANSPORTES si el vehículo no está en su alcance (RF-13)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.unitAssignment.findFirst.mockResolvedValue(null);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'TRANSPORTES', managedUnitIds: ['u-1'] });
+
+    await expect(
+      service.vehicleHistory({ vehicleId: 'v1' }, user),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('permite a TRANSPORTES ver un vehículo dentro de su alcance (RF-13)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.unitAssignment.findFirst.mockResolvedValue({ id: 'ua1' } as never);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'TRANSPORTES', managedUnitIds: ['u-1'] });
+
+    const result = await service.vehicleHistory({ vehicleId: 'v1' }, user);
+
+    expect(result).toEqual({ items: [], total: 0 });
+  });
+
+  it('CONDUCTOR sin ficha de personal no ve nada', async () => {
+    const { prisma } = buildVehicleHistoryPrismaMock();
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'CONDUCTOR', personnelId: null });
+
+    const result = await service.vehicleHistory({}, user);
+
+    expect(result).toEqual({ items: [], total: 0 });
+  });
+
+  it('CONDUCTOR sin vehículo a cargo vigente no ve nada (RF-16c)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.vehicleDriverAssignment.findFirst.mockResolvedValue(null);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'CONDUCTOR', personnelId: 'p1' });
+
+    const result = await service.vehicleHistory({}, user);
+
+    expect(result).toEqual({ items: [], total: 0 });
+  });
+
+  it('acota a CONDUCTOR al vehículo y a la fecha de su encargo vigente (RF-16)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.vehicleDriverAssignment.findFirst.mockResolvedValue({
+      vehicleId: 'v1',
+      startDate: new Date('2026-06-01T00:00:00.000Z'),
+    } as never);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'CONDUCTOR', personnelId: 'p1' });
+
+    await service.vehicleHistory({}, user);
+
+    const tripArgs = mock.trip.findMany.mock.calls[0][0];
+    expect(tripArgs.where.assignment.vehicleId).toBe('v1');
+    expect(tripArgs.where.departureAt.gte).toEqual(
+      new Date('2026-06-01T00:00:00.000Z'),
+    );
+  });
+
+  it('usa el filtro de fecha pedido si es más tardío que el inicio del encargo (RF-17)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.vehicleDriverAssignment.findFirst.mockResolvedValue({
+      vehicleId: 'v1',
+      startDate: new Date('2026-01-01T00:00:00.000Z'),
+    } as never);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'CONDUCTOR', personnelId: 'p1' });
+
+    await service.vehicleHistory({ fromDate: '2026-06-01' }, user);
+
+    const tripArgs = mock.trip.findMany.mock.calls[0][0];
+    expect(tripArgs.where.departureAt.gte).toEqual(new Date('2026-06-01'));
+  });
+
+  it('ignora el filtro de fecha pedido si es más temprano que el inicio del encargo (RF-17)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.vehicleDriverAssignment.findFirst.mockResolvedValue({
+      vehicleId: 'v1',
+      startDate: new Date('2026-06-01T00:00:00.000Z'),
+    } as never);
+    const service = new ReportsService(prisma);
+    const user = buildUser({ role: 'CONDUCTOR', personnelId: 'p1' });
+
+    await service.vehicleHistory({ fromDate: '2026-01-01' }, user);
+
+    const tripArgs = mock.trip.findMany.mock.calls[0][0];
+    expect(tripArgs.where.departureAt.gte).toEqual(
+      new Date('2026-06-01T00:00:00.000Z'),
+    );
+  });
+
+  it('mezcla las siete fuentes, ordena por fecha descendente y respeta la paginación', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.trip.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        departureAt: new Date('2026-01-01T00:00:00.000Z'),
+        returnAt: null,
+        distanceKm: 10,
+        assignment: { driver: null, request: { destination: 'Plaza' } },
+      },
+    ] as never);
+    mock.incident.findMany.mockResolvedValue([
+      {
+        id: 'i1',
+        occurredAt: new Date('2026-01-02T00:00:00.000Z'),
+        type: 'ACCIDENTE',
+        severity: 'MINOR',
+        place: 'Av. X',
+        estimatedCost: null,
+        description: 'Choque leve',
+        driver: null,
+      },
+    ] as never);
+    mock.fuelRecord.findMany.mockResolvedValue([
+      {
+        id: 'f1',
+        suppliedAt: new Date('2026-01-03T00:00:00.000Z'),
+        fuelType: 'DIESEL',
+        station: 'YPFB',
+        quantity: { toString: () => '20' },
+        totalCost: { toString: () => '80' },
+        driver: null,
+      },
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.vehicleHistory(
+      { vehicleId: 'v1' },
+      buildUser(),
+    );
+
+    expect(result.total).toBe(3);
+    expect(result.items.map((entry) => entry.type)).toEqual([
+      VehicleHistoryEntryType.FUEL,
+      VehicleHistoryEntryType.INCIDENT,
+      VehicleHistoryEntryType.TRIP,
+    ]);
+  });
+
+  it('filtra por tipo de evento cuando se especifica (RF-15)', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.trip.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        departureAt: new Date('2026-01-01T00:00:00.000Z'),
+        returnAt: null,
+        distanceKm: 10,
+        assignment: { driver: null, request: { destination: 'Plaza' } },
+      },
+    ] as never);
+    mock.incident.findMany.mockResolvedValue([
+      {
+        id: 'i1',
+        occurredAt: new Date('2026-01-02T00:00:00.000Z'),
+        type: 'ACCIDENTE',
+        severity: 'MINOR',
+        place: 'Av. X',
+        estimatedCost: null,
+        description: 'Choque leve',
+        driver: null,
+      },
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.vehicleHistory(
+      { vehicleId: 'v1', types: [VehicleHistoryEntryType.TRIP] },
+      buildUser(),
+    );
+
+    expect(result.total).toBe(1);
+    expect(result.items[0].type).toBe(VehicleHistoryEntryType.TRIP);
+  });
+
+  it('mapea cambios de unidad con el nombre de la unidad y el motivo', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.unitAssignment.findMany.mockResolvedValue([
+      {
+        id: 'ua1',
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
+        reason: 'Reasignación',
+        unit: { name: 'EPI 3' },
+      },
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.vehicleHistory(
+      { vehicleId: 'v1' },
+      buildUser(),
+    );
+
+    expect(result.items[0].unitName).toBe('EPI 3');
+    expect(result.items[0].description).toBe('Reasignación');
+    expect(result.items[0].type).toBe(VehicleHistoryEntryType.UNIT_ASSIGNMENT);
+  });
+
+  it('mapea salidas de almacén con el nombre del artículo y convierte la cantidad', async () => {
+    const { prisma, mock } = buildVehicleHistoryPrismaMock();
+    mock.stockMovement.findMany.mockResolvedValue([
+      {
+        id: 's1',
+        type: 'OUT',
+        createdAt: new Date('2026-02-01T00:00:00.000Z'),
+        reason: 'Cambio de aceite',
+        quantity: { toString: () => '2' },
+        sparePart: { name: 'Aceite 20W50' },
+      },
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.vehicleHistory(
+      { vehicleId: 'v1' },
+      buildUser(),
+    );
+
+    expect(result.items[0].sparePartName).toBe('Aceite 20W50');
+    expect(result.items[0].quantity).toBe(2);
+    expect(result.items[0].type).toBe(VehicleHistoryEntryType.STOCK_MOVEMENT);
   });
 });

@@ -176,6 +176,25 @@ export const routes: Routes = [
           import('./features/reports/reports.component').then((m) => m.ReportsComponent),
       },
       {
+        path: 'reportes/movimientos-almacen',
+        // Spec 018: mismo dominio que Inventario (Kardex), sin Combustible ni Transportes.
+        canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'MANTENIMIENTO', 'ALMACEN'])],
+        loadComponent: () =>
+          import('./features/inventory/stock-movements-list/stock-movements-list.component').then(
+            (m) => m.StockMovementsListComponent,
+          ),
+      },
+      {
+        path: 'reportes/historial-vehiculo',
+        // Spec 018 RF-12/RF-13/RF-16: ADMINISTRADOR y CONSULTA sin acotar, TRANSPORTES por
+        // unidad y CONDUCTOR siempre al vehículo del que está a cargo (sin selector).
+        canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'CONDUCTOR'])],
+        loadComponent: () =>
+          import('./features/reports/vehicle-history/vehicle-history.component').then(
+            (m) => m.VehicleHistoryComponent,
+          ),
+      },
+      {
         path: 'area-transportes',
         canActivate: [roleGuard(['ADMINISTRADOR'])],
         loadComponent: () =>

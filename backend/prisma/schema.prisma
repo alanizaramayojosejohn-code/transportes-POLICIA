@@ -104,20 +104,31 @@ model RolePermission {
   @@map("role_permission")
 }
 
-/// Bitácora de auditoría (RF-13). Guarda el antes y el después como JSON
-/// porque el valor de la bitácora es poder reconstruir qué cambió, no sólo que
-/// alguien tocó el registro.
+/// Bitácora de auditoría (spec 019). La escribe un único interceptor global
+/// (`AuditInterceptor`) después de cada mutation exitosa; ninguna mutation la
+/// toca, así que nadie puede crear, editar ni borrar filas desde la API
+/// (spec 019, RF-12).
 model AuditLog {
-  id        String      @id @default(uuid(7))
-  action    AuditAction
-  /// Nombre del modelo afectado: Vehicle, FuelRecord, ...
-  entity    String
-  entityId  String?     @map("entity_id")
-  before    Json?
+  id     String      @id @default(uuid(7))
+  action AuditAction
+  /// Nombre del modelo afectado: Vehicle, FuelRecord, ... El módulo de la
+  /// interfaz se deriva de aquí, no se almacena (spec 019, RF-6).
+  entity String
+  entityId String? @map("entity_id")
+  /// Identificador de negocio del registro al momento del evento (placa,
+  /// código, usuario). Se guarda denormalizado a propósito: el rastro debe
+  /// sobrevivir a que el registro se renombre o se borre, y `entityId` no
+  /// tiene clave foránea (spec 019, RF-5).
+  entityLabel String? @map("entity_label")
+  /// Estado previo: el interceptor corre después de la escritura y no lo
+  /// conoce. Queda para llenarlo por módulo si algún día se necesita el diff
+  /// campo por campo (spec 019, «Fuera de alcance»).
+  before Json?
+  /// Payload de la operación, sin los campos sensibles (spec 019, RF-8).
   after     Json?
-  ipAddress String?     @map("ip_address")
-  userAgent String?     @map("user_agent")
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -131,9 +142,16 @@ model AuditLog {
 enum AuditAction {
   CREATE
   UPDATE
+  /// Baja y reactivación (`deactivate*`/`reactivate*`): la maqueta las filtra
+  /// aparte de una edición normal (spec 019, RF-2).
+  STATUS_CHANGE
   DELETE
   LOGIN
+  /// Sin usar: la sesión es un JWT sin estado y no hay mutation de logout que
+  /// interceptar (spec 019, «Fuera de alcance»).
   LOGOUT
+  /// Sin usar: pertenecen al flujo de aprobación de `VehicleRequest`, que el
+  /// spec 006 dejó fuera de alcance.
   APPROVE
   REJECT
 
@@ -200,6 +218,7 @@ model Vehicle {
   maintenancePlans        MaintenancePlan[]
   fuelRecords             FuelRecord[]
   documents               VehicleDocument[]
+  photos                  VehiclePhoto[]
   incidents               Incident[]
   stockMovements          StockMovement[]
   procedureChecklistItems ProcedureChecklistItem[]
@@ -645,6 +664,30 @@ model VehicleDocument {
   @@index([vehicleId])
   @@index([expiresAt])
   @@map("vehicle_document")
+}
+
+// =============================================================================
+// RF-01  Registro fotográfico del vehículo
+// =============================================================================
+
+/// Una fila por vista obligatoria (frontal, trasero, motor, etc.). `slotKey`
+/// es el identificador de esa vista, definido en el frontend
+/// (`vehicle-form.component.ts`); el backend no valida contra una lista fija
+/// para no duplicar esa definición en dos lugares.
+model VehiclePhoto {
+  id        String   @id @default(uuid(7))
+  slotKey   String   @map("slot_key")
+  /// Data URL completa (`data:image/jpeg;base64,...`), ya optimizada en el
+  /// navegador (máx. 900px, calidad 0.72) antes de llegar acá.
+  dataUrl   String   @map("data_url") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, slotKey])
+  @@map("vehicle_photo")
 }
 
 enum DocumentType {

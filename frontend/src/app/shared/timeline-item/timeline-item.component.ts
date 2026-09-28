@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-/** Fila de un historial dentro de una ficha (`app-drawer`): condición, asignación, etc. */
+/** Fila de un historial dentro de una ficha (`app-modal`): condición, asignación, etc. */
 @Component({
   selector: 'app-timeline-item',
   host: { class: 'block' },

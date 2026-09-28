@@ -18,6 +18,51 @@ input AssignVehicleDriverInput {
   vehicleId: String!
 }
 
+"""Tipo de operación registrada en la bitácora de auditoría."""
+enum AuditAction {
+  APPROVE
+  CREATE
+  DELETE
+  LOGIN
+  LOGOUT
+  REJECT
+  STATUS_CHANGE
+  UPDATE
+}
+
+type AuditLog {
+  action: AuditAction!
+  after: String
+  createdAt: DateTime!
+  description: String!
+  entity: String!
+  entityId: String
+  entityLabel: String
+  id: String!
+  ipAddress: String
+  module: String!
+  user: AuditLogUser
+  userAgent: String
+}
+
+type AuditLogPage {
+  items: [AuditLog!]!
+  total: Int!
+}
+
+type AuditLogUser {
+  fullName: String!
+  id: String!
+  username: String!
+}
+
+type AuditSummary {
+  created: Int!
+  today: Int!
+  total: Int!
+  updated: Int!
+}
+
 type AuthPayload {
   accessToken: String!
   user: AuthUser!
@@ -430,6 +475,8 @@ type Mutation {
   registerOdometerReading(input: RegisterOdometerReadingInput!): OdometerReading!
   registerStockMovement(input: CreateStockMovementInput!): StockMovement!
   registerVehicleCondition(input: RegisterVehicleConditionInput!, vehicleId: String!): VehicleCondition!
+  removeVehiclePhoto(slotKey: String!, vehicleId: String!): Boolean!
+  setVehiclePhoto(input: SetVehiclePhotoInput!): VehiclePhoto!
   updateFuelRecordChecklist(fuelRecordId: String!, items: [UpdateProcedureChecklistItemInput!]!): [ProcedureChecklistItem!]!
   updateMaintenanceOrderChecklist(items: [UpdateProcedureChecklistItemInput!]!, maintenanceOrderId: String!): [ProcedureChecklistItem!]!
   updatePersonnel(id: String!, input: UpdatePersonnelInput!): Personnel!
@@ -540,6 +587,8 @@ type ProcedureTypePage {
 }
 
 type Query {
+  auditLogs(action: AuditAction, date: String, module: String, search: String, skip: Int = 0, take: Int = 20): AuditLogPage!
+  auditSummary: AuditSummary!
   dashboardSummary: DashboardSummary!
   driverLogbook(driverId: String, fromDate: String, skip: Int = 0, take: Int = 50, toDate: String, unitId: String, vehicleType: VehicleType): LogbookPage!
   fuelRecord(id: String!): FuelRecord!
@@ -558,6 +607,7 @@ type Query {
   sparePart(id: String!): SparePart!
   sparePartCategories: [SparePartCategory!]!
   spareParts(categoryId: String, isActive: Boolean, search: String, skip: Int = 0, take: Int = 20, type: SparePartType): SparePartPage!
+  stockMovements(fromDate: String, skip: Int = 0, sparePartId: String, take: Int = 20, toDate: String, type: StockMovementType, vehicleId: String): StockMovementPage!
   trip(id: String!): Trip!
   trips(driverId: String, open: Boolean, search: String, skip: Int = 0, take: Int = 20, vehicleId: String): TripPage!
   unit(id: String!): Unit!
@@ -568,6 +618,8 @@ type Query {
   vehicle(id: String!): Vehicle!
   vehicleDocuments(search: String, skip: Int = 0, take: Int = 20, type: DocumentType, vehicleId: String): VehicleDocumentPage!
   vehicleDriverAssignments(current: Boolean, driverId: String, skip: Int = 0, take: Int = 20, vehicleId: String): VehicleDriverAssignmentPage!
+  vehicleHistory(fromDate: String, skip: Int = 0, take: Int = 20, toDate: String, types: [VehicleHistoryEntryType!], vehicleId: String): VehicleHistoryPage!
+  vehiclePhotos(vehicleId: String!): [VehiclePhoto!]!
   vehicles(condition: VehicleConditionCode, search: String, skip: Int = 0, take: Int = 20, type: VehicleType, unitId: String): VehiclePage!
 }
 
@@ -586,6 +638,12 @@ type Role {
   code: String!
   id: String!
   name: String!
+}
+
+input SetVehiclePhotoInput {
+  dataUrl: String!
+  slotKey: String!
+  vehicleId: String!
 }
 
 type SparePart {
@@ -633,16 +691,24 @@ type StockMovement {
   id: String!
   lotExpiresAt: DateTime
   lotNumber: String
+  maintenanceOrder: MaintenanceOrder
   maintenanceOrderId: String
   procedureChecklistItems: [ProcedureChecklistItem!]!
   quantity: Float!
   reason: String
   reference: String
+  sparePart: SparePart!
   sparePartId: String!
   supplier: String
   type: StockMovementType!
   unitCost: Float
+  vehicle: Vehicle
   vehicleId: String
+}
+
+type StockMovementPage {
+  items: [StockMovement!]!
+  total: Int!
 }
 
 """Tipo de movimiento de inventario."""
@@ -923,9 +989,59 @@ type VehicleDriverAssignmentPage {
   total: Int!
 }
 
+type VehicleHistoryEntry {
+  amount: Float
+  description: String
+  destination: String
+  distanceKm: Int
+  driver: Personnel
+  fuelType: FuelType
+  id: String!
+  incidentSeverity: IncidentSeverity
+  incidentType: IncidentType
+  maintenanceStatus: MaintenanceStatus
+  maintenanceType: MaintenanceType
+  occurredAt: DateTime!
+  place: String
+  quantity: Float
+  returnAt: DateTime
+  sparePartName: String
+  station: String
+  stockMovementType: StockMovementType
+  type: VehicleHistoryEntryType!
+  unitName: String
+  workshopName: String
+}
+
+"""
+Distingue de qué fuente sale cada fila del historial integral del vehículo (spec 018).
+"""
+enum VehicleHistoryEntryType {
+  DRIVER_ASSIGNMENT
+  FUEL
+  INCIDENT
+  MAINTENANCE
+  STOCK_MOVEMENT
+  TRIP
+  UNIT_ASSIGNMENT
+}
+
+type VehicleHistoryPage {
+  items: [VehicleHistoryEntry!]!
+  total: Int!
+}
+
 type VehiclePage {
   items: [Vehicle!]!
   total: Int!
+}
+
+type VehiclePhoto {
+  dataUrl: String!
+  id: String!
+  slotKey: String!
+  updatedAt: DateTime!
+  vehicleId: String!
 }
 
 """Categoría del vehículo dentro del parque automotor."""

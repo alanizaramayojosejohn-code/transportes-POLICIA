@@ -1,12 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
-import { type UnitScope } from '../../common/unit-scope.js';
+import {
+  assertVehicleInScope,
+  unitScopeFor,
+  type UnitScope,
+} from '../../common/unit-scope.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
+import type { MaintenanceOrderModel } from '../../generated/prisma/models/MaintenanceOrder.js';
 import { LogbookFilterArgs } from './dto/logbook-filter.args.js';
+import { VehicleHistoryFilterArgs } from './dto/vehicle-history-filter.args.js';
 import {
   LogbookEntry,
   LogbookEntryType,
 } from './entities/logbook-entry.entity.js';
+import {
+  VehicleHistoryEntry,
+  VehicleHistoryEntryType,
+} from './entities/vehicle-history-entry.entity.js';
 
 const TRIP_INCLUDE = {
   assignment: { include: { vehicle: true, driver: true, request: true } },
@@ -24,6 +35,80 @@ const FUEL_RECORD_INCLUDE = {
 type FuelRecordWithRelations = Prisma.FuelRecordGetPayload<{
   include: typeof FUEL_RECORD_INCLUDE;
 }>;
+
+const HISTORY_TRIP_INCLUDE = {
+  assignment: { include: { driver: true, request: true } },
+} satisfies Prisma.TripInclude;
+
+type HistoryTripWithRelations = Prisma.TripGetPayload<{
+  include: typeof HISTORY_TRIP_INCLUDE;
+}>;
+
+const HISTORY_UNIT_ASSIGNMENT_INCLUDE = {
+  unit: true,
+} satisfies Prisma.UnitAssignmentInclude;
+
+type HistoryUnitAssignmentWithRelations = Prisma.UnitAssignmentGetPayload<{
+  include: typeof HISTORY_UNIT_ASSIGNMENT_INCLUDE;
+}>;
+
+const HISTORY_DRIVER_ASSIGNMENT_INCLUDE = {
+  driver: true,
+} satisfies Prisma.VehicleDriverAssignmentInclude;
+
+type HistoryDriverAssignmentWithRelations =
+  Prisma.VehicleDriverAssignmentGetPayload<{
+    include: typeof HISTORY_DRIVER_ASSIGNMENT_INCLUDE;
+  }>;
+
+const HISTORY_FUEL_RECORD_INCLUDE = {
+  driver: true,
+} satisfies Prisma.FuelRecordInclude;
+
+type HistoryFuelRecordWithRelations = Prisma.FuelRecordGetPayload<{
+  include: typeof HISTORY_FUEL_RECORD_INCLUDE;
+}>;
+
+const HISTORY_INCIDENT_INCLUDE = {
+  driver: true,
+} satisfies Prisma.IncidentInclude;
+
+type HistoryIncidentWithRelations = Prisma.IncidentGetPayload<{
+  include: typeof HISTORY_INCIDENT_INCLUDE;
+}>;
+
+const HISTORY_STOCK_MOVEMENT_INCLUDE = {
+  sparePart: true,
+} satisfies Prisma.StockMovementInclude;
+
+type HistoryStockMovementWithRelations = Prisma.StockMovementGetPayload<{
+  include: typeof HISTORY_STOCK_MOVEMENT_INCLUDE;
+}>;
+
+/** Todos los campos opcionales del historial en `null`, para no repetirlos en cada mapeo. */
+const EMPTY_HISTORY_ENTRY: Omit<
+  VehicleHistoryEntry,
+  'id' | 'type' | 'occurredAt'
+> = {
+  driver: null,
+  unitName: null,
+  destination: null,
+  returnAt: null,
+  distanceKm: null,
+  fuelType: null,
+  station: null,
+  quantity: null,
+  amount: null,
+  maintenanceType: null,
+  maintenanceStatus: null,
+  workshopName: null,
+  incidentType: null,
+  incidentSeverity: null,
+  place: null,
+  stockMovementType: null,
+  sparePartName: null,
+  description: null,
+};
 
 /**
  * Bitácora de conductores (reporte del módulo Combustible): une `Trip` y
@@ -105,6 +190,257 @@ export class ReportsService {
       });
     }
     return and.length > 0 ? { AND: and } : {};
+  }
+
+  /**
+   * Historial integral del vehículo (spec 018, RF-12 a RF-17): junta siete
+   * fuentes en una sola línea de tiempo paginada. ADMINISTRADOR/CONSULTA
+   * eligen cualquier vehículo; TRANSPORTES sólo uno de su alcance
+   * (`assertVehicleInScope`); CONDUCTOR no elige — se usa el vehículo del que
+   * está a cargo vigente y sólo se ven eventos desde que quedó a cargo
+   * (RF-16/RF-17). Cualquier otro rol nunca llega aquí (`@Roles` en el
+   * resolver ya lo rechaza).
+   */
+  async vehicleHistory(
+    filters: VehicleHistoryFilterArgs,
+    user: AuthenticatedUser,
+  ) {
+    const { vehicleId, minDate } = await this.resolveVehicleHistoryScope(
+      filters,
+      user,
+    );
+    if (!vehicleId) {
+      return { items: [], total: 0 };
+    }
+
+    const dateRange = this.buildHistoryDateRange(
+      filters.fromDate,
+      filters.toDate,
+      minDate,
+    );
+
+    const [
+      unitAssignments,
+      driverAssignments,
+      trips,
+      fuelRecords,
+      maintenanceOrders,
+      incidents,
+      stockMovements,
+    ] = await Promise.all([
+      this.prisma.unitAssignment.findMany({
+        where: { vehicleId, ...(dateRange ? { startDate: dateRange } : {}) },
+        include: HISTORY_UNIT_ASSIGNMENT_INCLUDE,
+      }),
+      this.prisma.vehicleDriverAssignment.findMany({
+        where: { vehicleId, ...(dateRange ? { startDate: dateRange } : {}) },
+        include: HISTORY_DRIVER_ASSIGNMENT_INCLUDE,
+      }),
+      this.prisma.trip.findMany({
+        where: {
+          assignment: { vehicleId },
+          ...(dateRange ? { departureAt: dateRange } : {}),
+        },
+        include: HISTORY_TRIP_INCLUDE,
+      }),
+      this.prisma.fuelRecord.findMany({
+        where: { vehicleId, ...(dateRange ? { suppliedAt: dateRange } : {}) },
+        include: HISTORY_FUEL_RECORD_INCLUDE,
+      }),
+      this.prisma.maintenanceOrder.findMany({
+        where: { vehicleId, ...(dateRange ? { createdAt: dateRange } : {}) },
+      }),
+      this.prisma.incident.findMany({
+        where: { vehicleId, ...(dateRange ? { occurredAt: dateRange } : {}) },
+        include: HISTORY_INCIDENT_INCLUDE,
+      }),
+      this.prisma.stockMovement.findMany({
+        where: { vehicleId, ...(dateRange ? { createdAt: dateRange } : {}) },
+        include: HISTORY_STOCK_MOVEMENT_INCLUDE,
+      }),
+    ]);
+
+    let entries: VehicleHistoryEntry[] = [
+      ...unitAssignments.map((a) => this.unitAssignmentToHistoryEntry(a)),
+      ...driverAssignments.map((a) => this.driverAssignmentToHistoryEntry(a)),
+      ...trips.map((t) => this.tripToHistoryEntry(t)),
+      ...fuelRecords.map((f) => this.fuelRecordToHistoryEntry(f)),
+      ...maintenanceOrders.map((m) => this.maintenanceOrderToHistoryEntry(m)),
+      ...incidents.map((i) => this.incidentToHistoryEntry(i)),
+      ...stockMovements.map((s) => this.stockMovementToHistoryEntry(s)),
+    ];
+
+    if (filters.types && filters.types.length > 0) {
+      const allowed = new Set(filters.types);
+      entries = entries.filter((entry) => allowed.has(entry.type));
+    }
+
+    entries.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
+
+    const skip = filters.skip ?? 0;
+    const take = filters.take ?? 20;
+    return { items: entries.slice(skip, skip + take), total: entries.length };
+  }
+
+  /// RF-12 (ADMINISTRADOR/CONSULTA: cualquier vehículo), RF-13 (TRANSPORTES:
+  /// acotado a su unidad) y RF-16 (CONDUCTOR: siempre su vehículo a cargo
+  /// vigente, sin selector). `vehicleId: null` significa "sin resultado", no
+  /// error: cubre al CONDUCTOR sin encargo vigente (RF-16c).
+  private async resolveVehicleHistoryScope(
+    filters: VehicleHistoryFilterArgs,
+    user: AuthenticatedUser,
+  ): Promise<{ vehicleId: string | null; minDate?: Date }> {
+    if (user.role === 'CONDUCTOR') {
+      if (!user.personnelId) {
+        return { vehicleId: null };
+      }
+      const current = await this.prisma.vehicleDriverAssignment.findFirst({
+        where: { driverId: user.personnelId, endDate: null },
+      });
+      if (!current) {
+        return { vehicleId: null };
+      }
+      return { vehicleId: current.vehicleId, minDate: current.startDate };
+    }
+
+    if (!filters.vehicleId) {
+      throw new BadRequestException('Debe seleccionar un vehículo');
+    }
+    if (user.role === 'TRANSPORTES') {
+      await assertVehicleInScope(
+        this.prisma,
+        unitScopeFor(user),
+        filters.vehicleId,
+      );
+    }
+    return { vehicleId: filters.vehicleId };
+  }
+
+  /// RF-17: la fecha mínima efectiva es la más tardía entre el filtro pedido
+  /// y el propio límite del conductor (`minDate`), nunca la más temprana.
+  private buildHistoryDateRange(
+    fromDate: string | undefined,
+    toDate: string | undefined,
+    minDate: Date | undefined,
+  ): { gte?: Date; lte?: Date } | undefined {
+    const requestedFrom = fromDate ? new Date(fromDate) : undefined;
+    const gte =
+      requestedFrom && minDate
+        ? requestedFrom > minDate
+          ? requestedFrom
+          : minDate
+        : (requestedFrom ?? minDate);
+    const lte = toDate ? new Date(toDate) : undefined;
+    if (!gte && !lte) {
+      return undefined;
+    }
+    return { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
+  }
+
+  private unitAssignmentToHistoryEntry(
+    assignment: HistoryUnitAssignmentWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `unit:${assignment.id}`,
+      type: VehicleHistoryEntryType.UNIT_ASSIGNMENT,
+      occurredAt: assignment.startDate,
+      unitName: assignment.unit.name,
+      description: assignment.reason,
+    };
+  }
+
+  private driverAssignmentToHistoryEntry(
+    assignment: HistoryDriverAssignmentWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `driver-assignment:${assignment.id}`,
+      type: VehicleHistoryEntryType.DRIVER_ASSIGNMENT,
+      occurredAt: assignment.startDate,
+      driver: assignment.driver,
+      description: assignment.notes,
+    };
+  }
+
+  private tripToHistoryEntry(
+    trip: HistoryTripWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `trip:${trip.id}`,
+      type: VehicleHistoryEntryType.TRIP,
+      occurredAt: trip.departureAt,
+      driver: trip.assignment.driver,
+      destination: trip.assignment.request.destination,
+      returnAt: trip.returnAt,
+      distanceKm: trip.distanceKm,
+    };
+  }
+
+  private fuelRecordToHistoryEntry(
+    record: HistoryFuelRecordWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `fuel:${record.id}`,
+      type: VehicleHistoryEntryType.FUEL,
+      occurredAt: record.suppliedAt,
+      driver: record.driver,
+      fuelType: record.fuelType,
+      station: record.station,
+      quantity: Number(record.quantity),
+      amount: Number(record.totalCost),
+    };
+  }
+
+  private maintenanceOrderToHistoryEntry(
+    order: MaintenanceOrderModel,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `maintenance:${order.id}`,
+      type: VehicleHistoryEntryType.MAINTENANCE,
+      occurredAt: order.createdAt,
+      maintenanceType: order.type,
+      maintenanceStatus: order.status,
+      workshopName: order.workshopName,
+      amount: Number(order.totalCost),
+      description: order.description,
+    };
+  }
+
+  private incidentToHistoryEntry(
+    incident: HistoryIncidentWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `incident:${incident.id}`,
+      type: VehicleHistoryEntryType.INCIDENT,
+      occurredAt: incident.occurredAt,
+      driver: incident.driver,
+      incidentType: incident.type,
+      incidentSeverity: incident.severity,
+      place: incident.place,
+      amount:
+        incident.estimatedCost === null ? null : Number(incident.estimatedCost),
+      description: incident.description,
+    };
+  }
+
+  private stockMovementToHistoryEntry(
+    movement: HistoryStockMovementWithRelations,
+  ): VehicleHistoryEntry {
+    return {
+      ...EMPTY_HISTORY_ENTRY,
+      id: `stock:${movement.id}`,
+      type: VehicleHistoryEntryType.STOCK_MOVEMENT,
+      occurredAt: movement.createdAt,
+      stockMovementType: movement.type,
+      sparePartName: movement.sparePart.name,
+      quantity: Number(movement.quantity),
+      description: movement.reason,
+    };
   }
 
   private tripToEntry(trip: TripWithRelations): LogbookEntry {

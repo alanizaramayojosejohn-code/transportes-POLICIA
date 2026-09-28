@@ -54,7 +54,7 @@
     <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
   </app-filter-bar>
 
-  <app-table [footer]="page().total + ' registro(s) en total.'">
+  <app-table>
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -112,4 +112,11 @@
       }
     </tbody>
   </app-table>
+
+  <app-pagination
+    noun="registro(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
 </app-card>
