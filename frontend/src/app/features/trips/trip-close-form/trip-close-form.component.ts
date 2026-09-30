@@ -1,5 +1,6 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { TripsService } from '../trips.service';
 import { Trip } from '../trip.model';
 import { FormValidation } from '../../../shared/validation/form-validation';
@@ -58,6 +59,8 @@ export class TripCloseFormComponent {
     this.returnFuelLevel.set(value === '' ? null : Number(value));
   }
 
+  private readonly toast = inject(ToastService);
+
   constructor(private readonly tripsService: TripsService) {}
 
   protected async submit(): Promise<void> {
@@ -75,11 +78,10 @@ export class TripCloseFormComponent {
         damagesFound: this.damagesFound() || undefined,
         incidentNotes: this.incidentNotes() || undefined,
       });
+      this.toast.success(`Recorrido a ${this.trip().destination} cerrado.`);
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar la llegada.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar la llegada.'));
     } finally {
       this.submitting.set(false);
     }

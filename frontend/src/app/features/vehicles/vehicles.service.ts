@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { firstValueFrom, map, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CreateVehicleInput,
   RegisterVehicleConditionInput,
@@ -186,31 +188,27 @@ export class VehiclesService {
   constructor(private readonly apollo: Apollo) {}
 
   list(filter: VehicleFilter): Observable<VehiclePage> {
-    return (
-      this.apollo
-        .watchQuery<VehiclesQueryResult>({
-          query: VEHICLES_QUERY,
-          variables: filter,
-          fetchPolicy: 'cache-and-network',
-        })
-        // Apollo Client v4 tipa `data` como potencialmente parcial o ausente
-        // mientras la primera respuesta sigue en vuelo; esta consulta no usa
-        // `errorPolicy: 'all'` ni datos enmascarados, así que en la práctica
-        // siempre llega completo salvo ese instante inicial.
-        .valueChanges.pipe(
-          map((result) => (result.data?.vehicles as VehiclePage) ?? { items: [], total: 0 }),
-        )
-    );
+    return this.apollo
+      .watchQuery<VehiclesQueryResult>({
+        query: VEHICLES_QUERY,
+        variables: filter,
+        fetchPolicy: 'cache-and-network',
+      })
+      .valueChanges.pipe(
+        queryData((data: VehiclesQueryResult) => data.vehicles, { items: [], total: 0 }),
+      );
   }
 
-  get(id: string): Observable<Vehicle> {
+  get(id: string): Observable<Vehicle | null> {
     return this.apollo
       .watchQuery<VehicleQueryResult>({
         query: VEHICLE_QUERY,
         variables: { id },
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => result.data?.vehicle as Vehicle));
+      .valueChanges.pipe(
+        queryData<VehicleQueryResult, Vehicle | null>((data) => data.vehicle as Vehicle, null),
+      );
   }
 
   /// Lista plana para el select de vehículo en asignaciones de unidad (spec
@@ -223,10 +221,25 @@ export class VehiclesService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) =>
-          ((result.data?.vehicles?.items as VehicleOption[]) ?? []).filter((v) => v.isActive),
-        ),
+        queryData((data: ActiveVehiclesResult) => data.vehicles?.items, []),
+        map((options) => options.filter((v) => v.isActive)),
       );
+  }
+
+  /// Para exportar (Excel/PDF): todo el resultado filtrado vigente, no sólo
+  /// la página actual. `query()`, no `watchQuery()` + `firstValueFrom`: ver
+  /// nota en `vehicle-photos.service.ts` sobre por qué esa combinación puede
+  /// abortar la petición real.
+  async listAll(filter: Omit<VehicleFilter, 'skip' | 'take'>): Promise<Vehicle[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<VehiclesQueryResult>({
+          query: VEHICLES_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.vehicles ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateVehicleInput): Promise<Vehicle> {

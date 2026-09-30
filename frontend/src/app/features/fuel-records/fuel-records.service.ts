@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CreateFuelRecordInput,
   FuelRecord,
@@ -23,6 +25,10 @@ const FUEL_RECORD_FIELDS = `
   vehicle {
     id
     plate
+    currentUnit {
+      id
+      name
+    }
   }
   driver {
     id
@@ -76,8 +82,21 @@ export class FuelRecordsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.fuelRecords as FuelRecordPage) ?? { items: [], total: 0 }),
+        queryData((data: FuelRecordsQueryResult) => data.fuelRecords, { items: [], total: 0 }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<FuelRecordFilter, 'skip' | 'take'>): Promise<FuelRecord[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<FuelRecordsQueryResult>({
+          query: FUEL_RECORDS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.fuelRecords ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateFuelRecordInput): Promise<FuelRecord> {

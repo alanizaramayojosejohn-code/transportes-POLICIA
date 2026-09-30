@@ -1,7 +1,8 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { PersonnelService } from '../../personnel/personnel.service';
 import { CreatePersonnelInput, Personnel } from '../../personnel/personnel.model';
 import { UnitOption } from '../../units/unit.model';
@@ -100,6 +101,8 @@ export class DriverFormComponent {
     },
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly personnelService: PersonnelService,
     private readonly unitsService: UnitsService,
@@ -194,11 +197,13 @@ export class DriverFormComponent {
         await this.createDriverAccount(personnel.id, value);
       }
 
+      const name = `${value.firstName} ${value.lastName}`;
+      this.toast.success(
+        current ? `Conductor ${name} actualizado.` : `Conductor ${name} registrado.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el conductor.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el conductor.'));
     } finally {
       this.submitting.set(false);
     }

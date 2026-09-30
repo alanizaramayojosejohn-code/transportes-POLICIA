@@ -101,7 +101,7 @@
             </td>
           </tr>
         } @empty {
-          <tr appTableEmpty [colspan]="5">
+          <tr appTableEmpty [colspan]="5" [loading]="recentTripsLoading()">
             Sin recorridos registrados todavía.
           </tr>
         }
@@ -138,7 +138,7 @@
             <td appTableCell>{{ record.ticketNumber || '—' }}</td>
           </tr>
         } @empty {
-          <tr appTableEmpty [colspan]="5">
+          <tr appTableEmpty [colspan]="5" [loading]="recentFuelRecordsLoading()">
             Sin cargas de combustible registradas todavía.
           </tr>
         }

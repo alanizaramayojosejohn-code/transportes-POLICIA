@@ -7,6 +7,13 @@
     class="self-center text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
     >Ver bitácora de conductores</a
   >
+  <app-export-buttons
+    title="Consumo de combustible"
+    filenameBase="consumo-de-combustible"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWriteFuel()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Registrar abastecimiento
@@ -34,7 +41,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -66,21 +73,31 @@
             }}
           </td>
           <td appTableCell class="text-right">
-            @if (record.procedureChecklistItems.length > 0) {
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
               <button
                 type="button"
                 appButton
                 size="sm"
                 variant="soft"
-                (click)="checklistRecordId.set(record.id)"
+                (click)="detailRecordId.set(record.id)"
               >
-                Trámites
+                Ver
               </button>
-            }
+              @if (record.procedureChecklistItems.length > 0) {
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="checklistRecordId.set(record.id)"
+                >
+                  Trámites
+                </button>
+              }
+            </div>
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="9">
+        <tr appTableEmpty [colspan]="9" [loading]="loading()">
           Sin abastecimientos registrados todavía.
         </tr>
       }
@@ -106,4 +123,8 @@
     [onSave]="saveChecklist"
     (closed)="checklistRecordId.set(null)"
   />
+}
+
+@if (detailRecord(); as record) {
+  <app-fuel-record-detail [record]="record" (closed)="detailRecordId.set(null)" />
 }

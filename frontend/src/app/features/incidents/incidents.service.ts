@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import { CreateIncidentInput, Incident, IncidentFilter, IncidentPage } from './incident.model';
 
 const INCIDENT_FIELDS = `
@@ -15,6 +17,10 @@ const INCIDENT_FIELDS = `
   vehicle {
     id
     plate
+    currentUnit {
+      id
+      name
+    }
   }
   driver {
     id
@@ -58,8 +64,21 @@ export class IncidentsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.incidents as IncidentPage) ?? { items: [], total: 0 }),
+        queryData((data: IncidentsQueryResult) => data.incidents, { items: [], total: 0 }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<IncidentFilter, 'skip' | 'take'>): Promise<Incident[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<IncidentsQueryResult>({
+          query: INCIDENTS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.incidents ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateIncidentInput): Promise<Incident> {

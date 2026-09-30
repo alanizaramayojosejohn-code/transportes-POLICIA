@@ -35,7 +35,7 @@
           <td appTableCell>{{ part.location || '—' }}</td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="5">
+        <tr appTableEmpty [colspan]="5" [loading]="loading()">
           Ningún repuesto bajo el mínimo.
         </tr>
       }

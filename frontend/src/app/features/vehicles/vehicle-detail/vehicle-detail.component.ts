@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { ModalComponent } from '../../../shared/modal/modal.component';
@@ -19,6 +19,10 @@ import {
   TableRowDirective,
 } from '../../../shared/table/table-parts.directive';
 import { TableEmptyRowComponent } from '../../../shared/table/table-empty-row.component';
+import { SpinnerComponent } from '../../../shared/spinner/spinner.component';
+import { loadable } from '../../../shared/loadable';
+import { errorMessage } from '../../../shared/error-message';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { VehiclesService } from '../vehicles.service';
 import { VehiclePhotosService } from '../vehicle-photos.service';
 import {
@@ -131,6 +135,7 @@ interface DriverSummary {
     TableRowDirective,
     TableCellDirective,
     TableEmptyRowComponent,
+    SpinnerComponent,
     ProcedureChecklistModalComponent,
   ],
   selector: 'app-vehicle-detail',
@@ -168,10 +173,13 @@ export class VehicleDetailComponent {
 
   private readonly vehicleId$ = toObservable(this.vehicleId);
 
-  protected readonly vehicle = toSignal(
-    this.vehicleId$.pipe(switchMap((id) => this.vehiclesService.get(id))),
-    { initialValue: null },
+  private readonly vehicleResult = loadable(
+    this.vehicleId,
+    (id) => this.vehiclesService.get(id),
+    null,
   );
+  protected readonly vehicle = this.vehicleResult.value;
+  protected readonly loading = this.vehicleResult.loading;
 
   protected readonly photoSlotLabel = PHOTO_SLOT_LABEL;
   private readonly photos = toSignal(
@@ -257,6 +265,8 @@ export class VehicleDetailComponent {
     return Array.from(byDriver.values()).sort((a, b) => b.lastTripAt.localeCompare(a.lastTripAt));
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly vehiclesService: VehiclesService,
     private readonly vehiclePhotosService: VehiclePhotosService,
@@ -294,12 +304,16 @@ export class VehicleDetailComponent {
   protected async registerCondition(): Promise<void> {
     this.submitting.set(true);
     try {
+      const code = this.newCode();
       await this.vehiclesService.registerCondition(this.vehicleId(), {
-        code: this.newCode(),
+        code,
         reason: this.newReason() || undefined,
       });
       this.showConditionForm.set(false);
       this.newReason.set('');
+      this.toast.success(`Condición registrada: ${this.conditionLabels[code]}.`);
+    } catch (error) {
+      this.toast.error(errorMessage(error, 'No se pudo registrar la condición.'));
     } finally {
       this.submitting.set(false);
     }

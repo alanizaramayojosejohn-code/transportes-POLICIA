@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
-import { VehicleHistoryFilter, VehicleHistoryPage } from './vehicle-history.model';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../../core/graphql/query-data';
+import { fetchAllPages } from '../../../shared/export/report-export';
+import {
+  VehicleHistoryEntry,
+  VehicleHistoryFilter,
+  VehicleHistoryPage,
+} from './vehicle-history.model';
 
 const VEHICLE_HISTORY_QUERY = gql`
   query VehicleHistory(
@@ -70,10 +76,25 @@ export class VehicleHistoryService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) =>
-            (result.data?.vehicleHistory as VehicleHistoryPage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: VehicleHistoryQueryResult) => data.vehicleHistory, {
+          items: [],
+          total: 0,
+        }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(
+    filter: Omit<VehicleHistoryFilter, 'skip' | 'take'>,
+  ): Promise<VehicleHistoryEntry[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<VehicleHistoryQueryResult>({
+          query: VEHICLE_HISTORY_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.vehicleHistory ?? { items: [], total: 0 }),
+    );
   }
 }

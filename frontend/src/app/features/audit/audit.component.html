@@ -47,7 +47,7 @@
     }
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha / hora</th>
@@ -89,7 +89,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           @if (hasFilters()) {
             Sin eventos para los filtros seleccionados.
           } @else {

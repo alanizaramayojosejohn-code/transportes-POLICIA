@@ -17,6 +17,8 @@ export const FUEL_TYPE_LABEL: Record<FuelType, string> = {
 export interface FuelRecordVehicle {
   id: string;
   plate: string;
+  /// Unidad actual del vehículo, para la ficha del abastecimiento (ver `TripVehicle`).
+  currentUnit: { id: string; name: string } | null;
 }
 
 export interface FuelRecordDriver {

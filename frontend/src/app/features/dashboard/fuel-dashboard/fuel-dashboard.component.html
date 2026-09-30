@@ -44,7 +44,7 @@
           <td appTableCell>{{ record.ticketNumber || '—' }}</td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="6">
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
           Sin abastecimientos registrados todavía.
         </tr>
       }

@@ -15,6 +15,8 @@ export const INCIDENT_TYPE_LABEL: Record<IncidentType, string> = {
 export interface IncidentVehicle {
   id: string;
   plate: string;
+  /// Unidad actual del vehículo, para la ficha del incidente (ver `TripVehicle`).
+  currentUnit: { id: string; name: string } | null;
 }
 
 export interface IncidentDriver {

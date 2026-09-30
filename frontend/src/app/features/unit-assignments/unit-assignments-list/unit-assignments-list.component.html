@@ -2,6 +2,13 @@
   title="Asignaciones de unidad"
   description="Historial de las unidades a las que estuvo asignado cada vehículo."
 >
+  <app-export-buttons
+    title="Historial de asignaciones"
+    filenameBase="historial-de-asignaciones"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWrite()) {
     <button type="button" appButton variant="primary" (click)="showCreateForm.set(true)">
       + Nueva asignación
@@ -29,7 +36,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Vehículo</th>
@@ -57,8 +64,17 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            @if (!a.endDate && currentRole.canWrite()) {
-              <div class="flex justify-end gap-1.5">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailAssignmentId.set(a.id)"
+              >
+                Ver
+              </button>
+              @if (!a.endDate && currentRole.canWrite()) {
                 <button
                   type="button"
                   appButton
@@ -67,17 +83,11 @@
                 >
                   Editar
                 </button>
-                <button
-                  type="button"
-                  appButton
-                  size="sm"
-                  variant="soft"
-                  (click)="openClose(a.vehicle.id)"
-                >
+                <button type="button" appButton size="sm" (click)="openClose(a.vehicle.id)">
                   Cerrar
                 </button>
-              </div>
-            }
+              }
+            </div>
           </td>
         </tr>
         @if (activeActionVehicleId() === a.vehicle.id) {
@@ -152,7 +162,7 @@
           </tr>
         }
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
           Sin asignaciones registradas todavía.
         </tr>
       }
@@ -172,4 +182,8 @@
     (saved)="showCreateForm.set(false)"
     (cancelled)="showCreateForm.set(false)"
   />
+}
+
+@if (detailAssignment(); as assignment) {
+  <app-unit-assignment-detail [assignment]="assignment" (closed)="detailAssignmentId.set(null)" />
 }

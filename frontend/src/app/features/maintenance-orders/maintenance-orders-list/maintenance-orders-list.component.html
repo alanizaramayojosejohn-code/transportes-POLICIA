@@ -2,6 +2,13 @@
   title="Mantenimiento"
   description="Historial de mantenimientos realizados a las movilidades."
 >
+  <app-export-buttons
+    title="Mantenimientos"
+    filenameBase="mantenimientos"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWriteMaintenance()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Registrar mantenimiento
@@ -30,7 +37,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -55,31 +62,28 @@
             {{ order.status === 'COMPLETED' ? 'Bs. ' + order.totalCost.toFixed(2) : '—' }}
           </td>
           <td appTableCell>
-            <app-badge [tone]="order.status === 'COMPLETED' ? 'gray' : 'amber'">
+            <app-badge [tone]="statusTone[order.status]">
               {{ statusLabel[order.status] }}
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            <div class="flex justify-end gap-2">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailOrderId.set(order.id)"
+              >
+                Ver
+              </button>
               @if (order.procedureChecklistItems.length > 0) {
-                <button
-                  type="button"
-                  appButton
-                  size="sm"
-                  variant="soft"
-                  (click)="checklistOrderId.set(order.id)"
-                >
+                <button type="button" appButton size="sm" (click)="checklistOrderId.set(order.id)">
                   Trámites
                 </button>
               }
               @if (order.status === 'IN_PROGRESS' && currentRole.canWriteMaintenance()) {
-                <button
-                  type="button"
-                  appButton
-                  size="sm"
-                  variant="soft"
-                  (click)="openFinish(order.id)"
-                >
+                <button type="button" appButton size="sm" (click)="openFinish(order.id)">
                   Finalizar
                 </button>
               }
@@ -87,7 +91,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
           Sin órdenes de mantenimiento registradas todavía.
         </tr>
       }
@@ -121,4 +125,8 @@
     [onSave]="saveChecklist"
     (closed)="checklistOrderId.set(null)"
   />
+}
+
+@if (detailOrder(); as order) {
+  <app-maintenance-order-detail [order]="order" (closed)="detailOrderId.set(null)" />
 }

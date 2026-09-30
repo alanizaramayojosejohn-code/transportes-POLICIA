@@ -1,3 +1,4 @@
+import { BadgeTone } from '../../shared/badge/badge.component';
 import {
   ProcedureChecklistItem,
   ProcedureChecklistItemDraft,
@@ -18,6 +19,14 @@ export const MAINTENANCE_STATUS_LABEL: Record<MaintenanceStatus, string> = {
   IN_PROGRESS: 'En proceso',
   COMPLETED: 'Finalizado',
   CANCELLED: 'Cancelado',
+};
+
+/** Color de la insignia de estado, compartido por el listado y la ficha. */
+export const MAINTENANCE_STATUS_TONE: Record<MaintenanceStatus, BadgeTone> = {
+  SCHEDULED: 'amber',
+  IN_PROGRESS: 'amber',
+  COMPLETED: 'gray',
+  CANCELLED: 'red',
 };
 
 export interface MaintenanceOrderVehicle {

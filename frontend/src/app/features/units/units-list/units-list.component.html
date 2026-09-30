@@ -33,7 +33,7 @@
     <p class="px-1 pb-3 text-13 text-red">{{ actionError() }}</p>
   }
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Código</th>
@@ -97,7 +97,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
           Sin unidades registradas todavía.
         </tr>
       }

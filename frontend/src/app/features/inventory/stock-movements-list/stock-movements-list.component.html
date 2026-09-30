@@ -7,6 +7,13 @@
     class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
     >← Volver a Reportes</a
   >
+  <app-export-buttons
+    title="Movimientos de almacén"
+    filenameBase="movimientos-de-almacen"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
 </app-page-head>
 
 <app-card>
@@ -54,7 +61,7 @@
     <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -92,7 +99,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="6">
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
           Sin movimientos para los filtros seleccionados.
         </tr>
       }

@@ -1,6 +1,7 @@
-import { Component, computed, effect, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { TripsService } from '../trips.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
@@ -72,6 +73,8 @@ export class TripFormComponent {
     ),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly tripsService: TripsService,
     private readonly vehiclesService: VehiclesService,
@@ -121,11 +124,13 @@ export class TripFormComponent {
         departureFuelLevel: this.departureFuelLevel() ?? undefined,
         departureConditionNotes: this.departureConditionNotes() || undefined,
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      this.toast.success(
+        `Salida a ${this.destination()} registrada${plate ? ` para el vehículo ${plate}` : ''}.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar la salida.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar la salida.'));
     } finally {
       this.submitting.set(false);
     }

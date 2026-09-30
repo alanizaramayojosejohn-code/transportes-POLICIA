@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CreateSparePartInput,
   CreateStockMovementInput,
@@ -8,6 +10,7 @@ import {
   SparePartCategory,
   SparePartFilter,
   SparePartPage,
+  StockMovement,
   StockMovementFilter,
   StockMovementPage,
   UpdateSparePartInput,
@@ -148,6 +151,11 @@ const STOCK_MOVEMENTS_QUERY = gql`
   }
 `;
 
+/// `DashboardSummary` va junto a `SpareParts` porque de ahí sale el contador de stock bajo: el
+/// badge de Inventario del menú y las tarjetas del panel de inicio quedarían con el saldo previo
+/// si no se refrescan con cada movimiento o alta/baja de artículo.
+const INVENTORY_REFETCH = ['SpareParts', 'DashboardSummary'];
+
 interface SparePartsQueryResult {
   spareParts: SparePartPage;
 }
@@ -172,8 +180,21 @@ export class InventoryService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.spareParts as SparePartPage) ?? { items: [], total: 0 }),
+        queryData((data: SparePartsQueryResult) => data.spareParts, { items: [], total: 0 }),
       );
+  }
+
+  /// Para exportar «Kardex / Inventario»: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<SparePartFilter, 'skip' | 'take'>): Promise<SparePart[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<SparePartsQueryResult>({
+          query: SPARE_PARTS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.spareParts ?? { items: [], total: 0 }),
+    );
   }
 
   listCategories(): Observable<SparePartCategory[]> {
@@ -183,7 +204,7 @@ export class InventoryService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.sparePartCategories as SparePartCategory[]) ?? []),
+        queryData((data: SparePartCategoriesResult) => data.sparePartCategories, []),
       );
   }
 
@@ -192,7 +213,7 @@ export class InventoryService {
       this.apollo.mutate<{ createSparePart: SparePart }>({
         mutation: CREATE_SPARE_PART_MUTATION,
         variables: { input },
-        refetchQueries: ['SpareParts'],
+        refetchQueries: INVENTORY_REFETCH,
       }),
     );
     return result.data!.createSparePart;
@@ -203,7 +224,7 @@ export class InventoryService {
       this.apollo.mutate<{ updateSparePart: SparePart }>({
         mutation: UPDATE_SPARE_PART_MUTATION,
         variables: { id, input },
-        refetchQueries: ['SpareParts'],
+        refetchQueries: INVENTORY_REFETCH,
       }),
     );
     return result.data!.updateSparePart;
@@ -214,7 +235,7 @@ export class InventoryService {
       this.apollo.mutate({
         mutation: DEACTIVATE_SPARE_PART_MUTATION,
         variables: { id },
-        refetchQueries: ['SpareParts'],
+        refetchQueries: INVENTORY_REFETCH,
       }),
     );
   }
@@ -224,7 +245,7 @@ export class InventoryService {
       this.apollo.mutate({
         mutation: REACTIVATE_SPARE_PART_MUTATION,
         variables: { id },
-        refetchQueries: ['SpareParts'],
+        refetchQueries: INVENTORY_REFETCH,
       }),
     );
   }
@@ -238,10 +259,26 @@ export class InventoryService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) => (result.data?.stockMovements as StockMovementPage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: StockMovementsQueryResult) => data.stockMovements, {
+          items: [],
+          total: 0,
+        }),
       );
+  }
+
+  /// Para exportar «Movimientos de almacén»: todo el resultado filtrado, no sólo la página actual.
+  async listAllMovements(
+    filter: Omit<StockMovementFilter, 'skip' | 'take'>,
+  ): Promise<StockMovement[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<StockMovementsQueryResult>({
+          query: STOCK_MOVEMENTS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.stockMovements ?? { items: [], total: 0 }),
+    );
   }
 
   async registerMovement(input: CreateStockMovementInput): Promise<void> {
@@ -249,7 +286,7 @@ export class InventoryService {
       this.apollo.mutate({
         mutation: REGISTER_STOCK_MOVEMENT_MUTATION,
         variables: { input },
-        refetchQueries: ['SpareParts'],
+        refetchQueries: INVENTORY_REFETCH,
       }),
     );
   }

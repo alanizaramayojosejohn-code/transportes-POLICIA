@@ -8,7 +8,7 @@
 </app-page-head>
 
 <app-card>
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>CI</th>
@@ -52,7 +52,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin personal administrativo registrado todavía.
         </tr>
       }

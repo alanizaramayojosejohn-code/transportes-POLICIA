@@ -1,19 +1,11 @@
 @if (driver(); as d) {
   <app-modal title="Ficha del conductor" small (closed)="closed.emit()">
     <div class="px-[22px] py-5">
-      <div class="mb-5 flex items-center gap-3.5">
-        <div
-          class="flex h-[54px] w-[54px] flex-none items-center justify-center rounded-full bg-green-700 text-13 font-bold text-white"
-        >
-          CD
-        </div>
-        <div class="min-w-0">
-          <h2 class="text-[19px] font-serif font-semibold text-ink">
-            {{ d.firstName }} {{ d.lastName }}
-          </h2>
-          <p class="text-12-5 text-ink-muted">{{ subtitle() }}</p>
-        </div>
-      </div>
+      <app-detail-header
+        initials="CD"
+        [title]="d.firstName + ' ' + d.lastName"
+        [subtitle]="subtitle()"
+      />
 
       <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
         <app-data-cell label="CI">{{ d.ci }}</app-data-cell>
@@ -67,5 +59,15 @@
     <app-form-actions>
       <button type="button" appButton (click)="closed.emit()">Cerrar</button>
     </app-form-actions>
+  </app-modal>
+} @else {
+  <app-modal title="Ficha del conductor" small (closed)="closed.emit()">
+    <div class="flex items-center justify-center px-[22px] py-16">
+      @if (loading()) {
+        <app-spinner size="lg" label="Cargando la ficha…" />
+      } @else {
+        <p class="text-13 text-ink-muted">No se encontró al conductor solicitado.</p>
+      }
+    </div>
   </app-modal>
 }

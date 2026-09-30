@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import {
   CreateProcedureTypeInput,
   ProcedureAction,
@@ -137,9 +138,10 @@ export class ProcedureTypesService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) => (result.data?.procedureTypes as ProcedureTypePage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: ProcedureTypesQueryResult) => data.procedureTypes, {
+          items: [],
+          total: 0,
+        }),
       );
   }
 

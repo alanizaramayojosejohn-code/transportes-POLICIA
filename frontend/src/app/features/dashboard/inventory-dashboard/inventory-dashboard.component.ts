@@ -14,6 +14,7 @@ import {
 } from '../../../shared/table/table-parts.directive';
 import { InventoryService } from '../../inventory/inventory.service';
 import { SparePart, SparePartCategory, SparePartPage } from '../../inventory/spare-part.model';
+import { loadableOf } from '../../../shared/loadable';
 
 const LIST_TAKE = 100;
 
@@ -42,6 +43,7 @@ const LIST_TAKE = 100;
 })
 export class InventoryDashboardComponent {
   protected readonly spareParts: Signal<SparePartPage>;
+  protected readonly loading: Signal<boolean>;
   protected readonly categories: Signal<SparePartCategory[]>;
 
   protected readonly lowStockItems = computed<SparePart[]>(() =>
@@ -49,9 +51,12 @@ export class InventoryDashboardComponent {
   );
 
   constructor(private readonly inventoryService: InventoryService) {
-    this.spareParts = toSignal(this.inventoryService.list({ isActive: true, take: LIST_TAKE }), {
-      initialValue: { items: [], total: 0 },
+    const result = loadableOf(this.inventoryService.list({ isActive: true, take: LIST_TAKE }), {
+      items: [],
+      total: 0,
     });
+    this.spareParts = result.value;
+    this.loading = result.loading;
     this.categories = toSignal(this.inventoryService.listCategories(), { initialValue: [] });
   }
 }

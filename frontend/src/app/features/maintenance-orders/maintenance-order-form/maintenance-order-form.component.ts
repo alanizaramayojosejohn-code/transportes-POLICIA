@@ -1,6 +1,7 @@
-import { Component, computed, output, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { MaintenanceOrdersService } from '../maintenance-orders.service';
 import {
   MAINTENANCE_TYPE_LABEL,
@@ -58,6 +59,8 @@ export class MaintenanceOrderFormComponent {
     description: required('Ingrese una descripción o diagnóstico.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly maintenanceOrdersService: MaintenanceOrdersService,
     private readonly vehiclesService: VehiclesService,
@@ -87,10 +90,14 @@ export class MaintenanceOrderFormComponent {
         invoiceNumber: this.invoiceNumber() || undefined,
         checklistItems: this.checklistFields()?.items(),
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      this.toast.success(
+        `Orden de mantenimiento abierta${plate ? ` para el vehículo ${plate}` : ''}.`,
+      );
       this.saved.emit();
     } catch (error) {
       this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar el mantenimiento.',
+        this.toast.reportError(error, 'No se pudo registrar el mantenimiento.'),
       );
     } finally {
       this.submitting.set(false);

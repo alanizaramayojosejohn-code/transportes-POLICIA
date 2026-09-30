@@ -1,10 +1,25 @@
-<div class="pointer-events-none fixed bottom-[22px] right-[22px] z-[200] flex flex-col gap-2">
+<div
+  class="pointer-events-none fixed bottom-[22px] right-[22px] z-[200] flex max-w-[min(420px,calc(100vw-44px))] flex-col gap-2"
+  aria-live="polite"
+>
   @for (toast of toastService.toasts(); track toast.id) {
     <div
-      class="animate-toast-in pointer-events-auto flex items-center gap-2 rounded-sm bg-green-800 px-[18px] py-3 text-13 font-semibold text-white shadow-2 transition-opacity duration-[250ms] dark:bg-green-400 dark:text-green-900"
+      class="animate-toast-in pointer-events-auto flex items-start gap-2.5 rounded-sm px-[18px] py-3 text-13 font-semibold shadow-2 transition-opacity duration-[250ms]"
+      [class]="variantClasses[toast.variant]"
       [class.opacity-0]="toast.leaving"
+      [attr.role]="toast.variant === 'error' ? 'alert' : null"
     >
-      {{ toast.message }}
+      <span class="min-w-0 flex-1 leading-relaxed">{{ toast.message }}</span>
+      @if (toastService.dismissible(toast)) {
+        <button
+          type="button"
+          class="-mr-1.5 -mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full text-[11px] opacity-70 transition-opacity hover:opacity-100"
+          aria-label="Cerrar aviso"
+          (click)="toastService.dismiss(toast.id)"
+        >
+          ✕
+        </button>
+      }
     </div>
   }
 </div>

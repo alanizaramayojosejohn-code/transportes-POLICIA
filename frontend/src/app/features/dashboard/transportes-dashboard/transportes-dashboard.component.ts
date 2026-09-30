@@ -27,6 +27,7 @@ import { FUEL_TYPE_LABEL, FuelRecordPage } from '../../fuel-records/fuel-record.
 import { IncidentsService } from '../../incidents/incidents.service';
 import { INCIDENT_TYPE_LABEL, IncidentPage } from '../../incidents/incident.model';
 import { formatDateEs, formatDateTimeEs } from '../../../shared/date-format';
+import { loadableOf } from '../../../shared/loadable';
 
 const RECENT_TAKE = 5;
 
@@ -67,8 +68,11 @@ export class TransportesDashboardComponent {
   protected readonly drivers: Signal<PersonnelPage>;
   protected readonly openTrips: Signal<TripPage>;
   protected readonly recentTrips: Signal<TripPage>;
+  protected readonly recentTripsLoading: Signal<boolean>;
   protected readonly recentFuelRecords: Signal<FuelRecordPage>;
+  protected readonly recentFuelRecordsLoading: Signal<boolean>;
   protected readonly recentIncidents: Signal<IncidentPage>;
+  protected readonly recentIncidentsLoading: Signal<boolean>;
 
   constructor(
     private readonly unitsService: UnitsService,
@@ -91,14 +95,23 @@ export class TransportesDashboardComponent {
     this.openTrips = toSignal(this.tripsService.list({ open: true, take: 100 }), {
       initialValue: { items: [], total: 0 },
     });
-    this.recentTrips = toSignal(this.tripsService.list({ take: RECENT_TAKE }), {
-      initialValue: { items: [], total: 0 },
+    const recentTrips = loadableOf(this.tripsService.list({ take: RECENT_TAKE }), {
+      items: [],
+      total: 0,
     });
-    this.recentFuelRecords = toSignal(this.fuelRecordsService.list({ take: RECENT_TAKE }), {
-      initialValue: { items: [], total: 0 },
+    this.recentTrips = recentTrips.value;
+    this.recentTripsLoading = recentTrips.loading;
+    const recentFuelRecords = loadableOf(this.fuelRecordsService.list({ take: RECENT_TAKE }), {
+      items: [],
+      total: 0,
     });
-    this.recentIncidents = toSignal(this.incidentsService.list({ take: RECENT_TAKE }), {
-      initialValue: { items: [], total: 0 },
+    this.recentFuelRecords = recentFuelRecords.value;
+    this.recentFuelRecordsLoading = recentFuelRecords.loading;
+    const recentIncidents = loadableOf(this.incidentsService.list({ take: RECENT_TAKE }), {
+      items: [],
+      total: 0,
     });
+    this.recentIncidents = recentIncidents.value;
+    this.recentIncidentsLoading = recentIncidents.loading;
   }
 }

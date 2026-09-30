@@ -24,6 +24,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "bun run prisma/seed.ts",
+    "prisma:seed:inventory": "bun run prisma/seed-inventory.ts",
     "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test"
   },
   "prisma": {

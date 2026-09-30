@@ -2,6 +2,13 @@
   title="Incidentes"
   description="Trazabilidad de hechos relacionados con vehículos y conductores."
 >
+  <app-export-buttons
+    title="Incidentes vehiculares"
+    filenameBase="incidentes-vehiculares"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWrite()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Registrar incidente
@@ -30,7 +37,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -39,6 +46,7 @@
         <th appTableHeadCell>Tipo</th>
         <th appTableHeadCell>Lugar</th>
         <th appTableHeadCell>Referencia</th>
+        <th appTableHeadCell></th>
       </tr>
     </thead>
     <tbody>
@@ -52,9 +60,20 @@
           <td appTableCell>{{ typeLabel[incident.type] }}</td>
           <td appTableCell>{{ incident.place }}</td>
           <td appTableCell>{{ incident.policeReportNumber || incident.code }}</td>
+          <td appTableCell class="text-right">
+            <button
+              type="button"
+              appButton
+              size="sm"
+              variant="soft"
+              (click)="detailIncidentId.set(incident.id)"
+            >
+              Ver
+            </button>
+          </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="6">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin incidentes registrados todavía.
         </tr>
       }
@@ -71,4 +90,8 @@
 
 @if (showForm()) {
   <app-incident-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailIncident(); as incident) {
+  <app-incident-detail [incident]="incident" (closed)="detailIncidentId.set(null)" />
 }

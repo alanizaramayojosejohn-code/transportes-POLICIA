@@ -34,7 +34,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Nombre</th>
@@ -85,7 +85,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="5">
+        <tr appTableEmpty [colspan]="5" [loading]="loading()">
           Sin tipos de trámite registrados todavía.
         </tr>
       }

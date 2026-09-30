@@ -1,6 +1,7 @@
-import { Component, computed, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { VehicleDocumentsService } from '../vehicle-documents.service';
 import { DOCUMENT_TYPE_LABEL, DOCUMENT_TYPES, DocumentType } from '../vehicle-document.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
@@ -44,6 +45,8 @@ export class VehicleDocumentFormComponent {
     expiresAt: required('Ingrese la fecha de vencimiento.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly vehicleDocumentsService: VehicleDocumentsService,
     private readonly vehiclesService: VehiclesService,
@@ -67,11 +70,13 @@ export class VehicleDocumentFormComponent {
         expiresAt: this.expiresAt(),
         notes: this.notes() || undefined,
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      this.toast.success(
+        `${this.typeLabel[this.type()]} registrado${plate ? ` para el vehículo ${plate}` : ''}.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar el documento.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar el documento.'));
     } finally {
       this.submitting.set(false);
     }

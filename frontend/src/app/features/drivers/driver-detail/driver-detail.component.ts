@@ -1,11 +1,9 @@
 import { Component, computed, input, output } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
-import { ModalComponent } from '../../../shared/modal/modal.component';
-import { BadgeComponent } from '../../../shared/badge/badge.component';
-import { ButtonDirective } from '../../../shared/button/button.directive';
-import { DataCellComponent } from '../../../shared/data-cell/data-cell.component';
-import { FormActionsComponent } from '../../../shared/form-actions/form-actions.component';
+import { DETAIL_MODAL_IMPORTS } from '../../../shared/detail-modal.imports';
+import { SpinnerComponent } from '../../../shared/spinner/spinner.component';
+import { loadable } from '../../../shared/loadable';
 import { PersonnelService } from '../../personnel/personnel.service';
 import { formatDateEs } from '../../../shared/date-format';
 import { TripsService } from '../../trips/trips.service';
@@ -24,13 +22,7 @@ const RELATED_TAKE = 50;
  * placas distintas de los recorridos del conductor en vez de dejarlo como texto fijo.
  */
 @Component({
-  imports: [
-    ModalComponent,
-    BadgeComponent,
-    ButtonDirective,
-    DataCellComponent,
-    FormActionsComponent,
-  ],
+  imports: [...DETAIL_MODAL_IMPORTS, SpinnerComponent],
   selector: 'app-driver-detail',
   templateUrl: './driver-detail.component.html',
 })
@@ -42,10 +34,13 @@ export class DriverDetailComponent {
 
   private readonly driverId$ = toObservable(this.driverId);
 
-  protected readonly driver = toSignal(
-    this.driverId$.pipe(switchMap((id) => this.personnelService.get(id))),
-    { initialValue: null },
+  private readonly driverResult = loadable(
+    this.driverId,
+    (id) => this.personnelService.get(id),
+    null,
   );
+  protected readonly driver = this.driverResult.value;
+  protected readonly loading = this.driverResult.loading;
 
   protected readonly subtitle = computed(() => {
     const d = this.driver();

@@ -2,6 +2,13 @@
   title="Vehículos"
   description="Registro y consulta centralizada del parque automotor."
 >
+  <app-export-buttons
+    title="Vehículos por unidad"
+    filenameBase="vehiculos-por-unidad"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWrite()) {
     <button type="button" appButton variant="primary" (click)="showCreateForm.set(true)">
       + Nuevo vehículo
@@ -35,7 +42,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Placa</th>
@@ -96,7 +103,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin vehículos registrados todavía.
         </tr>
       }

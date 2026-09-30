@@ -16,6 +16,7 @@ import { VehiclePhotosService } from '../vehicle-photos.service';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { errorMessage } from '../../../shared/error-message';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { UnitsService } from '../../units/units.service';
 import { UnitOption } from '../../units/unit.model';
@@ -214,11 +215,11 @@ export class VehicleFormComponent {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.toast.show('Seleccione un archivo de imagen válido.');
+      this.toast.error('Seleccione un archivo de imagen válido.');
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
-      this.toast.show('La fotografía no debe superar 12 MB.');
+      this.toast.error('La fotografía no debe superar 12 MB.');
       return;
     }
 
@@ -226,7 +227,7 @@ export class VehicleFormComponent {
       const dataUrl = await optimizePhoto(file);
       this.photos.update((current) => ({ ...current, [key]: dataUrl }));
     } catch {
-      this.toast.show('No se pudo procesar la fotografía.');
+      this.toast.error('No se pudo procesar la fotografía.');
     }
   }
 
@@ -291,10 +292,9 @@ export class VehicleFormComponent {
         try {
           await this.persistPhotos(current.id);
         } catch (photoError) {
-          this.errorMessage.set(
-            `Los datos del vehículo se guardaron, pero no se pudieron actualizar las fotografías (${
-              photoError instanceof Error ? photoError.message : 'error desconocido'
-            }).`,
+          this.partialFailure(
+            'Los datos del vehículo se guardaron, pero no se pudieron actualizar las fotografías',
+            photoError,
           );
           return;
         }
@@ -306,10 +306,9 @@ export class VehicleFormComponent {
         try {
           await this.persistPhotos(created.id);
         } catch (photoError) {
-          this.errorMessage.set(
-            `El vehículo se registró, pero no se pudieron guardar las fotografías (${
-              photoError instanceof Error ? photoError.message : 'error desconocido'
-            }).`,
+          this.partialFailure(
+            'El vehículo se registró, pero no se pudieron guardar las fotografías',
+            photoError,
           );
           return;
         }
@@ -321,23 +320,32 @@ export class VehicleFormComponent {
               startDate: new Date().toISOString().slice(0, 10),
             });
           } catch (assignError) {
-            this.errorMessage.set(
-              `El vehículo se registró, pero no se pudo asignar a la unidad automáticamente (${
-                assignError instanceof Error ? assignError.message : 'error desconocido'
-              }). Pida a un administrador que lo asigne desde Asignaciones.`,
+            this.partialFailure(
+              'El vehículo se registró, pero no se pudo asignar a la unidad automáticamente',
+              assignError,
+              'Pida a un administrador que lo asigne desde Asignaciones.',
             );
             return;
           }
         }
       }
+      this.toast.success(
+        current ? `Vehículo ${value.plate} actualizado.` : `Vehículo ${value.plate} registrado.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el vehículo.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el vehículo.'));
     } finally {
       this.submitting.set(false);
     }
+  }
+
+  /// El vehículo sí quedó guardado y falló un paso posterior (fotos, asignación de unidad): el
+  /// aviso lo dice así, porque reintentar el alta completa duplicaría el registro.
+  private partialFailure(summary: string, cause: unknown, advice = ''): void {
+    const message = `${summary} (${errorMessage(cause, 'error desconocido')}).${advice ? ` ${advice}` : ''}`;
+    this.errorMessage.set(message);
+    this.toast.error(message);
   }
 
   private initialValue(): CreateVehicleInput {

@@ -1,6 +1,7 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { PersonnelService } from '../../personnel/personnel.service';
 import { CreatePersonnelInput, Personnel } from '../../personnel/personnel.model';
 import { UsersService } from '../../users/users.service';
@@ -84,6 +85,8 @@ export class TransportOfficeFormComponent {
     ),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly personnelService: PersonnelService,
     private readonly usersService: UsersService,
@@ -158,11 +161,15 @@ export class TransportOfficeFormComponent {
         });
       }
 
+      const name = `${value.firstName} ${value.lastName}`;
+      this.toast.success(
+        `${current ? `${name} actualizado` : `${name} registrado`}${
+          createsAccount ? ', con su cuenta de sistema creada' : ''
+        }.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el registro.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el registro.'));
     } finally {
       this.submitting.set(false);
     }

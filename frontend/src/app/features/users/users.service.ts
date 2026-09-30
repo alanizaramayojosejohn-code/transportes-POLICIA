@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import { CreateUserInput, Role, UpdateUserInput, User, UserFilter, UserPage } from './user.model';
 
 const USER_FIELDS = `
@@ -12,6 +13,7 @@ const USER_FIELDS = `
   phone
   isActive
   lastLoginAt
+  createdAt
   roleId
   role {
     id
@@ -105,7 +107,7 @@ export class UsersService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.users as UserPage) ?? { items: [], total: 0 }),
+        queryData((data: UsersQueryResult) => data.users, { items: [], total: 0 }),
       );
   }
 
@@ -116,7 +118,7 @@ export class UsersService {
         query: ROLES_QUERY,
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => (result.data?.roles as Role[]) ?? []));
+      .valueChanges.pipe(queryData((data: RolesQueryResult) => data.roles, []));
   }
 
   async create(input: CreateUserInput): Promise<User> {

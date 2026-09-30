@@ -1,7 +1,6 @@
 import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs';
 import { FuelLogbookService } from './fuel-logbook.service';
 import { LOGBOOK_ENTRY_TYPE_LABEL, LogbookFilter } from './fuel-logbook.model';
 import { FUEL_TYPE_LABEL } from '../fuel-record.model';
@@ -11,6 +10,7 @@ import { UnitsService } from '../../units/units.service';
 import { UnitOption } from '../../units/unit.model';
 import { formatDateEs, formatDateTimeEs } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { loadable } from '../../../shared/loadable';
 import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 
 const VEHICLE_TYPE_OPTIONS: VehicleType[] = [
@@ -75,10 +75,12 @@ export class FuelLogbookReportComponent {
     take: PAGE_SIZE,
   }));
 
-  protected readonly page = toSignal(
-    toObservable(this.query).pipe(switchMap((filter) => this.fuelLogbookService.list(filter))),
-    { initialValue: { items: [], total: 0 } },
-  );
+  private readonly result = loadable(this.query, (filter) => this.fuelLogbookService.list(filter), {
+    items: [],
+    total: 0,
+  });
+  protected readonly page = this.result.value;
+  protected readonly loading = this.result.loading;
 
   constructor(private readonly fuelLogbookService: FuelLogbookService) {}
 

@@ -1,6 +1,7 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UnitsService } from '../units.service';
 import { CreateUnitInput, Unit, UnitOption } from '../unit.model';
 import { FormValidation } from '../../../shared/validation/form-validation';
@@ -28,6 +29,8 @@ export class UnitFormComponent {
     name: required<string, CreateUnitInput>('El nombre es obligatorio.'),
     code: maxLength<CreateUnitInput>(30, 'El código no puede superar los 30 caracteres.'),
   });
+
+  private readonly toast = inject(ToastService);
 
   constructor(private readonly unitsService: UnitsService) {
     // Se asigna aquí, no como inicializador de campo: un inicializador de
@@ -79,11 +82,12 @@ export class UnitFormComponent {
       const result = current
         ? await this.unitsService.update(current.id, value)
         : await this.unitsService.create(value);
+      this.toast.success(
+        current ? `Unidad ${result.name} actualizada.` : `Unidad ${result.name} registrada.`,
+      );
       this.saved.emit(result);
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar la unidad.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar la unidad.'));
     } finally {
       this.submitting.set(false);
     }

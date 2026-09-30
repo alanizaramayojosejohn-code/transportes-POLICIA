@@ -1,0 +1,103 @@
+- generic [ref=f15e4]:
+  - complementary [ref=f15e5]:
+    - generic [ref=f15e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f15e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f15e14]:
+      - link [ref=f15e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f15e22]
+      - generic [ref=f15e33]:
+        - link "Vehículos" [ref=f15e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f15e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f15e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f15e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f15e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f15e39]
+      - button [ref=f15e49]
+      - link [ref=f15e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f15e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f15e70]
+    - generic [ref=f15e81]: Sistema de información vehicular
+  - generic [ref=f15e82]:
+    - banner [ref=f15e83]:
+      - generic [ref=f15e84]:
+        - generic [ref=f15e85]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f15e86]
+      - generic [ref=f15e87]:
+        - generic [ref=f15e88]: En línea
+        - generic [ref=f15e90]:
+          - button "Tema claro" [ref=f15e91]
+          - button "Tema oscuro" [ref=f15e96]
+        - generic [ref=f15e100]:
+          - generic [ref=f15e101]: AD
+          - generic [ref=f15e102]:
+            - strong [ref=f15e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f15e104]
+    - main [ref=f15e105]:
+      - generic [ref=f15e106]:
+        - generic "Vehículos" [ref=f15e107]:
+          - generic [ref=f15e108]:
+            - generic [ref=f15e109]:
+              - heading "Vehículos" [level=2] [ref=f15e110]
+              - paragraph [ref=f15e111]: Registro y consulta centralizada del parque automotor.
+            - generic [ref=f15e112]:
+              - generic "Vehículos por unidad" [ref=f15e113]:
+                - generic [ref=f15e114]:
+                  - button [ref=f15e115]
+                  - button [ref=f15e120]
+              - button "+ Nuevo vehículo" [ref=f15e125]
+        - generic [ref=f15e127]:
+          - generic [ref=f15e129]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f15e130]
+            - combobox [ref=f15e131]:
+              - option "Todas las condiciones" [selected]
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+            - combobox [ref=f15e132]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Ambulancia"
+              - option "Otro"
+          - table [ref=f15e135]:
+            - rowgroup [ref=f15e136]:
+              - row [ref=f15e137]:
+                - columnheader "Placa" [ref=f15e138]
+                - columnheader "Marca" [ref=f15e139]
+                - columnheader "Modelo" [ref=f15e140]
+                - columnheader "Unidad" [ref=f15e141]
+                - columnheader "Condición" [ref=f15e142]
+                - columnheader "Último KM" [ref=f15e143]
+                - columnheader [ref=f15e144]
+            - rowgroup [ref=f15e145]:
+              - row [ref=f15e146]:
+                - cell "PRUEBA" [ref=f15e147]
+                - cell "prueba" [ref=f15e148]
+                - cell "prueba" [ref=f15e149]
+                - cell "Sin unidad asignada" [ref=f15e150]
+                - cell "Sin evaluar" [ref=f15e151]
+                - cell "—" [ref=f15e154]
+                - cell [ref=f15e155]:
+                  - generic [ref=f15e156]:
+                    - button "Ver" [ref=f15e157]
+                    - button "Editar" [ref=f15e158]
+                    - button "Eliminar" [ref=f15e159]
+          - paragraph [ref=f15e162]: 1 vehículo(s) en total.

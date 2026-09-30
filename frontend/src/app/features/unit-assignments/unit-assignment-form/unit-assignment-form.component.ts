@@ -1,7 +1,8 @@
-import { Component, computed, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
 import { NoticeComponent } from '../../../shared/notice/notice.component';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UnitAssignmentsService } from '../unit-assignments.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { UnitOption } from '../../units/unit.model';
@@ -48,6 +49,8 @@ export class UnitAssignmentFormComponent {
     startDate: required('Ingrese la fecha de inicio.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly unitAssignmentsService: UnitAssignmentsService,
     private readonly vehiclesService: VehiclesService,
@@ -73,11 +76,14 @@ export class UnitAssignmentFormComponent {
         referenceDocument: this.referenceDocument() || undefined,
         notes: this.notes() || undefined,
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      const unit = this.units().find((u) => u.id === this.unitId())?.name;
+      this.toast.success(
+        plate && unit ? `Vehículo ${plate} asignado a ${unit}.` : 'Asignación registrada.',
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar la asignación.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar la asignación.'));
     } finally {
       this.submitting.set(false);
     }

@@ -1,19 +1,24 @@
-import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, Signal, computed, effect, inject, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { filter, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { CurrentRoleService, ROLE_LABEL, Role } from '../../core/current-role.service';
 import { PwaInstallService } from '../../core/pwa-install.service';
 import { ThemeService } from '../../core/theme.service';
+import { DashboardService } from '../../features/dashboard/dashboard.service';
 import { ButtonDirective } from '../../shared/button/button.directive';
 import { IconComponent, IconName } from '../../shared/icon/icon.component';
 
 interface NavChild {
   readonly path: string;
   readonly label: string;
+  /** Contador vivo (hoy sólo Inventario); lo pone `nav()`, no el árbol estático. */
   readonly badge?: string;
 }
+
+const INVENTORY_PATH = '/inventario';
+const VEHICLES_PATH = '/vehiculos';
 
 interface NavEntry {
   readonly key: string;
@@ -25,8 +30,8 @@ interface NavEntry {
   readonly children?: readonly NavChild[];
 }
 
-/** Árbol de navegación de la maqueta (`prototipo/index.html:297-442`). El badge de Inventario
- * está fijo en "5", igual que en la maqueta (no se recalcula desde datos reales). */
+/** Árbol de navegación de la maqueta (`prototipo/index.html:297-442`), sin badges: el de
+ * Inventario lo calcula `nav()` a partir del stock real. */
 const BASE_NAV: readonly NavEntry[] = [
   { key: 'dashboard', label: 'Inicio', icon: 'home', path: '/' },
   {
@@ -34,7 +39,7 @@ const BASE_NAV: readonly NavEntry[] = [
     label: 'Gestión Vehicular',
     icon: 'vehicle',
     children: [
-      { path: '/vehiculos', label: 'Vehículos' },
+      { path: VEHICLES_PATH, label: 'Vehículos' },
       { path: '/asignaciones', label: 'Asignaciones' },
       { path: '/conductores', label: 'Conductores' },
       { path: '/unidades', label: 'Unidades' },
@@ -57,7 +62,7 @@ const BASE_NAV: readonly NavEntry[] = [
     icon: 'wrench',
     children: [
       { path: '/mantenimiento', label: 'Mantenimientos' },
-      { path: '/inventario', label: 'Inventario', badge: '5' },
+      { path: INVENTORY_PATH, label: 'Inventario' },
     ],
   },
   { key: 'reportes', label: 'Reportes', icon: 'bar-chart', path: '/reportes' },
@@ -90,10 +95,15 @@ const CONDUCTOR_NAV: readonly NavEntry[] = [
 /// roles no listados (ADMINISTRADOR, MANTENIMIENTO, CONSULTA) ven `BASE_NAV`
 /// completo, sin cambios.
 const ROLE_EXCLUDED_PATHS: Partial<Record<Role, readonly string[]>> = {
-  TRANSPORTES: ['/unidades', '/documentacion', '/mantenimiento', '/inventario'],
+  TRANSPORTES: ['/unidades', '/documentacion', '/mantenimiento', INVENTORY_PATH],
   ALMACEN: ['/combustible'],
-  COMBUSTIBLE: ['/inventario'],
+  COMBUSTIBLE: [INVENTORY_PATH],
 };
+
+/** `true` si alguna entrada del árbol —simple o hija de un grupo— apunta a `path`. */
+function navIncludes(nav: readonly NavEntry[], path: string): boolean {
+  return nav.some((entry) => entry.path === path || entry.children?.some((c) => c.path === path));
+}
 
 function navForRole(role: Role | null): readonly NavEntry[] {
   const excluded = role ? ROLE_EXCLUDED_PATHS[role] : undefined;
@@ -138,7 +148,10 @@ export class ShellComponent {
   /// CONDUCTOR (spec 014) tiene su propio árbol reducido, no el de operaciones completo.
   /// TRANSPORTES, ALMACEN y COMBUSTIBLE ven `BASE_NAV` con sus rutas ajenas quitadas
   /// (`navForRole`) en vez de acciones ocultas sobre la misma pantalla.
-  protected readonly nav = computed<readonly NavEntry[]>(() => {
+  ///
+  /// Estructura pura, sin contadores: sólo cambia al cambiar el rol. De aquí salen las
+  /// decisiones que no deben rehacerse cada vez que se refresca un badge.
+  private readonly baseNav = computed<readonly NavEntry[]>(() => {
     const role = this.currentRole.role();
     if (role === 'CONDUCTOR') {
       return CONDUCTOR_NAV;
@@ -146,6 +159,38 @@ export class ShellComponent {
     const base = navForRole(role);
     return role === 'ADMINISTRADOR' ? [...base, ADMIN_GROUP] : base;
   });
+
+  /// Artículos por debajo de su mínimo, del mismo `dashboardSummary` que alimenta el panel de
+  /// inicio (`currentStock < minStock`) — antes era un "5" fijo heredado de la maqueta. Es un
+  /// `watchQuery` vivo durante toda la sesión: las mutaciones de inventario piden refrescar
+  /// `DashboardSummary` (ver `InventoryService`) y el badge se actualiza solo.
+  /// No se consulta para quien no tiene Inventario en su menú: sería una petición sin lector.
+  /// Se asigna en el constructor, no como inicializador de campo: aquí arriba `dashboardService`
+  /// (propiedad de parámetro) todavía no está asignada.
+  private readonly lowStockCount: Signal<number>;
+
+  /// Sin faltantes no se pinta nada: un «0» permanente sólo enseña a ignorar el badge.
+  protected readonly nav = computed<readonly NavEntry[]>(() => {
+    const count = this.lowStockCount();
+    const base = this.baseNav();
+    if (count <= 0) return base;
+    return base.map((entry) =>
+      entry.children?.some((child) => child.path === INVENTORY_PATH)
+        ? {
+            ...entry,
+            children: entry.children.map((child) =>
+              child.path === INVENTORY_PATH ? { ...child, badge: String(count) } : child,
+            ),
+          }
+        : entry,
+    );
+  });
+
+  protected readonly globalSearch = signal('');
+
+  /// El buscador tiene un único destino (Vehículos), así que se oculta para quien no tiene esa
+  /// pantalla — hoy, CONDUCTOR. Mejor ausente que presente y sin efecto.
+  protected readonly canSearch = computed(() => navIncludes(this.baseNav(), VEHICLES_PATH));
 
   protected readonly activeGroupKey = computed(() => this.groupKeyForPath(this.currentUrl()));
 
@@ -169,7 +214,19 @@ export class ShellComponent {
     protected readonly authService: AuthService,
     protected readonly currentRole: CurrentRoleService,
     protected readonly themeService: ThemeService,
+    private readonly dashboardService: DashboardService,
   ) {
+    this.lowStockCount = toSignal(
+      toObservable(computed(() => navIncludes(this.baseNav(), INVENTORY_PATH))).pipe(
+        switchMap((showsInventory) =>
+          showsInventory
+            ? this.dashboardService.getSummary().pipe(map((s) => s.lowStockCount))
+            : of(0),
+        ),
+      ),
+      { initialValue: 0 },
+    );
+
     // Al navegar: el grupo de la ruta activa se auto-abre (reemplazando el que estuviera
     // abierto) y el sidebar móvil se cierra — igual que `prototipo/js/app.js:52`.
     effect(() => {
@@ -192,6 +249,19 @@ export class ShellComponent {
     this.sidebarOpen.update((open) => !open);
   }
 
+  /**
+   * Enter en el buscador del topbar lleva a Vehículos con el término ya aplicado, igual que la
+   * maqueta (`prototipo/js/app.js:3640`, que saltaba a la página y sembraba su buscador). Viaja
+   * como `?buscar=` en vez de estado compartido: así la búsqueda es enlazable y recargar la
+   * página no la pierde.
+   */
+  protected submitSearch(): void {
+    const term = this.globalSearch().trim();
+    if (!term) return;
+    this.globalSearch.set('');
+    void this.router.navigate([VEHICLES_PATH], { queryParams: { buscar: term } });
+  }
+
   /** Acordeón estricto: click en el grupo abierto lo cierra; click en otro grupo lo reemplaza. */
   protected toggleGroup(key: string): void {
     this.openGroup.update((current) => (current === key ? null : key));
@@ -205,8 +275,11 @@ export class ShellComponent {
     void this.authService.logout();
   }
 
+  /// Sobre `baseNav`, no sobre `nav`: qué grupo contiene una ruta no depende de los badges, y
+  /// leer `nav()` aquí haría que refrescar el contador de stock reabriera el acordeón y cerrara
+  /// el sidebar (esto lo consume un `effect`).
   private groupKeyForPath(url: string): string | null {
-    for (const entry of this.nav()) {
+    for (const entry of this.baseNav()) {
       if (entry.children?.some((child) => child.path === url)) return entry.key;
     }
     return null;

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import { AuditLogFilter, AuditLogPage, AuditSummary } from './audit.model';
 
 const AUDIT_LOGS_QUERY = gql`
@@ -80,7 +81,7 @@ export class AuditService {
         variables: filter,
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => (result.data?.auditLogs as AuditLogPage) ?? EMPTY_PAGE));
+      .valueChanges.pipe(queryData((data: AuditLogsResult) => data.auditLogs, EMPTY_PAGE));
   }
 
   summary(): Observable<AuditSummary> {
@@ -89,8 +90,6 @@ export class AuditService {
         query: AUDIT_SUMMARY_QUERY,
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(
-        map((result) => (result.data?.auditSummary as AuditSummary) ?? EMPTY_SUMMARY),
-      );
+      .valueChanges.pipe(queryData((data: AuditSummaryResult) => data.auditSummary, EMPTY_SUMMARY));
   }
 }

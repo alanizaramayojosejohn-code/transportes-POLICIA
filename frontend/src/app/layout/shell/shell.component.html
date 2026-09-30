@@ -126,15 +126,21 @@
         MENÚ
       </button>
 
-      <div
-        class="hidden min-w-0 max-w-[420px] flex-1 items-center gap-2 rounded-full border border-edge bg-surface-2 px-3.5 py-2 text-ink-faint transition-colors focus-within:border-green-500 min-[860px]:flex"
-      >
-        <span class="text-sm">⌕</span>
-        <input
-          class="w-full min-w-0 bg-transparent text-13-5 text-ink outline-none placeholder:text-ink-faint"
-          placeholder="Buscar por placa, vehículo, conductor o unidad..."
-        />
-      </div>
+      @if (canSearch()) {
+        <div
+          class="hidden min-w-0 max-w-[420px] flex-1 items-center gap-2 rounded-full border border-edge bg-surface-2 px-3.5 py-2 text-ink-faint transition-colors focus-within:border-green-500 min-[860px]:flex"
+        >
+          <span class="text-sm">⌕</span>
+          <input
+            class="w-full min-w-0 bg-transparent text-13-5 text-ink outline-none placeholder:text-ink-faint"
+            placeholder="Buscar vehículo por placa, marca, modelo o chasis..."
+            aria-label="Buscar vehículos"
+            [value]="globalSearch()"
+            (input)="globalSearch.set($any($event.target).value)"
+            (keydown.enter)="submitSearch()"
+          />
+        </div>
+      }
 
       <div class="ml-auto flex items-center gap-3">
         <span

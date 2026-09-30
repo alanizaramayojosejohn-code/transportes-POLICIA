@@ -1,6 +1,9 @@
 export interface TripVehicle {
   id: string;
   plate: string;
+  /// Unidad a la que está asignado el vehículo hoy — la ficha del recorrido la muestra
+  /// (`recorridoDetalleModal`). No es la unidad "del recorrido": el backend no la congela.
+  currentUnit: { id: string; name: string } | null;
 }
 
 export interface TripDriver {

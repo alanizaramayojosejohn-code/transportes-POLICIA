@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import {
   ProcedureChecklistItem,
   UpdateProcedureChecklistItemInput,
@@ -7,6 +7,7 @@ import { ModalComponent } from '../modal/modal.component';
 import { FieldControlDirective } from '../field/field-control.directive';
 import { ButtonDirective } from '../button/button.directive';
 import { FormActionsComponent } from '../form-actions/form-actions.component';
+import { ToastService } from '../toast/toast.service';
 
 /**
  * Ver y completar el checklist de trámites de un registro ya guardado (spec
@@ -31,6 +32,7 @@ export class ProcedureChecklistModalComponent {
   protected readonly errorMessage = signal<string | null>(null);
 
   private readonly draft = signal<Map<string, UpdateProcedureChecklistItemInput>>(new Map());
+  private readonly toast = inject(ToastService);
 
   protected readonly draftItems = computed(() =>
     this.items().map((item) => {
@@ -85,11 +87,11 @@ export class ProcedureChecklistModalComponent {
     this.errorMessage.set(null);
     try {
       await this.onSave()(Array.from(this.draft().values()));
+      const done = this.draftItems().filter((item) => item.completed).length;
+      this.toast.success(`Checklist guardado: ${done} de ${this.draftItems().length} completados.`);
       this.closed.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el checklist.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el checklist.'));
     } finally {
       this.submitting.set(false);
     }

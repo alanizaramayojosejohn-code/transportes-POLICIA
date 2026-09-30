@@ -1,0 +1,81 @@
+- generic [ref=f17e4]:
+  - complementary [ref=f17e5]:
+    - generic [ref=f17e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f17e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f17e14]:
+      - link [ref=f17e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f17e22]
+      - button [ref=f17e33]
+      - button [ref=f17e43]
+      - link [ref=f17e52] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f17e57] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f17e65]
+    - generic [ref=f17e76]: Sistema de información vehicular
+  - generic [ref=f17e77]:
+    - banner [ref=f17e78]:
+      - generic [ref=f17e79]:
+        - generic [ref=f17e80]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f17e81]
+      - generic [ref=f17e82]:
+        - generic [ref=f17e83]: En línea
+        - generic [ref=f17e85]:
+          - button "Tema claro" [ref=f17e86]
+          - button "Tema oscuro" [ref=f17e91]
+        - generic [ref=f17e95]:
+          - generic [ref=f17e96]: AD
+          - generic [ref=f17e97]:
+            - strong [ref=f17e98]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f17e99]
+    - main [ref=f17e100]:
+      - generic [ref=f17e101]:
+        - generic "Movimientos de almacén" [ref=f17e102]:
+          - generic [ref=f17e103]:
+            - generic [ref=f17e104]:
+              - heading "Movimientos de almacén" [level=2] [ref=f17e105]
+              - paragraph [ref=f17e106]: Entradas, salidas y ajustes de repuestos, materiales y lubricantes.
+            - generic [ref=f17e107]:
+              - link "← Volver a Reportes" [ref=f17e108] [cursor=pointer]:
+                - /url: /reportes
+              - generic "Movimientos de almacén" [ref=f17e109]:
+                - generic [ref=f17e110]:
+                  - button [ref=f17e111]
+                  - button [ref=f17e116]
+        - generic [ref=f17e122]:
+          - generic [ref=f17e124]:
+            - combobox [ref=f17e125]:
+              - option "Todos los artículos" [selected]
+              - option "LLA-001 · Llanta 195/65 R15"
+            - combobox [ref=f17e126]:
+              - option "Todos los vehículos" [selected]
+              - option "PRUEBA"
+            - combobox [ref=f17e127]:
+              - option "Todos los tipos" [selected]
+              - option "Entrada"
+              - option "Salida"
+              - option "Ajuste"
+            - textbox "Fecha desde" [ref=f17e128]
+            - textbox "Fecha hasta" [ref=f17e129]
+            - button "Limpiar filtros" [ref=f17e130]
+          - table [ref=f17e133]:
+            - rowgroup [ref=f17e134]:
+              - row [ref=f17e135]:
+                - columnheader "Fecha" [ref=f17e136]
+                - columnheader "Artículo" [ref=f17e137]
+                - columnheader "Tipo" [ref=f17e138]
+                - columnheader "Cantidad" [ref=f17e139]
+                - columnheader "Saldo" [ref=f17e140]
+                - columnheader "Vehículo / Motivo" [ref=f17e141]
+            - rowgroup [ref=f17e142]:
+              - row [ref=f17e143]:
+                - cell "20/09/2026, 10:31 p. m." [ref=f17e144]
+                - cell "LLA-001 · Llanta 195/65 R15" [ref=f17e145]
+                - cell "Entrada" [ref=f17e146]
+                - cell "10 unidad" [ref=f17e149]
+                - cell "10 unidad" [ref=f17e150]
+                - cell "—" [ref=f17e151]
+          - paragraph [ref=f17e154]: 1 movimiento(s) en total.

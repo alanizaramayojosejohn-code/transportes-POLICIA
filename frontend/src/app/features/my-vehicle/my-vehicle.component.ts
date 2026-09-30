@@ -1,7 +1,7 @@
-import { Component, Signal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, Signal, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { of } from 'rxjs';
 import { PageHeadComponent } from '../../shared/page-head/page-head.component';
 import { CardComponent } from '../../shared/card/card.component';
 import { DataCellComponent } from '../../shared/data-cell/data-cell.component';
@@ -26,6 +26,8 @@ import { TripPage } from '../trips/trip.model';
 import { FuelRecordsService } from '../fuel-records/fuel-records.service';
 import { FUEL_TYPE_LABEL, FuelRecordPage } from '../fuel-records/fuel-record.model';
 import { formatDateTimeEs } from '../../shared/date-format';
+import { loadable } from '../../shared/loadable';
+import { ToastService } from '../../shared/toast/toast.service';
 
 type Panel = 'none' | 'odometer';
 
@@ -62,7 +64,9 @@ type Panel = 'none' | 'odometer';
 export class MyVehicleComponent {
   protected readonly assignment: Signal<MyVehicleAssignment | null>;
   protected readonly recentTrips: Signal<TripPage>;
+  protected readonly recentTripsLoading: Signal<boolean>;
   protected readonly recentFuelRecords: Signal<FuelRecordPage>;
+  protected readonly recentFuelRecordsLoading: Signal<boolean>;
 
   protected readonly panel = signal<Panel>('none');
   protected readonly submitting = signal(false);
@@ -72,6 +76,8 @@ export class MyVehicleComponent {
 
   protected readonly odometerValue = signal<number | null>(null);
   protected readonly odometerNotes = signal('');
+
+  private readonly toast = inject(ToastService);
 
   constructor(
     private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
@@ -85,26 +91,26 @@ export class MyVehicleComponent {
     this.assignment = toSignal(this.vehicleDriverAssignmentsService.myAssignment(), {
       initialValue: null,
     });
-    this.recentTrips = toSignal(
-      toObservable(this.assignment).pipe(
-        switchMap((assignment) =>
-          assignment
-            ? this.tripsService.list({ vehicleId: assignment.vehicleId, take: 5 })
-            : of({ items: [], total: 0 }),
-        ),
-      ),
-      { initialValue: { items: [], total: 0 } },
+    const trips = loadable(
+      this.assignment,
+      (assignment) =>
+        assignment
+          ? this.tripsService.list({ vehicleId: assignment.vehicleId, take: 5 })
+          : of({ items: [], total: 0 }),
+      { items: [], total: 0 },
     );
-    this.recentFuelRecords = toSignal(
-      toObservable(this.assignment).pipe(
-        switchMap((assignment) =>
-          assignment
-            ? this.fuelRecordsService.list({ vehicleId: assignment.vehicleId, take: 5 })
-            : of({ items: [], total: 0 }),
-        ),
-      ),
-      { initialValue: { items: [], total: 0 } },
+    this.recentTrips = trips.value;
+    this.recentTripsLoading = trips.loading;
+    const fuelRecords = loadable(
+      this.assignment,
+      (assignment) =>
+        assignment
+          ? this.fuelRecordsService.list({ vehicleId: assignment.vehicleId, take: 5 })
+          : of({ items: [], total: 0 }),
+      { items: [], total: 0 },
     );
+    this.recentFuelRecords = fuelRecords.value;
+    this.recentFuelRecordsLoading = fuelRecords.loading;
   }
 
   protected toggleOdometerPanel(): void {
@@ -130,13 +136,13 @@ export class MyVehicleComponent {
         value: this.odometerValue()!,
         notes: this.odometerNotes() || undefined,
       });
+      const registered = this.odometerValue()!;
       this.odometerValue.set(null);
       this.odometerNotes.set('');
       this.panel.set('none');
+      this.toast.success(`Kilometraje registrado: ${registered} km.`);
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo completar la operación.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo completar la operación.'));
     } finally {
       this.submitting.set(false);
     }

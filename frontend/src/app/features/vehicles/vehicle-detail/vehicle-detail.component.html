@@ -446,4 +446,19 @@
       (closed)="showChecklist.set(false)"
     />
   }
+} @else {
+  <app-modal
+    eyebrow="EXPEDIENTE VEHICULAR"
+    title="Expediente vehicular"
+    wide
+    (closed)="closed.emit()"
+  >
+    <div class="flex items-center justify-center px-[22px] py-20">
+      @if (loading()) {
+        <app-spinner size="lg" label="Cargando el expediente…" />
+      } @else {
+        <p class="text-13 text-ink-muted">No se encontró la movilidad solicitada.</p>
+      }
+    </div>
+  </app-modal>
 }

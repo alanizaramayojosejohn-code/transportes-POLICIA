@@ -21,6 +21,8 @@ export interface User {
   phone: string | null;
   isActive: boolean;
   lastLoginAt: string | null;
+  /// Alta de la cuenta: la «Fecha de registro» de la ficha (`usuarioDetalleModal`).
+  createdAt: string;
   roleId: string;
   role: Role;
   /// Ficha de personal vinculada (spec 015): null si la cuenta no tiene una.

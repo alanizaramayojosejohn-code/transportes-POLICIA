@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { queryData } from '../../../core/graphql/query-data';
 import { LogbookFilter, LogbookPage } from './fuel-logbook.model';
 
 const LOGBOOK_QUERY = gql`
@@ -73,7 +74,7 @@ export class FuelLogbookService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.driverLogbook as LogbookPage) ?? { items: [], total: 0 }),
+        queryData((data: LogbookQueryResult) => data.driverLogbook, { items: [], total: 0 }),
       );
   }
 }

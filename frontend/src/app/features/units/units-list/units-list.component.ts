@@ -1,6 +1,4 @@
-import { Component, computed, linkedSignal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { UnitsService } from '../units.service';
 import { Unit, UnitFilter } from '../unit.model';
 import { UnitFormComponent } from '../unit-form/unit-form.component';
@@ -8,8 +6,13 @@ import { UnitDetailComponent } from '../unit-detail/unit-detail.component';
 import { ManagerAssignmentFormComponent } from '../manager-assignment-form/manager-assignment-form.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { formatDateEs } from '../../../shared/date-format';
+import { activationConfirm } from '../../../shared/confirm/activation-confirm';
+import { ConfirmService } from '../../../shared/confirm/confirm.service';
+import { errorMessage } from '../../../shared/error-message';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { loadable } from '../../../shared/loadable';
 import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({
   imports: [
@@ -39,10 +42,12 @@ export class UnitsListComponent {
     take: PAGE_SIZE,
   }));
 
-  protected readonly page = toSignal(
-    toObservable(this.query).pipe(switchMap((filter) => this.unitsService.list(filter))),
-    { initialValue: { items: [], total: 0 } },
-  );
+  private readonly result = loadable(this.query, (filter) => this.unitsService.list(filter), {
+    items: [],
+    total: 0,
+  });
+  protected readonly page = this.result.value;
+  protected readonly loading = this.result.loading;
 
   protected readonly showUnitForm = signal(false);
   protected readonly editingUnitId = signal<string | null>(null);
@@ -51,6 +56,9 @@ export class UnitsListComponent {
   protected readonly assigningManagerUnitId = signal<string | null>(null);
   protected readonly actionError = signal<string | null>(null);
   protected readonly formatDate = formatDateEs;
+
+  private readonly confirm = inject(ConfirmService);
+  private readonly toast = inject(ToastService);
 
   constructor(
     private readonly unitsService: UnitsService,
@@ -108,17 +116,43 @@ export class UnitsListComponent {
   }
 
   protected async toggleActive(id: string, isActive: boolean): Promise<void> {
+    const unit = this.page().items.find((u) => u.id === id);
+    if (!unit) return;
+
+    /// Los vehículos asignados no se mueven al dar de baja la unidad: conviene decirlo antes,
+    /// porque «dar de baja la unidad» suena a que arrastra lo que cuelga de ella.
+    const assigned = unit.activeVehicleCount;
+    const keepsVehicles =
+      assigned > 0
+        ? `, y conserva ${assigned} ${assigned === 1 ? 'vehículo asignado' : 'vehículos asignados'}`
+        : '';
+
+    const confirmed = await this.confirm.ask(
+      activationConfirm(isActive, {
+        subject: 'la unidad',
+        name: unit.name,
+        effect: `dejará de ofrecerse al asignar vehículos, personal o encargados${keepsVehicles}`,
+        restoredEffect: 'vuelve a ofrecerse al asignar vehículos, personal y encargados',
+      }),
+    );
+    if (!confirmed) return;
+
     this.actionError.set(null);
     try {
       if (isActive) {
         await this.unitsService.deactivate(id);
+        this.toast.success(`Unidad ${unit.name} dada de baja.`);
       } else {
         await this.unitsService.reactivate(id);
+        this.toast.success(`Unidad ${unit.name} reactivada.`);
       }
     } catch (error) {
-      this.actionError.set(
-        error instanceof Error ? error.message : 'No se pudo completar la operación.',
+      const message = errorMessage(
+        error,
+        isActive ? 'No se pudo dar de baja la unidad.' : 'No se pudo reactivar la unidad.',
       );
+      this.actionError.set(message);
+      this.toast.error(message);
     }
   }
 }

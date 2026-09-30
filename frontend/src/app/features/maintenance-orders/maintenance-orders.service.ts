@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CreateMaintenanceOrderInput,
   FinishMaintenanceOrderInput,
@@ -80,11 +82,26 @@ export class MaintenanceOrdersService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) =>
-            (result.data?.maintenanceOrders as MaintenanceOrderPage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: MaintenanceOrdersQueryResult) => data.maintenanceOrders, {
+          items: [],
+          total: 0,
+        }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(
+    filter: Omit<MaintenanceOrderFilter, 'skip' | 'take'>,
+  ): Promise<MaintenanceOrder[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<MaintenanceOrdersQueryResult>({
+          query: MAINTENANCE_ORDERS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.maintenanceOrders ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateMaintenanceOrderInput): Promise<MaintenanceOrder> {

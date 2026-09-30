@@ -1,5 +1,6 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { MaintenanceOrdersService } from '../maintenance-orders.service';
 import { MaintenanceOrder } from '../maintenance-order.model';
 import { FormValidation } from '../../../shared/validation/form-validation';
@@ -32,6 +33,8 @@ export class MaintenanceOrderFinishFormComponent {
     ),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(private readonly maintenanceOrdersService: MaintenanceOrdersService) {}
 
   protected onCostInput(value: string): void {
@@ -49,11 +52,10 @@ export class MaintenanceOrderFinishFormComponent {
       await this.maintenanceOrdersService.finish(this.order().id, {
         totalCost: this.totalCost()!,
       });
+      this.toast.success(`Orden ${this.order().code} finalizada.`);
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo finalizar la orden.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo finalizar la orden.'));
     } finally {
       this.submitting.set(false);
     }

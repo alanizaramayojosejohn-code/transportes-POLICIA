@@ -1,6 +1,7 @@
-import { Component, computed, effect, output, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, inject, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { FuelRecordsService } from '../fuel-records.service';
 import { FUEL_TYPE_LABEL, FUEL_TYPES, FuelType } from '../fuel-record.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
@@ -81,6 +82,8 @@ export class FuelRecordFormComponent {
     ),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly fuelRecordsService: FuelRecordsService,
     private readonly vehiclesService: VehiclesService,
@@ -131,10 +134,12 @@ export class FuelRecordFormComponent {
         notes: this.notes() || undefined,
         checklistItems: this.checklistFields()?.items(),
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      this.toast.success(`Abastecimiento registrado${plate ? ` para el vehículo ${plate}` : ''}.`);
       this.saved.emit();
     } catch (error) {
       this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar el abastecimiento.',
+        this.toast.reportError(error, 'No se pudo registrar el abastecimiento.'),
       );
     } finally {
       this.submitting.set(false);

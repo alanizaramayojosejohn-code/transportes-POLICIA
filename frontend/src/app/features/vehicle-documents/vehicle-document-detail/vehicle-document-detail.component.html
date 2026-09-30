@@ -1,0 +1,35 @@
+@if (document(); as d) {
+  <app-modal title="Detalle del documento" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header
+        initials="DO"
+        [title]="d.documentNumber || typeLabel[d.type]"
+        [subtitle]="subtitle()"
+      >
+        <app-badge [tone]="statusTone()">{{ statusLabel() }}</app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Vehículo">{{ d.vehicle.plate }}</app-data-cell>
+        <app-data-cell label="Tipo">{{ typeLabel[d.type] }}</app-data-cell>
+        <app-data-cell label="Número">{{ d.documentNumber || '—' }}</app-data-cell>
+        <app-data-cell label="Emisión">{{ formatDate(d.issuedAt) }}</app-data-cell>
+        <app-data-cell label="Vencimiento">{{ formatDate(d.expiresAt) }}</app-data-cell>
+        <app-data-cell label="Vigencia">{{ validityLabel() }}</app-data-cell>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <app-detail-section label="Referencia">{{
+          d.documentNumber || 'Sin número de documento registrado.'
+        }}</app-detail-section>
+        <app-detail-section label="Observaciones">{{
+          d.notes || 'Sin observaciones.'
+        }}</app-detail-section>
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

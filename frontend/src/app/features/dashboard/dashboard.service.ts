@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import { DashboardSummary } from './dashboard.model';
 
 const DASHBOARD_SUMMARY_QUERY = gql`
@@ -54,7 +55,7 @@ export class DashboardService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.dashboardSummary as DashboardSummary) ?? EMPTY_SUMMARY),
+        queryData((data: DashboardSummaryResult) => data.dashboardSummary, EMPTY_SUMMARY),
       );
   }
 }

@@ -1,4 +1,11 @@
 <app-page-head title="Inventario" description="Repuestos, lubricantes, filtros y materiales.">
+  <app-export-buttons
+    title="Kardex / Inventario"
+    filenameBase="kardex-inventario"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWriteInventory()) {
     <button type="button" appButton (click)="showPartForm.set(true)">+ Artículo</button>
     <button type="button" appButton variant="primary" (click)="showMovementForm.set(true)">
@@ -42,7 +49,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Código</th>
@@ -76,11 +83,18 @@
             }
           </td>
           <td appTableCell class="text-right">
-            @if (currentRole.canWriteInventory()) {
-              <div class="flex justify-end gap-2">
-                <button type="button" appButton size="sm" variant="soft" (click)="edit(part.id)">
-                  Editar
-                </button>
+            <div class="inline-flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailPartId.set(part.id)"
+              >
+                Ver
+              </button>
+              @if (currentRole.canWriteInventory()) {
+                <button type="button" appButton size="sm" (click)="edit(part.id)">Editar</button>
                 <button
                   type="button"
                   appButton
@@ -89,12 +103,12 @@
                 >
                   {{ part.isActive ? 'Dar de baja' : 'Reactivar' }}
                 </button>
-              </div>
-            }
+              }
+            </div>
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="9">
+        <tr appTableEmpty [colspan]="9" [loading]="loading()">
           Sin artículos registrados todavía.
         </tr>
       }
@@ -123,4 +137,8 @@
 
 @if (showMovementForm()) {
   <app-stock-movement-form (saved)="closeMovementForm()" (cancelled)="closeMovementForm()" />
+}
+
+@if (detailPart(); as part) {
+  <app-spare-part-detail [part]="part" (closed)="detailPartId.set(null)" />
 }

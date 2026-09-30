@@ -2,6 +2,13 @@
   title="Historial integral del vehículo"
   description="Consolida asignaciones, recorridos, combustible, mantenimientos, incidentes y movimientos de almacén de un vehículo."
 >
+  <app-export-buttons
+    title="Historial integral del vehículo"
+    filenameBase="historial-integral-vehiculo"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   <a
     routerLink="/reportes"
     class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
@@ -79,7 +86,7 @@
   @if (needsVehiclePicker() && !vehicleId()) {
     <app-notice>Seleccione un vehículo para generar el historial.</app-notice>
   } @else {
-    <app-table>
+    <app-table [loading]="loading()">
       <thead>
         <tr appTableHeadRow>
           <th appTableHeadCell>Fecha</th>
@@ -176,7 +183,7 @@
             </td>
           </tr>
         } @empty {
-          <tr appTableEmpty [colspan]="3">
+          <tr appTableEmpty [colspan]="3" [loading]="loading()">
             Sin eventos para los filtros seleccionados.
           </tr>
         }

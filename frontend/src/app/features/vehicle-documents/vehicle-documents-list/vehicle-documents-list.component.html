@@ -22,7 +22,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Vehículo</th>
@@ -30,6 +30,7 @@
         <th appTableHeadCell>Número</th>
         <th appTableHeadCell>Emisión</th>
         <th appTableHeadCell>Vencimiento</th>
+        <th appTableHeadCell></th>
       </tr>
     </thead>
     <tbody>
@@ -47,9 +48,20 @@
               }
             </div>
           </td>
+          <td appTableCell class="text-right">
+            <button
+              type="button"
+              appButton
+              size="sm"
+              variant="soft"
+              (click)="detailDocumentId.set(document.id)"
+            >
+              Ver
+            </button>
+          </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="5">
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
           Sin documentos registrados todavía.
         </tr>
       }
@@ -66,4 +78,8 @@
 
 @if (showForm()) {
   <app-vehicle-document-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailDocument(); as document) {
+  <app-vehicle-document-detail [document]="document" (closed)="detailDocumentId.set(null)" />
 }

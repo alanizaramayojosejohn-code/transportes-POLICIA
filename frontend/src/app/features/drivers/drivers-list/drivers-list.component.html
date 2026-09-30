@@ -2,6 +2,13 @@
   title="Conductores"
   description="Padrón de conductores habilitados y relación con los vehículos institucionales."
 >
+  <app-export-buttons
+    title="Conductores"
+    filenameBase="conductores"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWrite()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Nuevo conductor
@@ -34,7 +41,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>CI</th>
@@ -95,7 +102,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
           Sin conductores registrados todavía.
         </tr>
       }

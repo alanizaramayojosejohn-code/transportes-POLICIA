@@ -1,4 +1,11 @@
 <app-page-head title="Recorridos" description="Control de salida, llegada y kilometraje.">
+  <app-export-buttons
+    title="Historial de recorridos"
+    filenameBase="historial-de-recorridos"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWriteTrips()) {
     <button type="button" appButton variant="primary" (click)="showForm.set(true)">
       + Nuevo recorrido
@@ -21,7 +28,7 @@
     </select>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Vehículo</th>
@@ -49,15 +56,26 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            @if (!trip.returnAt && currentRole.canWriteTrips()) {
-              <button type="button" appButton size="sm" variant="soft" (click)="openClose(trip.id)">
-                Registrar llegada
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailTripId.set(trip.id)"
+              >
+                Ver
               </button>
-            }
+              @if (!trip.returnAt && currentRole.canWriteTrips()) {
+                <button type="button" appButton size="sm" (click)="openClose(trip.id)">
+                  Registrar llegada
+                </button>
+              }
+            </div>
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="8">
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
           Sin recorridos registrados todavía.
         </tr>
       }
@@ -82,4 +100,8 @@
     (saved)="closeCloseForm()"
     (cancelled)="closeCloseForm()"
   />
+}
+
+@if (detailTrip; as trip) {
+  <app-trip-detail [trip]="trip" (closed)="detailTripId.set(null)" />
 }

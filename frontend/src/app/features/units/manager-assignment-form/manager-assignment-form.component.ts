@@ -1,7 +1,8 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UnitsService } from '../units.service';
 import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
 import { UnitOption } from '../unit.model';
@@ -116,6 +117,8 @@ export class ManagerAssignmentFormComponent {
     },
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly unitsService: UnitsService,
     private readonly personnelService: PersonnelService,
@@ -183,11 +186,13 @@ export class ManagerAssignmentFormComponent {
         await this.createManagerAccount(officerId, officerFullName);
       }
 
+      const unit = this.units().find((u) => u.id === this.selectedUnitId())?.name;
+      this.toast.success(
+        `${officerFullName || 'Encargado'} designado${unit ? ` en ${unit}` : ''}.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar la designación.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar la designación.'));
     } finally {
       this.submitting.set(false);
     }

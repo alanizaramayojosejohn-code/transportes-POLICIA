@@ -1,6 +1,7 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { InventoryService } from '../inventory.service';
 import {
   CreateSparePartInput,
@@ -65,6 +66,8 @@ export class SparePartFormComponent {
     unit: required('Ingrese la unidad de medida.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(private readonly inventoryService: InventoryService) {
     this.categories = toSignal(this.inventoryService.listCategories(), { initialValue: [] });
 
@@ -125,14 +128,14 @@ export class SparePartFormComponent {
       const current = this.part();
       if (current) {
         await this.inventoryService.update(current.id, payload);
+        this.toast.success(`Artículo ${value.name} actualizado.`);
       } else {
         await this.inventoryService.create(payload);
+        this.toast.success(`Artículo ${value.name} registrado.`);
       }
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el artículo.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el artículo.'));
     } finally {
       this.submitting.set(false);
     }

@@ -1,6 +1,7 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UsersService } from '../users.service';
 import { CreateUserInput, Role, User } from '../user.model';
 import { FormValidation } from '../../../shared/validation/form-validation';
@@ -51,6 +52,8 @@ export class UserFormComponent {
     email: email<UserFormState>(),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(private readonly usersService: UsersService) {
     this.roles = toSignal(this.usersService.listRoles(), { initialValue: [] });
 
@@ -94,14 +97,14 @@ export class UserFormComponent {
       const payload = password ? { ...rest, password } : rest;
       if (current) {
         await this.usersService.update(current.id, payload);
+        this.toast.success(`Usuario ${value.fullName} actualizado.`);
       } else {
         await this.usersService.create(payload as CreateUserInput);
+        this.toast.success(`Usuario ${value.fullName} registrado.`);
       }
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el usuario.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar el usuario.'));
     } finally {
       this.submitting.set(false);
     }

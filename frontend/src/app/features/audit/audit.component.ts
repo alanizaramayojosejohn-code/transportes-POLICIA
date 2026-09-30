@@ -1,6 +1,5 @@
 import { Component, computed, linkedSignal, Signal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AuditService } from './audit.service';
 import {
   AUDIT_ACTION_LABEL,
@@ -15,6 +14,7 @@ import {
 } from './audit.model';
 import { AuditDetailComponent } from './audit-detail/audit-detail.component';
 import { LIST_PAGE_IMPORTS } from '../../shared/list-page.imports';
+import { loadable } from '../../shared/loadable';
 import { PAGE_SIZE } from '../../shared/pagination/pagination.component';
 import { NoticeComponent } from '../../shared/notice/notice.component';
 import { StatCardComponent } from '../../shared/stat-card/stat-card.component';
@@ -63,6 +63,7 @@ export class AuditComponent {
   }));
 
   protected readonly page: Signal<{ items: AuditLogEntry[]; total: number }>;
+  protected readonly loading: Signal<boolean>;
   protected readonly summary: Signal<AuditSummary>;
 
   protected readonly detailEntry = signal<AuditLogEntry | null>(null);
@@ -78,10 +79,12 @@ export class AuditComponent {
     // Se asignan aquí, no como inicializadores de campo: un inicializador se
     // ejecuta antes de que las propiedades de parámetro del constructor queden
     // asignadas (mismo motivo que MyVehicleComponent).
-    this.page = toSignal(
-      toObservable(this.query).pipe(switchMap((filter) => this.auditService.list(filter))),
-      { initialValue: { items: [], total: 0 } },
-    );
+    const result = loadable(this.query, (filter) => this.auditService.list(filter), {
+      items: [],
+      total: 0,
+    });
+    this.page = result.value;
+    this.loading = result.loading;
     this.summary = toSignal(this.auditService.summary(), {
       initialValue: { total: 0, today: 0, created: 0, updated: 0 },
     });

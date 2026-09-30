@@ -1,4 +1,4 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { ProcedureTypesService } from '../procedure-types.service';
 import {
   CreateProcedureTypeInput,
@@ -8,6 +8,7 @@ import {
   ProcedureType,
 } from '../procedure-type.model';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { required } from '../../../shared/validation/validators';
 
@@ -39,6 +40,8 @@ export class ProcedureTypeFormComponent {
   protected readonly validation = new FormValidation(this.form, {
     name: required<string, CreateProcedureTypeInput>('El nombre es obligatorio.'),
   });
+
+  private readonly toast = inject(ToastService);
 
   constructor(private readonly procedureTypesService: ProcedureTypesService) {
     effect(() => {
@@ -72,10 +75,15 @@ export class ProcedureTypeFormComponent {
       } else {
         await this.procedureTypesService.create(value);
       }
+      this.toast.success(
+        current
+          ? `Tipo de trámite «${value.name}» actualizado.`
+          : `Tipo de trámite «${value.name}» registrado.`,
+      );
       this.saved.emit();
     } catch (error) {
       this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar el tipo de trámite.',
+        this.toast.reportError(error, 'No se pudo guardar el tipo de trámite.'),
       );
     } finally {
       this.submitting.set(false);

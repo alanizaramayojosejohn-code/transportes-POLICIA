@@ -1,5 +1,4 @@
 import { Component, computed, Signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PageHeadComponent } from '../../../shared/page-head/page-head.component';
 import { CardComponent } from '../../../shared/card/card.component';
@@ -15,6 +14,7 @@ import {
 import { FuelRecordsService } from '../../fuel-records/fuel-records.service';
 import { FUEL_TYPE_LABEL, FuelRecordPage } from '../../fuel-records/fuel-record.model';
 import { formatDateTimeEs } from '../../../shared/date-format';
+import { loadableOf } from '../../../shared/loadable';
 
 const RECENT_TAKE = 50;
 const TABLE_TAKE = 10;
@@ -48,6 +48,7 @@ export class FuelDashboardComponent {
   protected readonly fuelTypeLabel = FUEL_TYPE_LABEL;
 
   protected readonly recent: Signal<FuelRecordPage>;
+  protected readonly loading: Signal<boolean>;
 
   protected readonly recentQuantity = computed(() =>
     this.recent().items.reduce((sum, record) => sum + record.quantity, 0),
@@ -58,8 +59,11 @@ export class FuelDashboardComponent {
   protected readonly tableItems = computed(() => this.recent().items.slice(0, TABLE_TAKE));
 
   constructor(private readonly fuelRecordsService: FuelRecordsService) {
-    this.recent = toSignal(this.fuelRecordsService.list({ take: RECENT_TAKE }), {
-      initialValue: { items: [], total: 0 },
+    const result = loadableOf(this.fuelRecordsService.list({ take: RECENT_TAKE }), {
+      items: [],
+      total: 0,
     });
+    this.recent = result.value;
+    this.loading = result.loading;
   }
 }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CreatePersonnelInput,
   Personnel,
@@ -159,18 +161,36 @@ export class PersonnelService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.personnel as PersonnelPage) ?? { items: [], total: 0 }),
+        queryData((data: PersonnelListResult) => data.personnel, { items: [], total: 0 }),
       );
   }
 
-  get(id: string): Observable<Personnel> {
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<PersonnelFilter, 'skip' | 'take'>): Promise<Personnel[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<PersonnelListResult>({
+          query: PERSONNEL_LIST_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.personnel ?? { items: [], total: 0 }),
+    );
+  }
+
+  get(id: string): Observable<Personnel | null> {
     return this.apollo
       .watchQuery<PersonnelMemberResult>({
         query: PERSONNEL_MEMBER_QUERY,
         variables: { id },
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => result.data?.personnelMember as Personnel));
+      .valueChanges.pipe(
+        queryData<PersonnelMemberResult, Personnel | null>(
+          (data) => data.personnelMember as Personnel,
+          null,
+        ),
+      );
   }
 
   /// Lista plana para selects (conductor en recorridos/combustible/incidentes,
@@ -190,7 +210,7 @@ export class PersonnelService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.personnel?.items as PersonnelOption[]) ?? []),
+        queryData((data: ActivePersonnelOptionsResult) => data.personnel?.items, []),
       );
   }
 

@@ -54,7 +54,7 @@
     <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
   </app-filter-bar>
 
-  <app-table>
+  <app-table [loading]="loading()">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Fecha</th>
@@ -106,7 +106,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin registros para los filtros seleccionados.
         </tr>
       }

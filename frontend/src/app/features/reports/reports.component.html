@@ -8,11 +8,18 @@
     <app-card>
       <h3 class="mb-1.5 text-14-5 font-semibold">{{ card.title }}</h3>
       <p class="mb-4 text-13 text-ink-muted">{{ card.description }}</p>
-      <button type="button" appButton variant="primary" size="sm" [routerLink]="card.path">
-        Generar reporte
-      </button>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" appButton variant="primary" size="sm" (click)="open(card)">
+          Generar reporte
+        </button>
+        <button type="button" appButton size="sm" (click)="detailCard.set(card)">Ver ficha</button>
+      </div>
     </app-card>
   } @empty {
     <app-notice>No hay reportes disponibles para su rol.</app-notice>
   }
 </div>
+
+@if (detailCard(); as card) {
+  <app-report-detail [card]="card" (opened)="open($event)" (closed)="detailCard.set(null)" />
+}

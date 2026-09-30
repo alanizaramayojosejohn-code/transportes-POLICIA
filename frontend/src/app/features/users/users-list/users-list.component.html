@@ -31,7 +31,7 @@
   </app-filter-bar>
 
   <h3 class="mb-2.5 mt-2 font-serif text-14-5 font-semibold">Administrativos</h3>
-  <app-table [footer]="administrativeUsers().length + ' cuenta(s).'">
+  <app-table [loading]="loading()" [footer]="administrativeUsers().length + ' cuenta(s).'">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Usuario</th>
@@ -57,10 +57,17 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            <div class="flex justify-end gap-2">
-              <button type="button" appButton size="sm" variant="soft" (click)="edit(user.id)">
-                Editar
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
               </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
               <button
                 type="button"
                 appButton
@@ -73,7 +80,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin resultados.
         </tr>
       }
@@ -81,7 +88,7 @@
   </app-table>
 
   <h3 class="mb-2.5 mt-6 font-serif text-14-5 font-semibold">Encargados</h3>
-  <app-table [footer]="managerUsers().length + ' cuenta(s).'">
+  <app-table [loading]="loading()" [footer]="managerUsers().length + ' cuenta(s).'">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Usuario</th>
@@ -107,10 +114,17 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            <div class="flex justify-end gap-2">
-              <button type="button" appButton size="sm" variant="soft" (click)="edit(user.id)">
-                Editar
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
               </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
               <button
                 type="button"
                 appButton
@@ -123,7 +137,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="7">
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
           Sin resultados.
         </tr>
       }
@@ -131,7 +145,7 @@
   </app-table>
 
   <h3 class="mb-2.5 mt-6 font-serif text-14-5 font-semibold">Conductores</h3>
-  <app-table [footer]="driverUsers().length + ' cuenta(s).'">
+  <app-table [loading]="loading()" [footer]="driverUsers().length + ' cuenta(s).'">
     <thead>
       <tr appTableHeadRow>
         <th appTableHeadCell>Usuario</th>
@@ -155,10 +169,17 @@
             </app-badge>
           </td>
           <td appTableCell class="text-right">
-            <div class="flex justify-end gap-2">
-              <button type="button" appButton size="sm" variant="soft" (click)="edit(user.id)">
-                Editar
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
               </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
               <button
                 type="button"
                 appButton
@@ -171,7 +192,7 @@
           </td>
         </tr>
       } @empty {
-        <tr appTableEmpty [colspan]="6">
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
           Sin resultados.
         </tr>
       }
@@ -192,4 +213,8 @@
 
 @if (editingUserId()) {
   <app-user-form [user]="editingUser" (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailUser(); as user) {
+  <app-user-detail [user]="user" (closed)="detailUserId.set(null)" />
 }

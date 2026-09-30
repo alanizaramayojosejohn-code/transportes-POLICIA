@@ -1,19 +1,21 @@
 import { Component, computed, linkedSignal, Signal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs';
 import { InventoryService } from '../inventory.service';
 import {
   SparePartPage,
   STOCK_MOVEMENT_TYPE_LABEL,
+  StockMovement,
   StockMovementFilter,
   StockMovementPage,
   StockMovementType,
 } from '../spare-part.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
+import { loadable } from '../../../shared/loadable';
 import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
 import { formatDateTimeEs } from '../../../shared/date-format';
+import { ReportColumn } from '../../../shared/export/report-export';
 
 const TYPE_OPTIONS: StockMovementType[] = ['IN', 'OUT', 'ADJUSTMENT'];
 
@@ -41,6 +43,30 @@ export class StockMovementsListComponent {
   protected readonly sparePartOptions: Signal<SparePartPage>;
   protected readonly vehicleOptions: Signal<VehicleOption[]>;
   protected readonly page: Signal<StockMovementPage>;
+  protected readonly loading: Signal<boolean>;
+
+  protected readonly exportColumns: ReportColumn<StockMovement>[] = [
+    { header: 'Fecha', accessor: (m) => formatDateTimeEs(m.createdAt) },
+    { header: 'Artículo', accessor: (m) => `${m.sparePart.code} · ${m.sparePart.name}` },
+    { header: 'Tipo', accessor: (m) => this.typeLabel[m.type] },
+    { header: 'Cantidad', accessor: (m) => `${m.quantity} ${m.sparePart.unit}` },
+    { header: 'Saldo', accessor: (m) => `${m.balanceAfter} ${m.sparePart.unit}` },
+    {
+      header: 'Vehículo / Motivo',
+      accessor: (m) => [m.vehicle?.plate, m.reason].filter(Boolean).join(' · ') || '—',
+    },
+  ];
+
+  protected readonly filtersSummary = computed(() => {
+    const parts: string[] = [];
+    if (this.type()) parts.push(`Tipo: ${this.typeLabel[this.type() as StockMovementType]}`);
+    if (this.fromDate()) parts.push(`Desde: ${this.fromDate()}`);
+    if (this.toDate()) parts.push(`Hasta: ${this.toDate()}`);
+    return parts.length ? parts.join(' · ') : undefined;
+  });
+
+  protected readonly fetchAllForExport = () =>
+    this.inventoryService.listAllMovements(this.filters());
 
   private readonly filters = computed(() => ({
     sparePartId: this.sparePartId() || undefined,
@@ -72,12 +98,12 @@ export class StockMovementsListComponent {
     this.vehicleOptions = toSignal(this.vehiclesService.listAllActiveOptions(), {
       initialValue: [],
     });
-    this.page = toSignal(
-      toObservable(this.query).pipe(
-        switchMap((filter) => this.inventoryService.listMovements(filter)),
-      ),
-      { initialValue: { items: [], total: 0 } },
-    );
+    const result = loadable(this.query, (filter) => this.inventoryService.listMovements(filter), {
+      items: [],
+      total: 0,
+    });
+    this.page = result.value;
+    this.loading = result.loading;
   }
 
   protected clearFilters(): void {

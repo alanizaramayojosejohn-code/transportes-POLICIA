@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import {
   AssignVehicleDriverInput,
   CloseVehicleDriverAssignmentInput,
@@ -72,7 +73,10 @@ export class VehicleDriverAssignmentsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.myVehicleAssignment as MyVehicleAssignment) ?? null),
+        queryData<MyVehicleAssignmentResult, MyVehicleAssignment | null>(
+          (data) => data.myVehicleAssignment as MyVehicleAssignment,
+          null,
+        ),
       );
   }
 

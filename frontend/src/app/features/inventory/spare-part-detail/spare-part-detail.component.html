@@ -1,0 +1,60 @@
+@if (part(); as p) {
+  <app-modal title="Detalle del artículo" (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="IN" [title]="p.name" [subtitle]="subtitle()">
+        <app-badge [tone]="stockTone()">{{ stockLabel() }}</app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Código">{{ p.code }}</app-data-cell>
+        <app-data-cell label="Categoría">{{ p.category?.name || '—' }}</app-data-cell>
+        <app-data-cell label="Unidad de medida">{{ p.unit }}</app-data-cell>
+        <app-data-cell label="Stock actual">{{ p.currentStock }} {{ p.unit }}</app-data-cell>
+        <app-data-cell label="Stock mínimo">{{ p.minStock }} {{ p.unit }}</app-data-cell>
+        <app-data-cell label="Movimientos">{{ movements().total }}</app-data-cell>
+        <app-data-cell label="Ubicación">{{ p.location || '—' }}</app-data-cell>
+        <app-data-cell label="Último costo unitario">{{
+          p.lastUnitCost !== null ? 'Bs. ' + p.lastUnitCost.toFixed(2) : '—'
+        }}</app-data-cell>
+      </div>
+
+      <div class="mt-4">
+        <app-detail-section label="Observaciones">{{
+          p.description || 'Sin observaciones.'
+        }}</app-detail-section>
+      </div>
+
+      <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Historial reciente</h4>
+      <app-table [loading]="movementsLoading()">
+        <thead>
+          <tr appTableHeadRow>
+            <th appTableHeadCell>Fecha</th>
+            <th appTableHeadCell>Tipo</th>
+            <th appTableHeadCell>Cantidad</th>
+            <th appTableHeadCell>Destino / origen</th>
+            <th appTableHeadCell>Documento</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movements().items; track movement.id) {
+            <tr appTableRow>
+              <td appTableCell>{{ formatDateTime(movement.createdAt) }}</td>
+              <td appTableCell>{{ movementTypeLabel[movement.type] }}</td>
+              <td appTableCell>{{ movement.quantity }} {{ p.unit }}</td>
+              <td appTableCell>{{ movementTarget(movement) }}</td>
+              <td appTableCell>{{ movement.reference || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr appTableEmpty [colspan]="5" [loading]="movementsLoading()">
+              Sin movimientos registrados para este artículo.
+            </tr>
+          }
+        </tbody>
+      </app-table>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

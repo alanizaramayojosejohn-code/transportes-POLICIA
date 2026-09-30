@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import {
   CreateVehicleDocumentInput,
   VehicleDocument,
@@ -56,10 +57,10 @@ export class VehicleDocumentsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) =>
-            (result.data?.vehicleDocuments as VehicleDocumentPage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: VehicleDocumentsQueryResult) => data.vehicleDocuments, {
+          items: [],
+          total: 0,
+        }),
       );
   }
 

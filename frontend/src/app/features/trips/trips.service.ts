@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import { CloseTripInput, CreateTripInput, Trip, TripFilter, TripPage } from './trip.model';
 
 const TRIP_FIELDS = `
@@ -20,6 +22,10 @@ const TRIP_FIELDS = `
   vehicle {
     id
     plate
+    currentUnit {
+      id
+      name
+    }
   }
   driver {
     id
@@ -71,8 +77,21 @@ export class TripsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.trips as TripPage) ?? { items: [], total: 0 }),
+        queryData((data: TripsQueryResult) => data.trips, { items: [], total: 0 }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<TripFilter, 'skip' | 'take'>): Promise<Trip[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<TripsQueryResult>({
+          query: TRIPS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.trips ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateTripInput): Promise<Trip> {

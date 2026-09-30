@@ -1,6 +1,7 @@
-import { Component, computed, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { IncidentsService } from '../incidents.service';
 import { INCIDENT_TYPE_LABEL, INCIDENT_TYPES, IncidentType } from '../incident.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
@@ -65,6 +66,8 @@ export class IncidentFormComponent {
     description: required('Ingrese una descripción del incidente.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly incidentsService: IncidentsService,
     private readonly vehiclesService: VehiclesService,
@@ -95,11 +98,11 @@ export class IncidentFormComponent {
         policeReportNumber: this.policeReportNumber() || undefined,
         postCondition: this.postCondition() || undefined,
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      this.toast.success(`Incidente registrado${plate ? ` para el vehículo ${plate}` : ''}.`);
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar el incidente.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar el incidente.'));
     } finally {
       this.submitting.set(false);
     }

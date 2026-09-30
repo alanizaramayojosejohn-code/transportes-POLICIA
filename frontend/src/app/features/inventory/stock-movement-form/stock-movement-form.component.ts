@@ -1,6 +1,7 @@
-import { Component, computed, output, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { InventoryService } from '../inventory.service';
 import { SparePart, SparePartPage, StockMovementType } from '../spare-part.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
@@ -65,6 +66,8 @@ export class StockMovementFormComponent {
     reason: requiredIf((form) => form.type === 'OUT', 'El motivo es obligatorio para una salida.'),
   });
 
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly inventoryService: InventoryService,
     private readonly vehiclesService: VehiclesService,
@@ -114,11 +117,13 @@ export class StockMovementFormComponent {
           this.isOut && this.maintenanceOrderId() ? this.maintenanceOrderId() : undefined,
         checklistItems: this.isOut ? this.checklistFields()?.items() : undefined,
       });
+      const part = this.parts().find((p) => p.id === this.sparePartId());
+      this.toast.success(
+        `Movimiento de ${this.isOut ? 'salida' : 'entrada'} registrado${part ? ` para ${part.name}` : ''}.`,
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar el movimiento.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar el movimiento.'));
     } finally {
       this.submitting.set(false);
     }
