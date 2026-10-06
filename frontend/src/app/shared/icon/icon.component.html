@@ -1,26 +1,5 @@
-<svg class="h-full w-full" [attr.viewBox]="viewBox()" fill="none" aria-hidden="true">
+<svg class="h-full w-full" viewBox="0 0 24 24" fill="none" aria-hidden="true">
   @switch (name()) {
-    @case ('brand-shield') {
-      <path d="M32 4 57 12v17c0 17-10.5 26-25 30C17.5 55 7 46 7 29V12Z" fill="#fff" opacity=".95" />
-      <path
-        d="M32 8 53 15v14c0 15-9 22.5-21 26C10 51.5 11 44.5 11 29.5V15Z"
-        fill="var(--color-green-700)"
-      />
-      <path d="M32 15 22 30l7 0 0 12 6 0 0-12 7 0Z" fill="#fff" />
-    }
-    @case ('login-shield') {
-      <path
-        d="M32 4 57 12v17c0 17-10.5 26-25 30C17.5 55 7 46 7 29V12Z"
-        fill="currentColor"
-        opacity=".18"
-      />
-      <path
-        d="M32 8 53 15v14c0 15-9 22.5-21 26C20 51.5 11 44 11 29V15Z"
-        stroke="currentColor"
-        stroke-width="2"
-      />
-      <path d="M32 16v26M22 29h20" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-    }
     @case ('home') {
       <path
         d="M3 10.5 12 3l9 7.5"

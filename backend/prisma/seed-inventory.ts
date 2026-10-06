@@ -21,6 +21,7 @@ import type { VehicleType, VehicleConditionCode, StockMovementType, SparePartTyp
  */
 
 type InventoryData = {
+  department: { code: string; name: string; description: string | null };
   units: Array<{ code: string; name: string; type: string; location: string | null; parentCode: string | null }>;
   vehicles: Array<{
     key: string;
@@ -37,13 +38,14 @@ type InventoryData = {
     receptionSource: string | null;
     observations: string | null;
     isActive: boolean;
+    departmentCode: string;
   }>;
   conditions: Array<{ vehicleKey: string; code: string; reason: string }>;
   unitAssignments: Array<{ vehicleKey: string; unitCode: string }>;
   spareParts: Array<{ key: string; name: string; category: string; type: string; unit: string }>;
   stockMovements: Array<{
     sparePartKey: string;
-    type: 'IN' | 'OUT';
+    type: 'IN' | 'OUT' | 'ADJUSTMENT';
     quantity: number;
     unitCost: number | null;
     reason: string;
@@ -75,6 +77,18 @@ async function main() {
         "Usuario 'transportes' no encontrado. Corre `bun run prisma/seed.ts` primero (siembra roles, usuarios y categorías de repuesto).",
       );
     }
+
+    // --- Departamento (activado con un único registro junto con este censo) ---
+    const department = await prisma.department.upsert({
+      where: { code: data.department.code },
+      update: { name: data.department.name, description: data.department.description },
+      create: {
+        code: data.department.code,
+        name: data.department.name,
+        description: data.department.description,
+      },
+    });
+    console.log(`Departamento sembrado: ${department.name}`);
 
     // --- Unidades ---
     const unitIdByCode = new Map<string, string>();
@@ -109,6 +123,7 @@ async function main() {
           receptionSource: v.receptionSource,
           observations: v.observations,
           isActive: v.isActive,
+          departmentId: department.id,
         },
       });
       vehicleIdByKey.set(v.key, vehicle.id);
@@ -201,7 +216,10 @@ async function main() {
 
       let balance = 0;
       for (const m of movements) {
-        balance = m.type === 'IN' ? balance + m.quantity : balance - m.quantity;
+        /// ADJUSTMENT guarda un delta con signo (ver inventory.service.ts);
+        /// el saldo inicial sembrado aquí siempre es positivo (sube el
+        /// saldo), igual que IN. Sólo OUT resta.
+        balance = m.type === 'OUT' ? balance - m.quantity : balance + m.quantity;
         const vehicleId = m.vehicleKey ? (vehicleIdByKey.get(m.vehicleKey) ?? null) : null;
         await prisma.stockMovement.create({
           data: {

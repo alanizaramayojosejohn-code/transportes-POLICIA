@@ -4,7 +4,19 @@ import {
 } from '../procedure-types/procedure-type.model';
 
 export type VehicleType =
-  'AUTOMOVIL' | 'CAMIONETA' | 'MOTOCICLETA' | 'MINIBUS' | 'CAMION' | 'AMBULANCIA' | 'OTRO';
+  | 'AUTOMOVIL'
+  | 'CAMIONETA'
+  | 'MOTOCICLETA'
+  | 'MINIBUS'
+  | 'CAMION'
+  | 'CAMION_CISTERNA'
+  | 'CAMION_GRUA'
+  | 'CAMION_BOMBERO'
+  | 'CAMION_RESCATE'
+  | 'CUADRATRACK'
+  | 'FURGON'
+  | 'AMBULANCIA'
+  | 'OTRO';
 
 export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
   AUTOMOVIL: 'Automóvil',
@@ -12,6 +24,12 @@ export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
   MOTOCICLETA: 'Motocicleta',
   MINIBUS: 'Minibús',
   CAMION: 'Camión',
+  CAMION_CISTERNA: 'Camión cisterna',
+  CAMION_GRUA: 'Camión grúa',
+  CAMION_BOMBERO: 'Camión de bomberos',
+  CAMION_RESCATE: 'Camión de rescate',
+  CUADRATRACK: 'Cuadratrack',
+  FURGON: 'Furgón',
   AMBULANCIA: 'Ambulancia',
   OTRO: 'Otro',
 };
@@ -25,7 +43,8 @@ export type VehicleConditionCode =
   | 'EXTRAVIADO'
   | 'DEVUELTO'
   | 'BAJA'
-  | 'SEPARADO_POR_INCIDENTE';
+  | 'SEPARADO_POR_INCIDENTE'
+  | 'SINIESTRADO';
 
 export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   BUENO: 'Bueno',
@@ -37,6 +56,7 @@ export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   DEVUELTO: 'Devuelto',
   BAJA: 'Dado de baja',
   SEPARADO_POR_INCIDENTE: 'Separado por incidente',
+  SINIESTRADO: 'Siniestrado',
 };
 
 /** Colores de badge por condición, siguiendo la paleta del diseño (spec 001). */
@@ -50,6 +70,7 @@ export const VEHICLE_CONDITION_BADGE: Record<VehicleConditionCode, 'green' | 'am
   DEVUELTO: 'amber',
   BAJA: 'red',
   SEPARADO_POR_INCIDENTE: 'red',
+  SINIESTRADO: 'red',
 };
 
 export interface VehicleCondition {

@@ -1,21 +1,3 @@
-<app-page-head
-  title="Movimientos de almacén"
-  description="Entradas, salidas y ajustes de repuestos, materiales y lubricantes."
->
-  <a
-    routerLink="/reportes"
-    class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
-    >← Volver a Reportes</a
-  >
-  <app-export-buttons
-    title="Movimientos de almacén"
-    filenameBase="movimientos-de-almacen"
-    [columns]="exportColumns"
-    [filtersSummary]="filtersSummary()"
-    [fetchRows]="fetchAllForExport"
-  />
-</app-page-head>
-
 <app-card>
   <app-filter-bar>
     <select
@@ -60,6 +42,20 @@
     />
     <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
   </app-filter-bar>
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-12-5 text-ink-muted">
+      Entradas, salidas y ajustes de repuestos, materiales y lubricantes, con el saldo que dejó cada
+      movimiento.
+    </p>
+    <app-export-buttons
+      title="Movimientos de almacén"
+      filenameBase="movimientos-de-almacen"
+      [columns]="exportColumns"
+      [filtersSummary]="filtersSummary()"
+      [fetchRows]="fetchAllForExport"
+    />
+  </div>
 
   <app-table [loading]="loading()">
     <thead>

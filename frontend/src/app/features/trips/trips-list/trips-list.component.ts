@@ -1,4 +1,4 @@
-import { Component, computed, linkedSignal, Signal, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, Signal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { TripsService } from '../trips.service';
@@ -6,6 +6,8 @@ import { Trip, TripFilter } from '../trip.model';
 import { TripFormComponent } from '../trip-form/trip-form.component';
 import { TripCloseFormComponent } from '../trip-close-form/trip-close-form.component';
 import { TripDetailComponent } from '../trip-detail/trip-detail.component';
+import { TripOutboxNoticeComponent } from '../offline/trip-outbox-notice.component';
+import { TripOutboxService } from '../offline/trip-outbox.service';
 import { CurrentRoleService } from '../../../core/current-role.service';
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
@@ -21,11 +23,19 @@ import { ReportColumn } from '../../../shared/export/report-export';
  * lista se acota a `myAssignment().vehicleId`, no al parque completo.
  */
 @Component({
-  imports: [...LIST_PAGE_IMPORTS, TripFormComponent, TripCloseFormComponent, TripDetailComponent],
+  imports: [
+    ...LIST_PAGE_IMPORTS,
+    TripFormComponent,
+    TripCloseFormComponent,
+    TripDetailComponent,
+    TripOutboxNoticeComponent,
+  ],
   selector: 'app-trips-list',
   templateUrl: './trips-list.component.html',
 })
 export class TripsListComponent {
+  private readonly outbox = inject(TripOutboxService);
+
   protected readonly search = signal('');
   protected readonly open = signal<'true' | 'false' | ''>('');
 
@@ -91,6 +101,15 @@ export class TripsListComponent {
     this.myAssignment = toSignal(vehicleDriverAssignmentsService.myAssignment(), {
       initialValue: null,
     });
+  }
+
+  /**
+   * ¿Su llegada ya está registrada y esperando envío (spec 006, RF-17)? El
+   * servidor sigue viendo el recorrido abierto, pero volver a pedirla
+   * duplicaría el registro en la cola.
+   */
+  protected arrivalQueued(tripId: string): boolean {
+    return this.outbox.arrivalFor(tripId) !== null;
   }
 
   protected closeForm(): void {

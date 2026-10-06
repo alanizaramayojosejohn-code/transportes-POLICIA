@@ -1,0 +1,20 @@
+<app-field [label]="label()">
+  <select appFieldControl [value]="code()" (change)="onCodeChange($any($event.target).value)">
+    <option value="">Sin especificar</option>
+    @for (option of codes; track option) {
+      <option [value]="option">{{ codeLabel[option] }}</option>
+    }
+  </select>
+</app-field>
+
+@if (code() === 'OTRO') {
+  <app-field label="Especifique el estado *" [errorText]="otherErrorText()">
+    <input
+      appFieldControl
+      placeholder="Ej. llanta delantera baja"
+      [invalid]="!!otherErrorText()"
+      [value]="otherText()"
+      (input)="otherText.set($any($event.target).value)"
+    />
+  </app-field>
+}

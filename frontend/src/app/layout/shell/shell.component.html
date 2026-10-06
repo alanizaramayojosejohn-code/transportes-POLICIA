@@ -7,7 +7,11 @@
     <div class="watermark text-white"></div>
 
     <div class="relative z-[1] flex items-center gap-3 px-5 py-[26px]">
-      <app-icon name="brand-shield" class="h-[38px] w-[38px] flex-none" />
+      <img
+        src="/icons/icon-96x96.png"
+        alt="Escudo de la Policía Boliviana"
+        class="h-[38px] w-[38px] flex-none object-contain"
+      />
       <div>
         <h1 class="font-serif text-[15.5px] font-semibold leading-tight text-white">
           Sistema de Información Vehicular
@@ -143,6 +147,17 @@
       }
 
       <div class="ml-auto flex items-center gap-3">
+        @if (pendingUploads()) {
+          <a
+            [routerLink]="pendingUploadsPath()"
+            class="flex items-center gap-1.5 rounded-full bg-amber-bg px-3 py-1.5 text-12 font-semibold text-amber"
+            [attr.title]="'Registros guardados en este equipo, pendientes de envío'"
+          >
+            <i class="h-1.5 w-1.5 rounded-full bg-amber"></i>
+            {{ pendingUploads() }} sin enviar
+          </a>
+        }
+
         <span
           class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-12 font-semibold"
           [class]="

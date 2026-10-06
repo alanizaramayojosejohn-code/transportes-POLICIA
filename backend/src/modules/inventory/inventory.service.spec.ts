@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { InventoryService } from './inventory.service.js';
@@ -165,6 +169,132 @@ describe('InventoryService', () => {
       expect(prisma.sparePart.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ currentStock: 8 }),
+        }),
+      );
+    });
+
+    it('rechaza un ajuste sin motivo', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+
+      await expect(
+        service.registerMovement(
+          { sparePartId: 'p1', type: 'ADJUSTMENT', quantity: 5 } as never,
+          actingUser,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza un ajuste de cantidad cero', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+
+      await expect(
+        service.registerMovement(
+          {
+            sparePartId: 'p1',
+            type: 'ADJUSTMENT',
+            quantity: 0,
+            reason: 'Conteo físico',
+          } as never,
+          actingUser,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza un ajuste que dejaría el stock en negativo', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+
+      await expect(
+        service.registerMovement(
+          {
+            sparePartId: 'p1',
+            type: 'ADJUSTMENT',
+            quantity: -15,
+            reason: 'Conteo físico',
+          } as never,
+          actingUser,
+        ),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('sube el stock con un ajuste positivo y guarda el motivo', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 13,
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'ADJUSTMENT',
+          quantity: 3,
+          reason: 'Conteo físico halló más stock',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.stockMovement.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'ADJUSTMENT',
+            quantity: 3,
+            balanceAfter: 13,
+            reason: 'Conteo físico halló más stock',
+          }),
+        }),
+      );
+      expect(prisma.sparePart.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ currentStock: 13 }),
+        }),
+      );
+    });
+
+    it('baja el stock con un ajuste negativo', async () => {
+      vi.mocked(prisma.sparePart.findUnique).mockResolvedValue({
+        id: 'p1',
+        isActive: true,
+        currentStock: 10,
+        unit: 'unidad',
+      } as never);
+      vi.mocked(prisma.stockMovement.create).mockResolvedValue({
+        id: 'm1',
+        balanceAfter: 7,
+      } as never);
+
+      await service.registerMovement(
+        {
+          sparePartId: 'p1',
+          type: 'ADJUSTMENT',
+          quantity: -3,
+          reason: 'Conteo físico halló menos stock',
+        } as never,
+        actingUser,
+      );
+
+      expect(prisma.sparePart.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ currentStock: 7 }),
         }),
       );
     });
@@ -431,9 +561,11 @@ describe('InventoryService', () => {
             sparePartId: 'p1',
             vehicleId: 'v1',
             type: 'OUT',
+            /// Días completos de Bolivia (UTC-4), no medianoche UTC: «Hasta
+            /// 31/01» incluye todo el 31 de enero (ver `common/day-range.ts`).
             createdAt: {
-              gte: new Date('2026-01-01'),
-              lte: new Date('2026-01-31'),
+              gte: new Date('2026-01-01T04:00:00.000Z'),
+              lte: new Date('2026-02-01T03:59:59.999Z'),
             },
           },
         }),

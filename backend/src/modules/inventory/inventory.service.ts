@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { withUniqueConstraintHandling } from '../../common/prisma-errors.js';
+import { dayRange } from '../../common/day-range.js';
 import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CreateSparePartInput } from './dto/create-spare-part.input.js';
@@ -141,15 +142,35 @@ export class InventoryService {
     return this.serialize(updated);
   }
 
-  /// RF-6 a RF-9.
+  /// RF-6 a RF-9. ADJUSTMENT (corrección manual de conteo) se agregó junto
+  /// con la importación del censo 2025: a diferencia de IN/OUT, su
+  /// `quantity` es un delta con signo (puede subir o bajar el saldo) y
+  /// exige `reason`, porque un ajuste sin motivo no deja rastro de por qué
+  /// cambió el saldo.
   async registerMovement(
     input: CreateStockMovementInput,
     actingUser: AuthenticatedUser,
   ) {
-    if (input.type !== 'IN' && input.type !== 'OUT') {
+    if (
+      input.type !== 'IN' &&
+      input.type !== 'OUT' &&
+      input.type !== 'ADJUSTMENT'
+    ) {
       throw new BadRequestException(
-        'Sólo se admiten movimientos de entrada o salida',
+        'Sólo se admiten movimientos de entrada, salida o ajuste',
       );
+    }
+    if (input.type === 'ADJUSTMENT') {
+      if (!input.reason?.trim()) {
+        throw new BadRequestException(
+          'El motivo es obligatorio para un ajuste de inventario',
+        );
+      }
+      if (input.quantity === 0) {
+        throw new BadRequestException('El ajuste no puede ser de cero');
+      }
+    } else if (input.quantity <= 0) {
+      throw new BadRequestException('La cantidad debe ser mayor a cero');
     }
 
     const part = await this.prisma.sparePart.findUnique({
@@ -172,9 +193,14 @@ export class InventoryService {
     }
 
     const newStock =
-      input.type === 'IN'
-        ? currentStock + input.quantity
-        : currentStock - input.quantity;
+      input.type === 'OUT'
+        ? currentStock - input.quantity
+        : currentStock + input.quantity;
+    if (newStock < 0) {
+      throw new ConflictException(
+        `El ajuste dejaría el stock en negativo: disponible ${currentStock} ${part.unit}`,
+      );
+    }
     const actingUserId = actingUser.id;
 
     /// Spec 017 RF-5/RF-8: el lote sólo aplica a una entrada, el vehículo
@@ -256,13 +282,10 @@ export class InventoryService {
   /// Reporte «Movimientos de almacén» (spec 018): no existía como listado
   /// propio, sólo se leía anidado bajo un artículo (`SparePart.movements`).
   async findAllMovements(filters: StockMovementFilterArgs) {
-    const dateRange =
-      filters.fromDate || filters.toDate
-        ? {
-            ...(filters.fromDate ? { gte: new Date(filters.fromDate) } : {}),
-            ...(filters.toDate ? { lte: new Date(filters.toDate) } : {}),
-          }
-        : undefined;
+    /// `dayRange`, no `new Date(toDate)`: «Hasta 02/10» incluye todo el 02/10
+    /// de Bolivia, no corta a la medianoche UTC de ese día (ver
+    /// `common/day-range.ts`).
+    const dateRange = dayRange(filters.fromDate, filters.toDate);
 
     const where: Prisma.StockMovementWhereInput = {
       ...(filters.sparePartId ? { sparePartId: filters.sparePartId } : {}),

@@ -1,12 +1,14 @@
-import { Component, DestroyRef, Signal, computed, effect, inject, signal } from '@angular/core';
+import { Component, Signal, computed, effect, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { CurrentRoleService, ROLE_LABEL, Role } from '../../core/current-role.service';
+import { ConnectivityService } from '../../core/offline/connectivity.service';
 import { PwaInstallService } from '../../core/pwa-install.service';
 import { ThemeService } from '../../core/theme.service';
 import { DashboardService } from '../../features/dashboard/dashboard.service';
+import { TripOutboxService } from '../../features/trips/offline/trip-outbox.service';
 import { ButtonDirective } from '../../shared/button/button.directive';
 import { IconComponent, IconName } from '../../shared/icon/icon.component';
 
@@ -130,8 +132,25 @@ function navForRole(role: Role | null): readonly NavEntry[] {
 export class ShellComponent {
   protected readonly sidebarOpen = signal(false);
   protected readonly openGroup = signal<string | null>(null);
-  protected readonly online = signal(navigator.onLine);
+  protected readonly online = inject(ConnectivityService).online;
   protected readonly pwaInstall = inject(PwaInstallService);
+
+  /// Inyectarlo acá no es casual: su constructor engancha el reenvío de
+  /// salidas y llegadas pendientes al volver la conexión (spec 006, RF-14),
+  /// y el shell es lo único que está montado en toda pantalla autenticada.
+  /// Resuelto en una pantalla de recorridos, la cola se quedaría esperando a
+  /// que alguien la abriera.
+  private readonly tripOutbox = inject(TripOutboxService);
+
+  /// Cuántos registros hay guardados en el equipo sin llegar al servidor: el
+  /// aviso completo vive en la pantalla que los gestiona, pero el número
+  /// tiene que verse desde cualquiera (RF-16).
+  protected readonly pendingUploads = computed(() => this.tripOutbox.entries().length);
+
+  /// Dónde se gestionan: un CONDUCTOR los ve en su panel; el resto, en Recorridos.
+  protected readonly pendingUploadsPath = computed(() =>
+    this.currentRole.role() === 'CONDUCTOR' ? '/mi-vehiculo' : '/recorridos',
+  );
 
   private readonly router = inject(Router);
 
@@ -232,16 +251,6 @@ export class ShellComponent {
     effect(() => {
       this.openGroup.set(this.groupKeyForPath(this.currentUrl()));
       this.sidebarOpen.set(false);
-    });
-
-    const destroyRef = inject(DestroyRef);
-    const onOnline = () => this.online.set(true);
-    const onOffline = () => this.online.set(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
-    destroyRef.onDestroy(() => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
     });
   }
 

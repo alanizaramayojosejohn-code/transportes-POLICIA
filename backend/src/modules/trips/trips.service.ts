@@ -263,6 +263,16 @@ export class TripsService {
 
     const actingUserId = actingUser.id;
     const returnAt = input.returnAt ? new Date(input.returnAt) : new Date();
+    /// El cliente ahora manda `returnAt` siempre, porque una llegada
+    /// registrada sin conexión se envía más tarde y debe conservar la hora en
+    /// que el vehículo volvió, no la del reenvío (spec 006, RF-15). Al ser un
+    /// dato del cliente hay que validarlo: antes era `new Date()` del
+    /// servidor y no podía ser anterior a la salida.
+    if (returnAt < trip.departureAt) {
+      throw new ConflictException(
+        'La fecha de llegada no puede ser anterior a la de salida',
+      );
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const closed = await tx.trip.update({

@@ -97,6 +97,11 @@ es encargado vigente. Es el primer rol del sistema cuyo permiso de escritura dep
   vehículo del que es encargado vigente (placa, unidad, kilometraje actual, encargado de transportes
   de esa unidad) o el estado «Sin vehículo asignado» si no tiene ninguno.
 
+> La pantalla de RF-15 creció después: si el vehículo tiene un recorrido abierto, aparece arriba
+> como llegada pendiente y se cierra desde ahí, y la salida también se registra sin salir de la
+> pantalla. Eso se especifica en el spec 006 (RF-12), que es el dueño del ciclo del recorrido; acá
+> sólo se consume.
+
 ### Kilometraje suelto
 
 - RF-16: CUANDO un usuario ADMINISTRADOR, TRANSPORTES o CONDUCTOR registra una lectura de kilometraje

@@ -291,6 +291,29 @@ type FleetStatusBreakdown {
   other: Int!
 }
 
+type FuelConsumptionReport {
+  items: [FuelConsumptionRow!]!
+  total: Int!
+  totalCost: Float!
+  totalDistanceKm: Int!
+  totalEfficiencyKmPerLiter: Float
+  totalLiters: Float!
+  totalRecords: Int!
+}
+
+type FuelConsumptionRow {
+  avgUnitPrice: Float
+  distanceKm: Int!
+  efficiencyKmPerLiter: Float
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  liters: Float!
+  records: Int!
+  totalCost: Float!
+  vehicleCount: Int!
+}
+
 type FuelRecord {
   createdAt: DateTime!
   driver: Personnel
@@ -398,6 +421,27 @@ input LoginInput {
   username: String!
 }
 
+type MaintenanceCostReport {
+  items: [MaintenanceCostRow!]!
+  total: Int!
+  totalCorrective: Int!
+  totalCost: Float!
+  totalOrders: Int!
+  totalPreventive: Int!
+}
+
+type MaintenanceCostRow {
+  avgCost: Float
+  corrective: Int!
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  orders: Int!
+  preventive: Int!
+  totalCost: Float!
+  vehicleCount: Int!
+}
+
 type MaintenanceOrder {
   code: String!
   createdAt: DateTime!
@@ -433,6 +477,25 @@ enum MaintenanceStatus {
 enum MaintenanceType {
   CORRECTIVE
   PREVENTIVE
+}
+
+type MileageReport {
+  items: [MileageRow!]!
+  total: Int!
+  totalClosedTrips: Int!
+  totalDistanceKm: Int!
+  totalTrips: Int!
+}
+
+type MileageRow {
+  avgDistanceKm: Float
+  closedTrips: Int!
+  distanceKm: Int!
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  trips: Int!
+  vehicleCount: Int!
 }
 
 type MonthlyTripCount {
@@ -591,12 +654,15 @@ type Query {
   auditSummary: AuditSummary!
   dashboardSummary: DashboardSummary!
   driverLogbook(driverId: String, fromDate: String, skip: Int = 0, take: Int = 50, toDate: String, unitId: String, vehicleType: VehicleType): LogbookPage!
+  fuelConsumptionReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): FuelConsumptionReport!
   fuelRecord(id: String!): FuelRecord!
   fuelRecords(fromDate: String, fuelType: FuelType, search: String, skip: Int = 0, take: Int = 20, toDate: String, vehicleId: String): FuelRecordPage!
   incidents(search: String, skip: Int = 0, take: Int = 20, type: IncidentType, vehicleId: String): IncidentPage!
+  maintenanceCostReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): MaintenanceCostReport!
   maintenanceOrder(id: String!): MaintenanceOrder!
   maintenanceOrders(search: String, skip: Int = 0, status: MaintenanceStatus, take: Int = 20, type: MaintenanceType, vehicleId: String): MaintenanceOrderPage!
   me: AuthUser!
+  mileageReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): MileageReport!
   myVehicleAssignment: VehicleDriverAssignment
   odometerReadings(skip: Int = 0, take: Int = 20, vehicleId: String): OdometerReadingPage!
   personnel(isActive: Boolean, isAdmin: Boolean, isDriver: Boolean, isOfficer: Boolean, search: String, skip: Int = 0, take: Int = 20, unitId: String): PersonnelPage!
@@ -632,6 +698,14 @@ input RegisterOdometerReadingInput {
 input RegisterVehicleConditionInput {
   code: VehicleConditionCode!
   reason: String
+}
+
+"""
+Cómo se consolidan las filas de un reporte: una por vehículo, o una por la unidad a la que el vehículo está asignado hoy (spec 018).
+"""
+enum ReportGroupBy {
+  UNIT
+  VEHICLE
 }
 
 type Role {
@@ -952,6 +1026,7 @@ enum VehicleConditionCode {
   INOPERABLE
   REGULAR
   SEPARADO_POR_INCIDENTE
+  SINIESTRADO
 }
 
 type VehicleDocument {
@@ -1050,6 +1125,12 @@ enum VehicleType {
   AUTOMOVIL
   CAMION
   CAMIONETA
+  CAMION_BOMBERO
+  CAMION_CISTERNA
+  CAMION_GRUA
+  CAMION_RESCATE
+  CUADRATRACK
+  FURGON
   MINIBUS
   MOTOCICLETA
   OTRO

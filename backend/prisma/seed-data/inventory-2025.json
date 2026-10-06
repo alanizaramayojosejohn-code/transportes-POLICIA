@@ -1,4 +1,9 @@
 {
+  "department": {
+    "code": "ORU",
+    "name": "Comando Departamental de Policía Oruro",
+    "description": "Único departamento activado a partir del censo 2025 (campo DISTRITO de la fuente, siempre \"Oruro\")."
+  },
   "units": [
     {
       "code": "CMDO_DPTAL_ORURO",
@@ -677,6 +682,7 @@
     {
       "key": "6317-BFR",
       "plate": "6317-BFR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -695,6 +701,7 @@
     {
       "key": "5258-LZI",
       "plate": "5258-LZI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -713,6 +720,7 @@
     {
       "key": "3144-NHH",
       "plate": "3144-NHH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -731,6 +739,7 @@
     {
       "key": "6417-PBT",
       "plate": "6417-PBT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -749,6 +758,7 @@
     {
       "key": "5258-LYF",
       "plate": "5258-LYF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -767,6 +777,7 @@
     {
       "key": "2822-ZSF",
       "plate": "2822-ZSF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -785,6 +796,7 @@
     {
       "key": "3878-ZYL",
       "plate": "3878-ZYL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -803,6 +815,7 @@
     {
       "key": "967-IGE",
       "plate": "967-IGE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -821,6 +834,7 @@
     {
       "key": "1089-FND",
       "plate": "1089-FND",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -839,6 +853,7 @@
     {
       "key": "2981-GEP",
       "plate": "2981-GEP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -857,6 +872,7 @@
     {
       "key": "2946-KZC",
       "plate": "2946-KZC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -875,6 +891,7 @@
     {
       "key": "3292-CYI",
       "plate": "3292-CYI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -893,6 +910,7 @@
     {
       "key": "SIN-PLACA-0001",
       "plate": "SIN-PLACA-0001",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -911,6 +929,7 @@
     {
       "key": "SIN-PLACA-0002",
       "plate": "SIN-PLACA-0002",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -929,6 +948,7 @@
     {
       "key": "1515-RFP",
       "plate": "1515-RFP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -947,6 +967,7 @@
     {
       "key": "4070-KSE",
       "plate": "4070-KSE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -965,6 +986,7 @@
     {
       "key": "6307-ZXB",
       "plate": "6307-ZXB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MINIBUS",
       "brand": "Toyota",
@@ -983,6 +1005,7 @@
     {
       "key": "SIN-PLACA-0003",
       "plate": "SIN-PLACA-0003",
+      "departmentCode": "ORU",
       "plateDnfr": "003-PBO",
       "type": "MINIBUS",
       "brand": "Nissan",
@@ -1001,6 +1024,7 @@
     {
       "key": "3292-EFK",
       "plate": "3292-EFK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1019,6 +1043,7 @@
     {
       "key": "1515-PZT",
       "plate": "1515-PZT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1037,8 +1062,9 @@
     {
       "key": "SIN-PLACA-0004",
       "plate": "SIN-PLACA-0004",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1055,8 +1081,9 @@
     {
       "key": "SIN-PLACA-0005",
       "plate": "SIN-PLACA-0005",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1073,8 +1100,9 @@
     {
       "key": "SIN-PLACA-0006",
       "plate": "SIN-PLACA-0006",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1091,8 +1119,9 @@
     {
       "key": "SIN-PLACA-0007",
       "plate": "SIN-PLACA-0007",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1109,8 +1138,9 @@
     {
       "key": "SIN-PLACA-0008",
       "plate": "SIN-PLACA-0008",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1127,8 +1157,9 @@
     {
       "key": "SIN-PLACA-0009",
       "plate": "SIN-PLACA-0009",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1145,8 +1176,9 @@
     {
       "key": "SIN-PLACA-0010",
       "plate": "SIN-PLACA-0010",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-624",
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -1163,6 +1195,7 @@
     {
       "key": "1515-PRU",
       "plate": "1515-PRU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1181,6 +1214,7 @@
     {
       "key": "1515-PXK",
       "plate": "1515-PXK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1199,6 +1233,7 @@
     {
       "key": "1515-REK",
       "plate": "1515-REK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1217,6 +1252,7 @@
     {
       "key": "1515-RKF",
       "plate": "1515-RKF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1235,6 +1271,7 @@
     {
       "key": "3292-EBU",
       "plate": "3292-EBU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1253,6 +1290,7 @@
     {
       "key": "3298-PIN",
       "plate": "3298-PIN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1271,6 +1309,7 @@
     {
       "key": "SIN-PLACA-0011",
       "plate": "SIN-PLACA-0011",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-052",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1289,6 +1328,7 @@
     {
       "key": "SIN-PLACA-0012",
       "plate": "SIN-PLACA-0012",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-064",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1307,6 +1347,7 @@
     {
       "key": "SIN-PLACA-0013",
       "plate": "SIN-PLACA-0013",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-048",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1325,6 +1366,7 @@
     {
       "key": "SIN-PLACA-0014",
       "plate": "SIN-PLACA-0014",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-054",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1343,6 +1385,7 @@
     {
       "key": "SIN-PLACA-0015",
       "plate": "SIN-PLACA-0015",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-059",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1361,6 +1404,7 @@
     {
       "key": "SIN-PLACA-0016",
       "plate": "SIN-PLACA-0016",
+      "departmentCode": "ORU",
       "plateDnfr": "TR-35",
       "type": "MOTOCICLETA",
       "brand": "Lifan",
@@ -1379,6 +1423,7 @@
     {
       "key": "SIN-PLACA-0017",
       "plate": "SIN-PLACA-0017",
+      "departmentCode": "ORU",
       "plateDnfr": "TR-36",
       "type": "MOTOCICLETA",
       "brand": "Lifan",
@@ -1397,6 +1442,7 @@
     {
       "key": "SIN-PLACA-0018",
       "plate": "SIN-PLACA-0018",
+      "departmentCode": "ORU",
       "plateDnfr": "TR-39",
       "type": "MOTOCICLETA",
       "brand": "Lifan",
@@ -1415,6 +1461,7 @@
     {
       "key": "SIN-PLACA-0019",
       "plate": "SIN-PLACA-0019",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1433,6 +1480,7 @@
     {
       "key": "1515-PYP",
       "plate": "1515-PYP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1451,6 +1499,7 @@
     {
       "key": "SIN-PLACA-0020",
       "plate": "SIN-PLACA-0020",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-065",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1469,6 +1518,7 @@
     {
       "key": "SIN-PLACA-0021",
       "plate": "SIN-PLACA-0021",
+      "departmentCode": "ORU",
       "plateDnfr": "PBL-023",
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -1487,6 +1537,7 @@
     {
       "key": "1515-RHY",
       "plate": "1515-RHY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1505,6 +1556,7 @@
     {
       "key": "3097-YRA",
       "plate": "3097-YRA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -1523,6 +1575,7 @@
     {
       "key": "3097-YTG",
       "plate": "3097-YTG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -1541,6 +1594,7 @@
     {
       "key": "3292-EDD",
       "plate": "3292-EDD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1559,6 +1613,7 @@
     {
       "key": "SIN-PLACA-0022",
       "plate": "SIN-PLACA-0022",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1577,6 +1632,7 @@
     {
       "key": "1979-CAE",
       "plate": "1979-CAE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1595,6 +1651,7 @@
     {
       "key": "5224-ZKI",
       "plate": "5224-ZKI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -1613,6 +1670,7 @@
     {
       "key": "3447-TLP",
       "plate": "3447-TLP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -1631,6 +1689,7 @@
     {
       "key": "1842-UBY",
       "plate": "1842-UBY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -1649,6 +1708,7 @@
     {
       "key": "3590-CBK",
       "plate": "3590-CBK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -1667,6 +1727,7 @@
     {
       "key": "3590-DUX",
       "plate": "3590-DUX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -1685,6 +1746,7 @@
     {
       "key": "4682-CCC",
       "plate": "4682-CCC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -1703,6 +1765,7 @@
     {
       "key": "4682-CDF",
       "plate": "4682-CDF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -1721,6 +1784,7 @@
     {
       "key": "5231-XFB",
       "plate": "5231-XFB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -1739,6 +1803,7 @@
     {
       "key": "3292-DDC",
       "plate": "3292-DDC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1757,6 +1822,7 @@
     {
       "key": "3292-DFI",
       "plate": "3292-DFI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1775,6 +1841,7 @@
     {
       "key": "3292-EAR",
       "plate": "3292-EAR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1793,6 +1860,7 @@
     {
       "key": "3292-ECA",
       "plate": "3292-ECA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1811,6 +1879,7 @@
     {
       "key": "3298-PGF",
       "plate": "3298-PGF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1829,6 +1898,7 @@
     {
       "key": "3298-PKS",
       "plate": "3298-PKS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1847,6 +1917,7 @@
     {
       "key": "3298-PSL",
       "plate": "3298-PSL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1865,6 +1936,7 @@
     {
       "key": "3298-PUU",
       "plate": "3298-PUU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1883,6 +1955,7 @@
     {
       "key": "5797-FEC",
       "plate": "5797-FEC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1901,6 +1974,7 @@
     {
       "key": "5797-FFF",
       "plate": "5797-FFF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1919,6 +1993,7 @@
     {
       "key": "5797-FGI",
       "plate": "5797-FGI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1937,6 +2012,7 @@
     {
       "key": "5797-FHN",
       "plate": "5797-FHN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1955,6 +2031,7 @@
     {
       "key": "5797-FIS",
       "plate": "5797-FIS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1973,6 +2050,7 @@
     {
       "key": "5797-FKX",
       "plate": "5797-FKX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -1991,6 +2069,7 @@
     {
       "key": "3298-PTR",
       "plate": "3298-PTR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -2009,6 +2088,7 @@
     {
       "key": "5344-TBB",
       "plate": "5344-TBB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2027,6 +2107,7 @@
     {
       "key": "5258-LTT",
       "plate": "5258-LTT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2045,6 +2126,7 @@
     {
       "key": "SIN-PLACA-0023",
       "plate": "SIN-PLACA-0023",
+      "departmentCode": "ORU",
       "plateDnfr": "017-PBO",
       "type": "AMBULANCIA",
       "brand": "Toyota",
@@ -2063,6 +2145,7 @@
     {
       "key": "1877-LKD",
       "plate": "1877-LKD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -2081,6 +2164,7 @@
     {
       "key": "1150-DSY",
       "plate": "1150-DSY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2099,6 +2183,7 @@
     {
       "key": "1152-INK",
       "plate": "1152-INK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2117,6 +2202,7 @@
     {
       "key": "3447-TBE",
       "plate": "3447-TBE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -2135,6 +2221,7 @@
     {
       "key": "SIN-PLACA-0024",
       "plate": "SIN-PLACA-0024",
+      "departmentCode": "ORU",
       "plateDnfr": "PBL-024",
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2153,6 +2240,7 @@
     {
       "key": "3860-IEG",
       "plate": "3860-IEG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2171,6 +2259,7 @@
     {
       "key": "2866-DXF",
       "plate": "2866-DXF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2189,6 +2278,7 @@
     {
       "key": "1877-NBY",
       "plate": "1877-NBY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -2207,6 +2297,7 @@
     {
       "key": "1152-FHR",
       "plate": "1152-FHR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Chevrolet",
@@ -2225,6 +2316,7 @@
     {
       "key": "SIN-PLACA-0025",
       "plate": "SIN-PLACA-0025",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-024",
       "type": "CAMIONETA",
       "brand": "Ford",
@@ -2243,6 +2335,7 @@
     {
       "key": "1150-IHC",
       "plate": "1150-IHC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -2261,6 +2354,7 @@
     {
       "key": "1979-BYA",
       "plate": "1979-BYA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -2279,6 +2373,7 @@
     {
       "key": "5051-XLK",
       "plate": "5051-XLK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -2297,6 +2392,7 @@
     {
       "key": "5051-XNP",
       "plate": "5051-XNP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -2315,6 +2411,7 @@
     {
       "key": "1515-RLI",
       "plate": "1515-RLI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -2333,6 +2430,7 @@
     {
       "key": "SIN-PLACA-0026",
       "plate": "SIN-PLACA-0026",
+      "departmentCode": "ORU",
       "plateDnfr": "246-MGP",
       "type": "MOTOCICLETA",
       "brand": "RUDO",
@@ -2351,6 +2449,7 @@
     {
       "key": "6499-LZB",
       "plate": "6499-LZB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -2369,6 +2468,7 @@
     {
       "key": "6317-BGU",
       "plate": "6317-BGU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2387,6 +2487,7 @@
     {
       "key": "6317-BHA",
       "plate": "6317-BHA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2405,6 +2506,7 @@
     {
       "key": "6317-ABA",
       "plate": "6317-ABA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2423,6 +2525,7 @@
     {
       "key": "6422-DAT",
       "plate": "6422-DAT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2441,6 +2544,7 @@
     {
       "key": "5313-KZT",
       "plate": "5313-KZT",
+      "departmentCode": "ORU",
       "plateDnfr": "DIC",
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2459,6 +2563,7 @@
     {
       "key": "5327-UIH",
       "plate": "5327-UIH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2477,6 +2582,7 @@
     {
       "key": "5327-UKL",
       "plate": "5327-UKL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2495,6 +2601,7 @@
     {
       "key": "5313-KYP",
       "plate": "5313-KYP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2513,6 +2620,7 @@
     {
       "key": "5273-FLU",
       "plate": "5273-FLU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2531,6 +2639,7 @@
     {
       "key": "5273-FNA",
       "plate": "5273-FNA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2549,6 +2658,7 @@
     {
       "key": "5273-FRG",
       "plate": "5273-FRG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2567,6 +2677,7 @@
     {
       "key": "5591-PZG",
       "plate": "5591-PZG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Toyota",
@@ -2585,8 +2696,9 @@
     {
       "key": "6499-NGB",
       "plate": "6499-NGB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "FURGON",
       "brand": "Nissan",
       "model": "Urvan",
       "year": 2026,
@@ -2603,6 +2715,7 @@
     {
       "key": "3860-IDD",
       "plate": "3860-IDD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2621,6 +2734,7 @@
     {
       "key": "5273-FPD",
       "plate": "5273-FPD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -2639,6 +2753,7 @@
     {
       "key": "6155-ICI",
       "plate": "6155-ICI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -2657,6 +2772,7 @@
     {
       "key": "6155-IDN",
       "plate": "6155-IDN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -2675,6 +2791,7 @@
     {
       "key": "4944-PKB",
       "plate": "4944-PKB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -2693,6 +2810,7 @@
     {
       "key": "4944-PLE",
       "plate": "4944-PLE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -2711,6 +2829,7 @@
     {
       "key": "5231-XEX",
       "plate": "5231-XEX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -2729,6 +2848,7 @@
     {
       "key": "1703-DXC",
       "plate": "1703-DXC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -2747,6 +2867,7 @@
     {
       "key": "3458-NRS",
       "plate": "3458-NRS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2765,6 +2886,7 @@
     {
       "key": "3447-TCH",
       "plate": "3447-TCH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2783,6 +2905,7 @@
     {
       "key": "3447-TGA",
       "plate": "3447-TGA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2801,6 +2924,7 @@
     {
       "key": "3447-ZGE",
       "plate": "3447-ZGE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2819,8 +2943,9 @@
     {
       "key": "3108-KGR",
       "plate": "3108-KGR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_BOMBERO",
       "brand": "International",
       "model": "4400",
       "year": 2014,
@@ -2837,8 +2962,9 @@
     {
       "key": "6322-NAB",
       "plate": "6322-NAB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_CISTERNA",
       "brand": "Volkswagen",
       "model": "31,320",
       "year": 2024,
@@ -2855,6 +2981,7 @@
     {
       "key": "SIN-PLACA-0027",
       "plate": "SIN-PLACA-0027",
+      "departmentCode": "ORU",
       "plateDnfr": "013-PBO",
       "type": "AMBULANCIA",
       "brand": "Toyota",
@@ -2873,6 +3000,7 @@
     {
       "key": "1584-ZZC",
       "plate": "1584-ZZC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2891,6 +3019,7 @@
     {
       "key": "2688-NXB",
       "plate": "2688-NXB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -2909,6 +3038,7 @@
     {
       "key": "2872-SET",
       "plate": "2872-SET",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-029",
       "type": "AMBULANCIA",
       "brand": "IVECO",
@@ -2927,8 +3057,9 @@
     {
       "key": "SIN-PLACA-0028",
       "plate": "SIN-PLACA-0028",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-015",
-      "type": "CAMION",
+      "type": "CAMION_BOMBERO",
       "brand": "Magirus",
       "model": "Bombero",
       "year": 1968,
@@ -2945,8 +3076,9 @@
     {
       "key": "1152-LPS",
       "plate": "1152-LPS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_RESCATE",
       "brand": "Mercedes Benz",
       "model": "Bombero",
       "year": 1979,
@@ -2963,8 +3095,9 @@
     {
       "key": "3165-ELT",
       "plate": "3165-ELT",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-020 612304",
-      "type": "CAMION",
+      "type": "CAMION_RESCATE",
       "brand": "Mercedes Benz",
       "model": "Camión",
       "year": 1985,
@@ -2981,8 +3114,9 @@
     {
       "key": "1570-FGH",
       "plate": "1570-FGH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_BOMBERO",
       "brand": "Isuzu",
       "model": "Forward",
       "year": 1990,
@@ -2999,6 +3133,7 @@
     {
       "key": "1515-RDG",
       "plate": "1515-RDG",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-089",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3017,6 +3152,7 @@
     {
       "key": "1515-RIC",
       "plate": "1515-RIC",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-090",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3035,6 +3171,7 @@
     {
       "key": "5258-LXC",
       "plate": "5258-LXC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MINIBUS",
       "brand": "Toyota",
@@ -3053,6 +3190,7 @@
     {
       "key": "1814-PKG",
       "plate": "1814-PKG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMION",
       "brand": "Nissan",
@@ -3071,6 +3209,7 @@
     {
       "key": "1703-DUY",
       "plate": "1703-DUY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -3089,6 +3228,7 @@
     {
       "key": "3144-PCP",
       "plate": "3144-PCP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -3107,6 +3247,7 @@
     {
       "key": "3590-DAH",
       "plate": "3590-DAH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -3125,6 +3266,7 @@
     {
       "key": "1857-CFD",
       "plate": "1857-CFD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -3143,6 +3285,7 @@
     {
       "key": "1857-CZH",
       "plate": "1857-CZH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -3161,6 +3304,7 @@
     {
       "key": "1857-DAI",
       "plate": "1857-DAI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -3179,6 +3323,7 @@
     {
       "key": "4682-CAT",
       "plate": "4682-CAT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -3197,6 +3342,7 @@
     {
       "key": "5051-KUA",
       "plate": "5051-KUA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3215,6 +3361,7 @@
     {
       "key": "5055-KYT",
       "plate": "5055-KYT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3233,6 +3380,7 @@
     {
       "key": "5055-LAA",
       "plate": "5055-LAA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3251,6 +3399,7 @@
     {
       "key": "5055-LNS",
       "plate": "5055-LNS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3269,6 +3418,7 @@
     {
       "key": "5055-LPX",
       "plate": "5055-LPX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3287,6 +3437,7 @@
     {
       "key": "5797-FLB",
       "plate": "5797-FLB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3305,6 +3456,7 @@
     {
       "key": "5797-FNE",
       "plate": "5797-FNE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3323,6 +3475,7 @@
     {
       "key": "5797-FPH",
       "plate": "5797-FPH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3341,6 +3494,7 @@
     {
       "key": "5797-FRL",
       "plate": "5797-FRL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3359,6 +3513,7 @@
     {
       "key": "SIN-PLACA-0029",
       "plate": "SIN-PLACA-0029",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-055",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3377,6 +3532,7 @@
     {
       "key": "SIN-PLACA-0030",
       "plate": "SIN-PLACA-0030",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3395,6 +3551,7 @@
     {
       "key": "SIN-PLACA-0031",
       "plate": "SIN-PLACA-0031",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3413,6 +3570,7 @@
     {
       "key": "SIN-PLACA-0032",
       "plate": "SIN-PLACA-0032",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3431,6 +3589,7 @@
     {
       "key": "SIN-PLACA-0033",
       "plate": "SIN-PLACA-0033",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3449,6 +3608,7 @@
     {
       "key": "SIN-PLACA-0034",
       "plate": "SIN-PLACA-0034",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3467,6 +3627,7 @@
     {
       "key": "5224-ZLN",
       "plate": "5224-ZLN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -3485,6 +3646,7 @@
     {
       "key": "5224-ZRB",
       "plate": "5224-ZRB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -3503,6 +3665,7 @@
     {
       "key": "5224-ZNS",
       "plate": "5224-ZNS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -3521,6 +3684,7 @@
     {
       "key": "3447-SXR",
       "plate": "3447-SXR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3539,6 +3703,7 @@
     {
       "key": "3447-THD",
       "plate": "3447-THD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3557,6 +3722,7 @@
     {
       "key": "3447-TKK",
       "plate": "3447-TKK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3575,6 +3741,7 @@
     {
       "key": "3447-TRC",
       "plate": "3447-TRC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3593,6 +3760,7 @@
     {
       "key": "3458-NSX",
       "plate": "3458-NSX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3611,6 +3779,7 @@
     {
       "key": "3447-TIG",
       "plate": "3447-TIG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3629,6 +3798,7 @@
     {
       "key": "3447-TNT",
       "plate": "3447-TNT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3647,6 +3817,7 @@
     {
       "key": "3447-TER",
       "plate": "3447-TER",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3665,6 +3836,7 @@
     {
       "key": "3447-TFU",
       "plate": "3447-TFU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3683,6 +3855,7 @@
     {
       "key": "5231-XNA",
       "plate": "5231-XNA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -3701,6 +3874,7 @@
     {
       "key": "5231-TLS",
       "plate": "5231-TLS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -3719,6 +3893,7 @@
     {
       "key": "3447-SZA",
       "plate": "3447-SZA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3737,6 +3912,7 @@
     {
       "key": "3447-TAB",
       "plate": "3447-TAB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3755,6 +3931,7 @@
     {
       "key": "3447-SUL",
       "plate": "3447-SUL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3773,6 +3950,7 @@
     {
       "key": "1856-EIH",
       "plate": "1856-EIH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -3791,6 +3969,7 @@
     {
       "key": "1703-DRK",
       "plate": "1703-DRK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -3809,6 +3988,7 @@
     {
       "key": "1152-KUG",
       "plate": "1152-KUG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3827,6 +4007,7 @@
     {
       "key": "3447-SPX",
       "plate": "3447-SPX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -3845,6 +4026,7 @@
     {
       "key": "SIN-PLACA-0035",
       "plate": "SIN-PLACA-0035",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-031",
       "type": "AUTOMOVIL",
       "brand": "Jeep",
@@ -3863,6 +4045,7 @@
     {
       "key": "SIN-PLACA-0036",
       "plate": "SIN-PLACA-0036",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-032",
       "type": "AUTOMOVIL",
       "brand": "Jeep",
@@ -3881,6 +4064,7 @@
     {
       "key": "SIN-PLACA-0037",
       "plate": "SIN-PLACA-0037",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-033",
       "type": "AUTOMOVIL",
       "brand": "Jeep",
@@ -3899,6 +4083,7 @@
     {
       "key": "SIN-PLACA-0038",
       "plate": "SIN-PLACA-0038",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-034",
       "type": "AUTOMOVIL",
       "brand": "Jeep",
@@ -3917,6 +4102,7 @@
     {
       "key": "1515-PGS",
       "plate": "1515-PGS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3935,6 +4121,7 @@
     {
       "key": "5797-ESP",
       "plate": "5797-ESP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3953,6 +4140,7 @@
     {
       "key": "5797-ETT",
       "plate": "5797-ETT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3971,6 +4159,7 @@
     {
       "key": "5797-EUY",
       "plate": "5797-EUY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -3989,6 +4178,7 @@
     {
       "key": "5797-EXC",
       "plate": "5797-EXC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4007,6 +4197,7 @@
     {
       "key": "5797-EYF",
       "plate": "5797-EYF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4025,6 +4216,7 @@
     {
       "key": "5797-EZI",
       "plate": "5797-EZI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4043,6 +4235,7 @@
     {
       "key": "5797-FAK",
       "plate": "5797-FAK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4061,6 +4254,7 @@
     {
       "key": "5797-FBP",
       "plate": "5797-FBP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4079,6 +4273,7 @@
     {
       "key": "5797-FCT",
       "plate": "5797-FCT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4097,6 +4292,7 @@
     {
       "key": "5797-FDY",
       "plate": "5797-FDY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4115,6 +4311,7 @@
     {
       "key": "5055-LBD",
       "plate": "5055-LBD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4133,6 +4330,7 @@
     {
       "key": "5055-LCG",
       "plate": "5055-LCG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4151,6 +4349,7 @@
     {
       "key": "5055-LDK",
       "plate": "5055-LDK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4169,6 +4368,7 @@
     {
       "key": "5055-LEP",
       "plate": "5055-LEP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4187,6 +4387,7 @@
     {
       "key": "5055-LFT",
       "plate": "5055-LFT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4205,6 +4406,7 @@
     {
       "key": "5055-LGY",
       "plate": "5055-LGY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4223,6 +4425,7 @@
     {
       "key": "5055-LHC",
       "plate": "5055-LHC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4241,6 +4444,7 @@
     {
       "key": "5055-LIF",
       "plate": "5055-LIF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4259,6 +4463,7 @@
     {
       "key": "5055-LKI",
       "plate": "5055-LKI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4277,6 +4482,7 @@
     {
       "key": "5055-LLN",
       "plate": "5055-LLN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4295,6 +4501,7 @@
     {
       "key": "3292-DRR",
       "plate": "3292-DRR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4313,6 +4520,7 @@
     {
       "key": "3298-PPE",
       "plate": "3298-PPE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4331,6 +4539,7 @@
     {
       "key": "3298-PLX",
       "plate": "3298-PLX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4349,6 +4558,7 @@
     {
       "key": "3298-NZF",
       "plate": "3298-NZF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4367,6 +4577,7 @@
     {
       "key": "2946-LBG",
       "plate": "2946-LBG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4385,6 +4596,7 @@
     {
       "key": "3292-CZN",
       "plate": "3292-CZN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4403,6 +4615,7 @@
     {
       "key": "3292-EGP",
       "plate": "3292-EGP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4421,6 +4634,7 @@
     {
       "key": "3292-EHT",
       "plate": "3292-EHT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4439,6 +4653,7 @@
     {
       "key": "1979-BZD",
       "plate": "1979-BZD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4457,6 +4672,7 @@
     {
       "key": "2942-KCY",
       "plate": "2942-KCY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4475,6 +4691,7 @@
     {
       "key": "3292-DPL",
       "plate": "3292-DPL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4493,6 +4710,7 @@
     {
       "key": "3292-DGN",
       "plate": "3292-DGN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4511,6 +4729,7 @@
     {
       "key": "3292-DZP",
       "plate": "3292-DZP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4529,6 +4748,7 @@
     {
       "key": "1979-CCL",
       "plate": "1979-CCL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4547,6 +4767,7 @@
     {
       "key": "1515-RAU",
       "plate": "1515-RAU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4565,6 +4786,7 @@
     {
       "key": "3292-DEF",
       "plate": "3292-DEF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4583,6 +4805,7 @@
     {
       "key": "3292-DUD",
       "plate": "3292-DUD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4601,6 +4824,7 @@
     {
       "key": "3298-RDU",
       "plate": "3298-RDU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4619,6 +4843,7 @@
     {
       "key": "3298-RGG",
       "plate": "3298-RGG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4637,6 +4862,7 @@
     {
       "key": "3298-RRI",
       "plate": "3298-RRI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4655,6 +4881,7 @@
     {
       "key": "5231-XHH",
       "plate": "5231-XHH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -4673,6 +4900,7 @@
     {
       "key": "1877-LFL",
       "plate": "1877-LFL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -4691,6 +4919,7 @@
     {
       "key": "1856-TAR",
       "plate": "1856-TAR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -4709,6 +4938,7 @@
     {
       "key": "1515-RBA",
       "plate": "1515-RBA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4727,6 +4957,7 @@
     {
       "key": "SIN-PLACA-0039",
       "plate": "SIN-PLACA-0039",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-058",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4745,6 +4976,7 @@
     {
       "key": "SIN-PLACA-0040",
       "plate": "SIN-PLACA-0040",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-717",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4763,6 +4995,7 @@
     {
       "key": "2872-UGE",
       "plate": "2872-UGE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -4781,6 +5014,7 @@
     {
       "key": "4021-LIG",
       "plate": "4021-LIG",
+      "departmentCode": "ORU",
       "plateDnfr": "PN00017",
       "type": "CAMION",
       "brand": "Mazda",
@@ -4799,6 +5033,7 @@
     {
       "key": "1269-CKB",
       "plate": "1269-CKB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Mitsubishi",
@@ -4817,6 +5052,7 @@
     {
       "key": "957-XZF",
       "plate": "957-XZF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -4835,6 +5071,7 @@
     {
       "key": "3172-XDS",
       "plate": "3172-XDS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4853,6 +5090,7 @@
     {
       "key": "3172-XKR",
       "plate": "3172-XKR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4871,6 +5109,7 @@
     {
       "key": "SIN-PLACA-0041",
       "plate": "SIN-PLACA-0041",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4889,6 +5128,7 @@
     {
       "key": "1515-RGT",
       "plate": "1515-RGT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4907,6 +5147,7 @@
     {
       "key": "737-ZCI",
       "plate": "737-ZCI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -4925,6 +5166,7 @@
     {
       "key": "737-ZDN",
       "plate": "737-ZDN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -4943,6 +5185,7 @@
     {
       "key": "1515-PSA",
       "plate": "1515-PSA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -4961,6 +5204,7 @@
     {
       "key": "737-ZAC",
       "plate": "737-ZAC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -4979,6 +5223,7 @@
     {
       "key": "737-ZBF",
       "plate": "737-ZBF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -4997,6 +5242,7 @@
     {
       "key": "SIN-PLACA-0042",
       "plate": "SIN-PLACA-0042",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5015,6 +5261,7 @@
     {
       "key": "5231-YCP",
       "plate": "5231-YCP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -5033,6 +5280,7 @@
     {
       "key": "4434-EKH",
       "plate": "4434-EKH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5051,6 +5299,7 @@
     {
       "key": "1655-SLA",
       "plate": "1655-SLA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Mitsubishi",
@@ -5069,6 +5318,7 @@
     {
       "key": "1877-KUE",
       "plate": "1877-KUE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5087,6 +5337,7 @@
     {
       "key": "1150-GLK",
       "plate": "1150-GLK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5105,6 +5356,7 @@
     {
       "key": "1152-FFH",
       "plate": "1152-FFH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5123,6 +5375,7 @@
     {
       "key": "4053-SLA",
       "plate": "4053-SLA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5141,6 +5394,7 @@
     {
       "key": "5051-ZIF",
       "plate": "5051-ZIF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5159,6 +5413,7 @@
     {
       "key": "5258-LUY",
       "plate": "5258-LUY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MINIBUS",
       "brand": "Toyota",
@@ -5177,8 +5432,9 @@
     {
       "key": "3622-LLX",
       "plate": "3622-LLX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_GRUA",
       "brand": "Volkswagen",
       "model": "10-150",
       "year": 2014,
@@ -5195,8 +5451,9 @@
     {
       "key": "4805-FGL",
       "plate": "4805-FGL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_GRUA",
       "brand": "Volkswagen",
       "model": "10-150",
       "year": 2018,
@@ -5213,8 +5470,9 @@
     {
       "key": "6000-TPA",
       "plate": "6000-TPA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "CAMION",
+      "type": "CAMION_GRUA",
       "brand": "Volkswagen",
       "model": null,
       "year": null,
@@ -5231,6 +5489,7 @@
     {
       "key": "2822-ZPY",
       "plate": "2822-ZPY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5249,6 +5508,7 @@
     {
       "key": "2822-ZTI",
       "plate": "2822-ZTI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5267,6 +5527,7 @@
     {
       "key": "SIN-PLACA-0043",
       "plate": "SIN-PLACA-0043",
+      "departmentCode": "ORU",
       "plateDnfr": "002-DNFR",
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5285,6 +5546,7 @@
     {
       "key": "3292-DNH",
       "plate": "3292-DNH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5303,6 +5565,7 @@
     {
       "key": "SIN-PLACA-0044",
       "plate": "SIN-PLACA-0044",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-059",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5321,6 +5584,7 @@
     {
       "key": "5258-NAK",
       "plate": "5258-NAK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5339,6 +5603,7 @@
     {
       "key": "4682-CBY",
       "plate": "4682-CBY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5357,6 +5622,7 @@
     {
       "key": "1703-DSP",
       "plate": "1703-DSP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5375,6 +5641,7 @@
     {
       "key": "1842-TYN",
       "plate": "1842-TYN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5393,6 +5660,7 @@
     {
       "key": "3458-NPN",
       "plate": "3458-NPN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5411,6 +5679,7 @@
     {
       "key": "1842-UFN",
       "plate": "1842-UFN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5429,6 +5698,7 @@
     {
       "key": "1857-CEA",
       "plate": "1857-CEA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5447,6 +5717,7 @@
     {
       "key": "1678-DTT",
       "plate": "1678-DTT",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-051",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5465,6 +5736,7 @@
     {
       "key": "3590-CUU",
       "plate": "3590-CUU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -5483,6 +5755,7 @@
     {
       "key": "4538-TLS",
       "plate": "4538-TLS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Renault",
@@ -5501,6 +5774,7 @@
     {
       "key": "SIN-PLACA-0045",
       "plate": "SIN-PLACA-0045",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-057",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5519,6 +5793,7 @@
     {
       "key": "3298-RFD",
       "plate": "3298-RFD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5537,6 +5812,7 @@
     {
       "key": "3590-CEY",
       "plate": "3590-CEY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -5555,6 +5831,7 @@
     {
       "key": "3590-CKS",
       "plate": "3590-CKS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -5573,6 +5850,7 @@
     {
       "key": "1703-DYF",
       "plate": "1703-DYF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5591,6 +5869,7 @@
     {
       "key": "3590-CYD",
       "plate": "3590-CYD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -5609,6 +5888,7 @@
     {
       "key": "5231-XDS",
       "plate": "5231-XDS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -5627,8 +5907,9 @@
     {
       "key": "3786-XZD",
       "plate": "3786-XZD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "FURGON",
       "brand": "Nissan",
       "model": "Urvan",
       "year": 2015,
@@ -5645,6 +5926,7 @@
     {
       "key": "1257-NGU",
       "plate": "1257-NGU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -5663,6 +5945,7 @@
     {
       "key": "1507-TCL",
       "plate": "1507-TCL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -5681,6 +5964,7 @@
     {
       "key": "3298-PNB",
       "plate": "3298-PNB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5699,6 +5983,7 @@
     {
       "key": "3292-DTA",
       "plate": "3292-DTA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5717,6 +6002,7 @@
     {
       "key": "3447-STH",
       "plate": "3447-STH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -5735,6 +6021,7 @@
     {
       "key": "SIN-PLACA-0046",
       "plate": "SIN-PLACA-0046",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5753,6 +6040,7 @@
     {
       "key": "2673-DIX",
       "plate": "2673-DIX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5771,6 +6059,7 @@
     {
       "key": "1515-RNN",
       "plate": "1515-RNN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5789,6 +6078,7 @@
     {
       "key": "1975-GXP",
       "plate": "1975-GXP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5807,6 +6097,7 @@
     {
       "key": "2946-LCK",
       "plate": "2946-LCK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5825,6 +6116,7 @@
     {
       "key": "3292-DHS",
       "plate": "3292-DHS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5843,6 +6135,7 @@
     {
       "key": "SIN-PLACA-0047",
       "plate": "SIN-PLACA-0047",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -5861,6 +6154,7 @@
     {
       "key": "4682-CEI",
       "plate": "4682-CEI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -5879,6 +6173,7 @@
     {
       "key": "3905-LCF",
       "plate": "3905-LCF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5897,6 +6192,7 @@
     {
       "key": "SIN-PLACA-0048",
       "plate": "SIN-PLACA-0048",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-1135",
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5915,6 +6211,7 @@
     {
       "key": "3292-DCY",
       "plate": "3292-DCY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5933,6 +6230,7 @@
     {
       "key": "SIN-PLACA-0049",
       "plate": "SIN-PLACA-0049",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-063",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -5951,6 +6249,7 @@
     {
       "key": "SIN-PLACA-0050",
       "plate": "SIN-PLACA-0050",
+      "departmentCode": "ORU",
       "plateDnfr": "6155863",
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5969,6 +6268,7 @@
     {
       "key": "1856-SFI",
       "plate": "1856-SFI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -5987,6 +6287,7 @@
     {
       "key": "6417-LZL",
       "plate": "6417-LZL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6005,6 +6306,7 @@
     {
       "key": "5231-TII",
       "plate": "5231-TII",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -6023,6 +6325,7 @@
     {
       "key": "3447-SRB",
       "plate": "3447-SRB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -6041,6 +6344,7 @@
     {
       "key": "SIN-PLACA-0051",
       "plate": "SIN-PLACA-0051",
+      "departmentCode": "ORU",
       "plateDnfr": "018-PNO",
       "type": "MINIBUS",
       "brand": "Volkswagen",
@@ -6059,6 +6363,7 @@
     {
       "key": "1515-PUG",
       "plate": "1515-PUG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6077,6 +6382,7 @@
     {
       "key": "2946-TPG",
       "plate": "2946-TPG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6095,6 +6401,7 @@
     {
       "key": "3298-PAG",
       "plate": "3298-PAG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6113,6 +6420,7 @@
     {
       "key": "SIN-PLACA-0052",
       "plate": "SIN-PLACA-0052",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-066",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6131,6 +6439,7 @@
     {
       "key": "SIN-PLACA-0053",
       "plate": "SIN-PLACA-0053",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-051",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6149,6 +6458,7 @@
     {
       "key": "6417-NAN",
       "plate": "6417-NAN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6167,6 +6477,7 @@
     {
       "key": "5231-RYX",
       "plate": "5231-RYX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -6185,6 +6496,7 @@
     {
       "key": "4682-BZS",
       "plate": "4682-BZS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6203,6 +6515,7 @@
     {
       "key": "3447-TPY",
       "plate": "3447-TPY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -6221,6 +6534,7 @@
     {
       "key": "3292-EEG",
       "plate": "3292-EEG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6239,6 +6553,7 @@
     {
       "key": "1515-PTD",
       "plate": "1515-PTD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6257,6 +6572,7 @@
     {
       "key": "SIN-PLACA-0054",
       "plate": "SIN-PLACA-0054",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-056",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6275,6 +6591,7 @@
     {
       "key": "SIN-PLACA-0055",
       "plate": "SIN-PLACA-0055",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-068",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6293,6 +6610,7 @@
     {
       "key": "SIN-PLACA-0056",
       "plate": "SIN-PLACA-0056",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-062",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6311,6 +6629,7 @@
     {
       "key": "SIN-PLACA-0057",
       "plate": "SIN-PLACA-0057",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6329,6 +6648,7 @@
     {
       "key": "6417-NBS",
       "plate": "6417-NBS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6347,6 +6667,7 @@
     {
       "key": "5231-TGC",
       "plate": "5231-TGC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -6365,6 +6686,7 @@
     {
       "key": "5231-XRG",
       "plate": "5231-XRG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -6383,6 +6705,7 @@
     {
       "key": "3447-SSE",
       "plate": "3447-SSE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6401,6 +6724,7 @@
     {
       "key": "3590-DNC",
       "plate": "3590-DNC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -6419,6 +6743,7 @@
     {
       "key": "3458-NNI",
       "plate": "3458-NNI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6437,6 +6762,7 @@
     {
       "key": "1842-TRT",
       "plate": "1842-TRT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -6455,6 +6781,7 @@
     {
       "key": "3488-INR",
       "plate": "3488-INR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6473,6 +6800,7 @@
     {
       "key": "3298-NYC",
       "plate": "3298-NYC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6491,6 +6819,7 @@
     {
       "key": "2946-TSP",
       "plate": "2946-TSP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6509,6 +6838,7 @@
     {
       "key": "SIN-PLACA-0058",
       "plate": "SIN-PLACA-0058",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-082",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6527,6 +6857,7 @@
     {
       "key": "SIN-PLACA-0059",
       "plate": "SIN-PLACA-0059",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-049",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6545,6 +6876,7 @@
     {
       "key": "SIN-PLACA-0060",
       "plate": "SIN-PLACA-0060",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-055",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6563,6 +6895,7 @@
     {
       "key": "6499-NES",
       "plate": "6499-NES",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6581,6 +6914,7 @@
     {
       "key": "6417-NCX",
       "plate": "6417-NCX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6599,6 +6933,7 @@
     {
       "key": "5686-UIG",
       "plate": "5686-UIG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -6617,6 +6952,7 @@
     {
       "key": "3590-CLX",
       "plate": "3590-CLX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -6635,6 +6971,7 @@
     {
       "key": "5231-URF",
       "plate": "5231-URF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Maxus",
@@ -6653,6 +6990,7 @@
     {
       "key": "5055-LRB",
       "plate": "5055-LRB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6671,6 +7009,7 @@
     {
       "key": "5055-KUK",
       "plate": "5055-KUK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6689,6 +7028,7 @@
     {
       "key": "3298-REA",
       "plate": "3298-REA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6707,6 +7047,7 @@
     {
       "key": "3292-DXG",
       "plate": "3292-DXG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6725,6 +7066,7 @@
     {
       "key": "3722-KXC",
       "plate": "3722-KXC",
+      "departmentCode": "ORU",
       "plateDnfr": "2TP205N3",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6743,6 +7085,7 @@
     {
       "key": "3298-PRH",
       "plate": "3298-PRH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6761,6 +7104,7 @@
     {
       "key": "6417-NDB",
       "plate": "6417-NDB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6779,6 +7123,7 @@
     {
       "key": "6317-BID",
       "plate": "6317-BID",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -6797,6 +7142,7 @@
     {
       "key": "3590-CTR",
       "plate": "3590-CTR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -6815,6 +7161,7 @@
     {
       "key": "3447-SYU",
       "plate": "3447-SYU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6833,6 +7180,7 @@
     {
       "key": "1703-DTT",
       "plate": "1703-DTT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -6851,6 +7199,7 @@
     {
       "key": "5055-KZY",
       "plate": "5055-KZY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6869,6 +7218,7 @@
     {
       "key": "5055-KXP",
       "plate": "5055-KXP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6887,6 +7237,7 @@
     {
       "key": "5051-KXD",
       "plate": "5051-KXD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6905,6 +7256,7 @@
     {
       "key": "3292-CXF",
       "plate": "3292-CXF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6923,6 +7275,7 @@
     {
       "key": "SIN-PLACA-0061",
       "plate": "SIN-PLACA-0061",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-053",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6941,6 +7294,7 @@
     {
       "key": "SIN-PLACA-0062",
       "plate": "SIN-PLACA-0062",
+      "departmentCode": "ORU",
       "plateDnfr": "SIGLA 09",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -6959,6 +7313,7 @@
     {
       "key": "6499-NFX",
       "plate": "6499-NFX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -6977,6 +7332,7 @@
     {
       "key": "6307-ZUX",
       "plate": "6307-ZUX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -6995,6 +7351,7 @@
     {
       "key": "4053-SKU",
       "plate": "4053-SKU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -7013,6 +7370,7 @@
     {
       "key": "3458-NTB",
       "plate": "3458-NTB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -7031,6 +7389,7 @@
     {
       "key": "2946-TRK",
       "plate": "2946-TRK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7049,6 +7408,7 @@
     {
       "key": "SIN-PLACA-0063",
       "plate": "SIN-PLACA-0063",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-093",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7067,6 +7427,7 @@
     {
       "key": "SIN-PLACA-0064",
       "plate": "SIN-PLACA-0064",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-067",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7085,8 +7446,9 @@
     {
       "key": "SIN-PLACA-0065",
       "plate": "SIN-PLACA-0065",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -7103,6 +7465,7 @@
     {
       "key": "SIN-PLACA-0066",
       "plate": "SIN-PLACA-0066",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-024",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7121,6 +7484,7 @@
     {
       "key": "SIN-PLACA-0067",
       "plate": "SIN-PLACA-0067",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-057",
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -7139,6 +7503,7 @@
     {
       "key": "SIN-PLACA-0068",
       "plate": "SIN-PLACA-0068",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-042",
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -7157,6 +7522,7 @@
     {
       "key": "3590-DDU",
       "plate": "3590-DDU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7175,6 +7541,7 @@
     {
       "key": "SIN-PLACA-0069",
       "plate": "SIN-PLACA-0069",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-050",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7193,6 +7560,7 @@
     {
       "key": "6417-PAP",
       "plate": "6417-PAP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -7211,6 +7579,7 @@
     {
       "key": "1842-UDF",
       "plate": "1842-UDF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7229,6 +7598,7 @@
     {
       "key": "3590-BXY",
       "plate": "3590-BXY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7247,6 +7617,7 @@
     {
       "key": "1670-CUY",
       "plate": "1670-CUY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7265,6 +7636,7 @@
     {
       "key": "SIN-PLACA-0070",
       "plate": "SIN-PLACA-0070",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "SUPER MOTO",
@@ -7283,6 +7655,7 @@
     {
       "key": "4199-UYP",
       "plate": "4199-UYP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7301,6 +7674,7 @@
     {
       "key": "SIN-PLACA-0071",
       "plate": "SIN-PLACA-0071",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7319,6 +7693,7 @@
     {
       "key": "3590-CDT",
       "plate": "3590-CDT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7337,6 +7712,7 @@
     {
       "key": "1199-ATD",
       "plate": "1199-ATD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7355,6 +7731,7 @@
     {
       "key": "3447-ZHH",
       "plate": "3447-ZHH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AMBULANCIA",
       "brand": "Nissan",
@@ -7373,6 +7750,7 @@
     {
       "key": "4428-LIL",
       "plate": "4428-LIL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -7391,6 +7769,7 @@
     {
       "key": "3590-DPF",
       "plate": "3590-DPF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7409,6 +7788,7 @@
     {
       "key": "2404-GFG",
       "plate": "2404-GFG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -7427,6 +7807,7 @@
     {
       "key": "1842-TFL",
       "plate": "1842-TFL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7445,6 +7826,7 @@
     {
       "key": "SIN-PLACA-0072",
       "plate": "SIN-PLACA-0072",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7463,6 +7845,7 @@
     {
       "key": "SIN-PLACA-0073",
       "plate": "SIN-PLACA-0073",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Kyngo",
@@ -7481,6 +7864,7 @@
     {
       "key": "3590-DRI",
       "plate": "3590-DRI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7499,6 +7883,7 @@
     {
       "key": "2934-HBY",
       "plate": "2934-HBY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7517,6 +7902,7 @@
     {
       "key": "4695-NDG",
       "plate": "4695-NDG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7535,6 +7921,7 @@
     {
       "key": "SIN-PLACA-0074",
       "plate": "SIN-PLACA-0074",
+      "departmentCode": "ORU",
       "plateDnfr": "PNO-003",
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7553,6 +7940,7 @@
     {
       "key": "3487-BZE",
       "plate": "3487-BZE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7571,6 +7959,7 @@
     {
       "key": "3487-CAF",
       "plate": "3487-CAF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7589,6 +7978,7 @@
     {
       "key": "3487-CBI",
       "plate": "3487-CBI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7607,6 +7997,7 @@
     {
       "key": "3487-CCN",
       "plate": "3487-CCN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7625,6 +8016,7 @@
     {
       "key": "3531-XSU",
       "plate": "3531-XSU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7643,6 +8035,7 @@
     {
       "key": "3531-XTA",
       "plate": "3531-XTA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7661,6 +8054,7 @@
     {
       "key": "3531-XUD",
       "plate": "3531-XUD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7679,6 +8073,7 @@
     {
       "key": "SIN-PLACA-0075",
       "plate": "SIN-PLACA-0075",
+      "departmentCode": "ORU",
       "plateDnfr": "3356-XPA",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7697,6 +8092,7 @@
     {
       "key": "SIN-PLACA-0076",
       "plate": "SIN-PLACA-0076",
+      "departmentCode": "ORU",
       "plateDnfr": "3356-XIH",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7715,6 +8111,7 @@
     {
       "key": "3531-XXG",
       "plate": "3531-XXG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7733,6 +8130,7 @@
     {
       "key": "SIN-PLACA-0077",
       "plate": "SIN-PLACA-0077",
+      "departmentCode": "ORU",
       "plateDnfr": "PBO-A89",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7751,6 +8149,7 @@
     {
       "key": "3590-DFD",
       "plate": "3590-DFD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7769,6 +8168,7 @@
     {
       "key": "1842-TPP",
       "plate": "1842-TPP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -7787,6 +8187,7 @@
     {
       "key": "3642-APP",
       "plate": "3642-APP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7805,6 +8206,7 @@
     {
       "key": "SIN-PLACA-0078",
       "plate": "SIN-PLACA-0078",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7823,6 +8225,7 @@
     {
       "key": "3590-DLY",
       "plate": "3590-DLY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7841,6 +8244,7 @@
     {
       "key": "2399-PCC",
       "plate": "2399-PCC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7859,6 +8263,7 @@
     {
       "key": "3364SXH",
       "plate": "3364SXH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7877,6 +8282,7 @@
     {
       "key": "3364-SYL",
       "plate": "3364-SYL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7895,6 +8301,7 @@
     {
       "key": "3590-BZF",
       "plate": "3590-BZF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7913,6 +8320,7 @@
     {
       "key": "SIN-PLACA-0079",
       "plate": "SIN-PLACA-0079",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7931,6 +8339,7 @@
     {
       "key": "4900-PDS",
       "plate": "4900-PDS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7949,6 +8358,7 @@
     {
       "key": "3590-CNB",
       "plate": "3590-CNB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -7967,6 +8377,7 @@
     {
       "key": "1674-GIH",
       "plate": "1674-GIH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -7985,6 +8396,7 @@
     {
       "key": "4922-FNG",
       "plate": "4922-FNG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8003,6 +8415,7 @@
     {
       "key": "4735-RTP",
       "plate": "4735-RTP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "FOTON",
@@ -8021,6 +8434,7 @@
     {
       "key": "SIN-PLACA-0080",
       "plate": "SIN-PLACA-0080",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8039,6 +8453,7 @@
     {
       "key": "3590-DCR",
       "plate": "3590-DCR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8057,6 +8472,7 @@
     {
       "key": "4920-DCB",
       "plate": "4920-DCB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8075,6 +8491,7 @@
     {
       "key": "SIN-PLACA-0081",
       "plate": "SIN-PLACA-0081",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Montero",
@@ -8093,6 +8510,7 @@
     {
       "key": "3590-CPE",
       "plate": "3590-CPE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8111,6 +8529,7 @@
     {
       "key": "SIN-PLACA-0082",
       "plate": "SIN-PLACA-0082",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8129,6 +8548,7 @@
     {
       "key": "SIN-PLACA-0083",
       "plate": "SIN-PLACA-0083",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Isuzu",
@@ -8147,6 +8567,7 @@
     {
       "key": "SIN-PLACA-0084",
       "plate": "SIN-PLACA-0084",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Mitsubishi",
@@ -8165,6 +8586,7 @@
     {
       "key": "2867-NCR",
       "plate": "2867-NCR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8183,6 +8605,7 @@
     {
       "key": "402-XXY",
       "plate": "402-XXY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -8201,6 +8624,7 @@
     {
       "key": "3480-XTU",
       "plate": "3480-XTU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8219,8 +8643,9 @@
     {
       "key": "SIN-PLACA-0085",
       "plate": "SIN-PLACA-0085",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -8237,6 +8662,7 @@
     {
       "key": "1600-DAD",
       "plate": "1600-DAD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8255,6 +8681,7 @@
     {
       "key": "5296-IUA",
       "plate": "5296-IUA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8273,6 +8700,7 @@
     {
       "key": "3590-CRH",
       "plate": "3590-CRH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8291,6 +8719,7 @@
     {
       "key": "5403-LRN",
       "plate": "5403-LRN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8309,6 +8738,7 @@
     {
       "key": "5403-LSS",
       "plate": "5403-LSS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8327,6 +8757,7 @@
     {
       "key": "3502-ZPN",
       "plate": "3502-ZPN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8345,6 +8776,7 @@
     {
       "key": "3502-ZTB",
       "plate": "3502-ZTB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8363,6 +8795,7 @@
     {
       "key": "3502-ZUE",
       "plate": "3502-ZUE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8381,6 +8814,7 @@
     {
       "key": "5403-LTX",
       "plate": "5403-LTX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8399,6 +8833,7 @@
     {
       "key": "SIN-PLACA-0086",
       "plate": "SIN-PLACA-0086",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Kawasaki",
@@ -8417,6 +8852,7 @@
     {
       "key": "SIN-PLACA-0087",
       "plate": "SIN-PLACA-0087",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Kawasaki",
@@ -8435,6 +8871,7 @@
     {
       "key": "SIN-PLACA-0088",
       "plate": "SIN-PLACA-0088",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8453,6 +8890,7 @@
     {
       "key": "SIN-PLACA-0089",
       "plate": "SIN-PLACA-0089",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8471,6 +8909,7 @@
     {
       "key": "5358-ZNT",
       "plate": "5358-ZNT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8489,6 +8928,7 @@
     {
       "key": "1152-NUI",
       "plate": "1152-NUI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -8507,6 +8947,7 @@
     {
       "key": "3139-YNS",
       "plate": "3139-YNS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -8525,6 +8966,7 @@
     {
       "key": "3590-DTS",
       "plate": "3590-DTS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8543,6 +8985,7 @@
     {
       "key": "SIN-PLACA-0090",
       "plate": "SIN-PLACA-0090",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8561,6 +9004,7 @@
     {
       "key": "2882-CLN",
       "plate": "2882-CLN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -8579,6 +9023,7 @@
     {
       "key": "2882-CKI",
       "plate": "2882-CKI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -8597,6 +9042,7 @@
     {
       "key": "2404-GCU",
       "plate": "2404-GCU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Yamaha",
@@ -8615,6 +9061,7 @@
     {
       "key": "3590-CAG",
       "plate": "3590-CAG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8633,6 +9080,7 @@
     {
       "key": "1622-TIS",
       "plate": "1622-TIS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8651,6 +9099,7 @@
     {
       "key": "SIN-PLACA-0091",
       "plate": "SIN-PLACA-0091",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8669,6 +9118,7 @@
     {
       "key": "SIN-PLACA-0092",
       "plate": "SIN-PLACA-0092",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8687,6 +9137,7 @@
     {
       "key": "3590-CFC",
       "plate": "3590-CFC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8705,6 +9156,7 @@
     {
       "key": "1150-FPS",
       "plate": "1150-FPS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -8723,6 +9175,7 @@
     {
       "key": "SIN-PLACA-0093",
       "plate": "SIN-PLACA-0093",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8741,6 +9194,7 @@
     {
       "key": "1856-TCA",
       "plate": "1856-TCA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -8759,6 +9213,7 @@
     {
       "key": "1842-TLG",
       "plate": "1842-TLG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8777,6 +9232,7 @@
     {
       "key": "SIN-PLACA-0094",
       "plate": "SIN-PLACA-0094",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8795,6 +9251,7 @@
     {
       "key": "SIN-PLACA-0095",
       "plate": "SIN-PLACA-0095",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8813,8 +9270,9 @@
     {
       "key": "SIN-PLACA-0096",
       "plate": "SIN-PLACA-0096",
+      "departmentCode": "ORU",
       "plateDnfr": null,
-      "type": "OTRO",
+      "type": "CUADRATRACK",
       "brand": "Suzuki",
       "model": "700X",
       "year": 2007,
@@ -8831,6 +9289,7 @@
     {
       "key": "SIN-PLACA-0097",
       "plate": "SIN-PLACA-0097",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -8849,6 +9308,7 @@
     {
       "key": "SIN-PLACA-0098",
       "plate": "SIN-PLACA-0098",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8867,6 +9327,7 @@
     {
       "key": "3590-BYC",
       "plate": "3590-BYC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8885,6 +9346,7 @@
     {
       "key": "3590-CIN",
       "plate": "3590-CIN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8903,6 +9365,7 @@
     {
       "key": "3414-YBU",
       "plate": "3414-YBU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -8921,6 +9384,7 @@
     {
       "key": "3590-CGF",
       "plate": "3590-CGF",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -8939,6 +9403,7 @@
     {
       "key": "1842-TKD",
       "plate": "1842-TKD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -8957,6 +9422,7 @@
     {
       "key": "3102-YHC",
       "plate": "3102-YHC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Foton",
@@ -8975,6 +9441,7 @@
     {
       "key": "1150-GGU",
       "plate": "1150-GGU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -8993,6 +9460,7 @@
     {
       "key": "3590-DEA",
       "plate": "3590-DEA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9011,6 +9479,7 @@
     {
       "key": "SIN-PLACA-0099",
       "plate": "SIN-PLACA-0099",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9029,6 +9498,7 @@
     {
       "key": "SIN-PLACA-0100",
       "plate": "SIN-PLACA-0100",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9047,6 +9517,7 @@
     {
       "key": "2822-ZRC",
       "plate": "2822-ZRC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Nissan",
@@ -9065,6 +9536,7 @@
     {
       "key": "4602-ZLK",
       "plate": "4602-ZLK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9083,6 +9555,7 @@
     {
       "key": "3590-DHK",
       "plate": "3590-DHK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9101,6 +9574,7 @@
     {
       "key": "3575-CUS",
       "plate": "3575-CUS",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9119,6 +9593,7 @@
     {
       "key": "2874-NHU",
       "plate": "2874-NHU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -9137,6 +9612,7 @@
     {
       "key": "3590-DBL",
       "plate": "3590-DBL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9155,6 +9631,7 @@
     {
       "key": "3108-IBU",
       "plate": "3108-IBU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -9173,6 +9650,7 @@
     {
       "key": "3590-DKT",
       "plate": "3590-DKT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9191,6 +9669,7 @@
     {
       "key": "SIN-PLACA-0101",
       "plate": "SIN-PLACA-0101",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -9209,6 +9688,7 @@
     {
       "key": "SIN-PLACA-0102",
       "plate": "SIN-PLACA-0102",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Suzuki",
@@ -9227,6 +9707,7 @@
     {
       "key": "SIN-PLACA-0103",
       "plate": "SIN-PLACA-0103",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -9245,6 +9726,7 @@
     {
       "key": "3364-SUE",
       "plate": "3364-SUE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9263,6 +9745,7 @@
     {
       "key": "1842-TNK",
       "plate": "1842-TNK",
+      "departmentCode": "ORU",
       "plateDnfr": "Corque",
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -9281,6 +9764,7 @@
     {
       "key": "SIN-PLACA-0104",
       "plate": "SIN-PLACA-0104",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9299,6 +9783,7 @@
     {
       "key": "3364-SZR",
       "plate": "3364-SZR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9317,6 +9802,7 @@
     {
       "key": "3527-XUX",
       "plate": "3527-XUX",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9335,6 +9821,7 @@
     {
       "key": "3527-XXB",
       "plate": "3527-XXB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9353,6 +9840,7 @@
     {
       "key": "3590-CSL",
       "plate": "3590-CSL",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9371,6 +9859,7 @@
     {
       "key": "3590-CZG",
       "plate": "3590-CZG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9389,6 +9878,7 @@
     {
       "key": "1150-AHR",
       "plate": "1150-AHR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -9407,6 +9897,7 @@
     {
       "key": "4199-XBA",
       "plate": "4199-XBA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9425,6 +9916,7 @@
     {
       "key": "3944-BYU",
       "plate": "3944-BYU",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9443,6 +9935,7 @@
     {
       "key": "1856-EGB",
       "plate": "1856-EGB",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Nissan",
@@ -9461,6 +9954,7 @@
     {
       "key": "3590-CXA",
       "plate": "3590-CXA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9479,6 +9973,7 @@
     {
       "key": "3642-ANK",
       "plate": "3642-ANK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9497,6 +9992,7 @@
     {
       "key": "SIN-PLACA-0105",
       "plate": "SIN-PLACA-0105",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9515,6 +10011,7 @@
     {
       "key": "3590-DIP",
       "plate": "3590-DIP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9533,6 +10030,7 @@
     {
       "key": "3739-SEH",
       "plate": "3739-SEH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9551,6 +10049,7 @@
     {
       "key": "3098-AKT",
       "plate": "3098-AKT",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "AUTOMOVIL",
       "brand": "Toyota",
@@ -9569,6 +10068,7 @@
     {
       "key": "3590-CHI",
       "plate": "3590-CHI",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9587,6 +10087,7 @@
     {
       "key": "4177-CAH",
       "plate": "4177-CAH",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9605,6 +10106,7 @@
     {
       "key": "3590-DGG",
       "plate": "3590-DGG",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9623,6 +10125,7 @@
     {
       "key": "3590-CCP",
       "plate": "3590-CCP",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9641,6 +10144,7 @@
     {
       "key": "1980-LPR",
       "plate": "1980-LPR",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9659,6 +10163,7 @@
     {
       "key": "4194-ZAC",
       "plate": "4194-ZAC",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9677,6 +10182,7 @@
     {
       "key": "754-BGY",
       "plate": "754-BGY",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9695,6 +10201,7 @@
     {
       "key": "3414-YCA",
       "plate": "3414-YCA",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9713,6 +10220,7 @@
     {
       "key": "3590-DSN",
       "plate": "3590-DSN",
+      "departmentCode": "ORU",
       "plateDnfr": "SINIESTRADO",
       "type": "CAMIONETA",
       "brand": "CHTC",
@@ -9731,6 +10239,7 @@
     {
       "key": "3501-RSE",
       "plate": "3501-RSE",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9749,6 +10258,7 @@
     {
       "key": "1954-DXD",
       "plate": "1954-DXD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9767,6 +10277,7 @@
     {
       "key": "4697-NZN",
       "plate": "4697-NZN",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "CAMIONETA",
       "brand": "Toyota",
@@ -9785,6 +10296,7 @@
     {
       "key": "2638-SCK",
       "plate": "2638-SCK",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9803,6 +10315,7 @@
     {
       "key": "1678-ACN",
       "plate": "1678-ACN",
+      "departmentCode": "ORU",
       "plateDnfr": "PO-052",
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9821,6 +10334,7 @@
     {
       "key": "SIN-PLACA-0106",
       "plate": "SIN-PLACA-0106",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9839,6 +10353,7 @@
     {
       "key": "2781XPD",
       "plate": "2781XPD",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -9857,6 +10372,7 @@
     {
       "key": "SIN-PLACA-0107",
       "plate": "SIN-PLACA-0107",
+      "departmentCode": "ORU",
       "plateDnfr": null,
       "type": "MOTOCICLETA",
       "brand": "Honda",
@@ -10416,7 +10932,7 @@
     },
     {
       "vehicleKey": "5273-FPD",
-      "code": "INOPERABLE",
+      "code": "SINIESTRADO",
       "reason": "Estado según inventario físico (fuente: \"SINIESTRADO\")."
     },
     {
@@ -14537,11 +15053,11 @@
   "stockMovements": [
     {
       "sparePartKey": "ACEITE_15W40",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 49.75,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",
@@ -14549,11 +15065,11 @@
     },
     {
       "sparePartKey": "ACEITE_20W50",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 21,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",
@@ -14561,11 +15077,11 @@
     },
     {
       "sparePartKey": "ANTICONGELANTE",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 13,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",
@@ -14573,11 +15089,11 @@
     },
     {
       "sparePartKey": "LIQUIDO_FRENOS",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 2,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",
@@ -14585,11 +15101,11 @@
     },
     {
       "sparePartKey": "ACEITE_10W40",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 12.75,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",
@@ -14597,11 +15113,11 @@
     },
     {
       "sparePartKey": "ACEITE_CAJA",
-      "type": "IN",
+      "type": "ADJUSTMENT",
       "quantity": 10,
       "unitCost": null,
-      "reason": "Saldo inicial de gestión 2025 estimado a partir del consumo anual del Kardex (el documento fuente no registra compras/ingresos, sólo salidas).",
-      "reference": "KARDEX ACEITE 2025 - saldo inicial estimado",
+      "reason": "Ajuste de saldo inicial de gestión 2025: el Kardex fuente sólo registra salidas de almacén hacia vehículos/unidades, nunca compras ni ingresos. Se estima el saldo inicial como el consumo total del año para que el kardex cierre en 0 al final de la gestión; no es una compra real.",
+      "reference": "KARDEX ACEITE 2025 - ajuste de saldo inicial (estimado, sin respaldo de compra)",
       "vehicleKey": null,
       "nro": "0",
       "occurredAt": "2025-01-01T12:00:00.000Z",

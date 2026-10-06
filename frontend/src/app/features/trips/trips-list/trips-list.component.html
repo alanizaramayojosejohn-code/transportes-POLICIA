@@ -13,6 +13,8 @@
   }
 </app-page-head>
 
+<app-trip-outbox-notice />
+
 <app-card>
   <app-filter-bar>
     <input
@@ -67,9 +69,13 @@
                 Ver
               </button>
               @if (!trip.returnAt && currentRole.canWriteTrips()) {
-                <button type="button" appButton size="sm" (click)="openClose(trip.id)">
-                  Registrar llegada
-                </button>
+                @if (arrivalQueued(trip.id)) {
+                  <app-badge tone="blue">Llegada sin enviar</app-badge>
+                } @else {
+                  <button type="button" appButton size="sm" (click)="openClose(trip.id)">
+                    Registrar llegada
+                  </button>
+                }
               }
             </div>
           </td>

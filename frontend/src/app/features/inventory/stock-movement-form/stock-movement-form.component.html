@@ -4,6 +4,7 @@
       <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
         <option value="IN">Entrada</option>
         <option value="OUT">Salida</option>
+        <option value="ADJUSTMENT">Ajuste</option>
       </select>
     </app-field>
 
@@ -24,7 +25,7 @@
       </select>
     </app-field>
 
-    <app-field label="Cantidad *" [errorText]="validation.error('quantity')">
+    <app-field [label]="quantityLabel" [errorText]="validation.error('quantity')">
       <input
         appFieldControl
         type="number"
@@ -35,7 +36,20 @@
       />
     </app-field>
 
-    @if (!isOut) {
+    @if (isOut || isAdjustment) {
+      <app-field label="Motivo *" full [errorText]="validation.error('reason')">
+        <input
+          appFieldControl
+          [placeholder]="isAdjustment ? 'Conteo físico mensual' : 'Cambio de aceite'"
+          [invalid]="!!validation.error('reason')"
+          [value]="reason()"
+          (input)="reason.set($any($event.target).value)"
+          (blur)="validation.touch('reason')"
+        />
+      </app-field>
+    }
+
+    @if (!isOut && !isAdjustment) {
       <app-field label="Precio unitario">
         <input
           appFieldControl
@@ -70,16 +84,6 @@
     }
 
     @if (isOut) {
-      <app-field label="Para qué *" full [errorText]="validation.error('reason')">
-        <input
-          appFieldControl
-          placeholder="Cambio de aceite"
-          [invalid]="!!validation.error('reason')"
-          [value]="reason()"
-          (input)="reason.set($any($event.target).value)"
-          (blur)="validation.touch('reason')"
-        />
-      </app-field>
       <app-field label="Vehículo destino">
         <select
           appFieldControl

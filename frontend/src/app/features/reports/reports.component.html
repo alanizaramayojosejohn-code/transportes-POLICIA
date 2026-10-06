@@ -1,25 +1,24 @@
 <app-page-head
   title="Reportes"
-  description="Consultas consolidadas para seguimiento, control interno y toma de decisiones."
+  description="Consultas consolidadas que no existen en ningún otro módulo, con filtros y rango de fechas."
 ></app-page-head>
 
-<div class="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[960px]:grid-cols-3">
-  @for (card of cards(); track card.key) {
-    <app-card>
-      <h3 class="mb-1.5 text-14-5 font-semibold">{{ card.title }}</h3>
-      <p class="mb-4 text-13 text-ink-muted">{{ card.description }}</p>
-      <div class="flex flex-wrap gap-2">
-        <button type="button" appButton variant="primary" size="sm" (click)="open(card)">
-          Generar reporte
-        </button>
-        <button type="button" appButton size="sm" (click)="detailCard.set(card)">Ver ficha</button>
-      </div>
-    </app-card>
-  } @empty {
-    <app-notice>No hay reportes disponibles para su rol.</app-notice>
-  }
-</div>
+@if (tabs().length > 0) {
+  <!-- Envuelve en vez de desplazarse: con cinco pestañas, una barra con scroll horizontal esconde
+       reportes detrás de un gesto que nadie descubre. -->
+  <nav class="mb-4 flex flex-wrap gap-1 border-b border-edge" aria-label="Reportes">
+    @for (tab of tabs(); track tab.path) {
+      <a
+        [routerLink]="['/reportes', tab.path]"
+        routerLinkActive="bg-green-bg text-green-700 dark:text-green-300"
+        class="whitespace-nowrap rounded-t-sm px-3 py-2 text-13 font-semibold text-ink-muted transition-colors hover:text-ink"
+      >
+        {{ tab.label }}
+      </a>
+    }
+  </nav>
 
-@if (detailCard(); as card) {
-  <app-report-detail [card]="card" (opened)="open($event)" (closed)="detailCard.set(null)" />
+  <router-outlet />
+} @else {
+  <app-notice>No hay reportes disponibles para su rol.</app-notice>
 }

@@ -7,6 +7,7 @@ import { UnitAssignmentsService } from '../unit-assignments.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { UnitOption } from '../../units/unit.model';
 import { UnitsService } from '../../units/units.service';
+import { toDateInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { required } from '../../../shared/validation/validators';
 
@@ -31,7 +32,7 @@ export class UnitAssignmentFormComponent {
 
   protected readonly vehicleId = signal('');
   protected readonly unitId = signal('');
-  protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly startDate = signal(toDateInputValue());
   protected readonly reason = signal('');
   protected readonly referenceDocument = signal('');
   protected readonly notes = signal('');

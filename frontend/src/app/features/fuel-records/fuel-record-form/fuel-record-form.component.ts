@@ -10,6 +10,7 @@ import { CurrentRoleService } from '../../../core/current-role.service';
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { MyVehicleAssignment } from '../../vehicle-driver-assignments/vehicle-driver-assignment.model';
 import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { toDateTimeInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { combine, min, required } from '../../../shared/validation/validators';
 
@@ -47,7 +48,7 @@ export class FuelRecordFormComponent {
 
   protected readonly vehicleId = signal('');
   protected readonly driverId = signal('');
-  protected readonly suppliedAt = signal(new Date().toISOString().slice(0, 16));
+  protected readonly suppliedAt = signal(toDateTimeInputValue());
   protected readonly fuelType = signal<FuelType>('DIESEL');
   protected readonly quantity = signal<number | null>(null);
   protected readonly unitPrice = signal<number | null>(null);

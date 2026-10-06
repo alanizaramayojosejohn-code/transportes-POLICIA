@@ -8,6 +8,7 @@ import { PersonnelOption, PersonnelService } from '../../personnel/personnel.ser
 import { UnitOption } from '../unit.model';
 import { UsersService } from '../../users/users.service';
 import { POLICE_RANK_OPTIONS } from '../../../shared/police-ranks';
+import { toDateInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { requiredIf, required } from '../../../shared/validation/validators';
 
@@ -75,7 +76,7 @@ export class ManagerAssignmentFormComponent {
   protected readonly mode = signal<OfficerMode>('existing');
   protected readonly officerId = signal('');
   protected readonly newOfficer = signal<NewOfficerFormState>(EMPTY_NEW_OFFICER);
-  protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly startDate = signal(toDateInputValue());
   protected readonly referenceDocument = signal('');
   protected readonly notes = signal('');
   protected readonly createAccount = signal(false);

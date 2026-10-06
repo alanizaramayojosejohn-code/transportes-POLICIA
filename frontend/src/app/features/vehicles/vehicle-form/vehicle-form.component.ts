@@ -22,6 +22,7 @@ import { UnitsService } from '../../units/units.service';
 import { UnitOption } from '../../units/unit.model';
 import { UnitAssignmentsService } from '../../unit-assignments/unit-assignments.service';
 import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { toDateInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { combine, max, maxLength, min, required } from '../../../shared/validation/validators';
 
@@ -129,6 +130,12 @@ export class VehicleFormComponent {
     'MOTOCICLETA',
     'MINIBUS',
     'CAMION',
+    'CAMION_CISTERNA',
+    'CAMION_GRUA',
+    'CAMION_BOMBERO',
+    'CAMION_RESCATE',
+    'CUADRATRACK',
+    'FURGON',
     'AMBULANCIA',
     'OTRO',
   ];
@@ -317,7 +324,7 @@ export class VehicleFormComponent {
             await this.unitAssignmentsService.create({
               vehicleId: created.id,
               unitId: this.selectedUnitId(),
-              startDate: new Date().toISOString().slice(0, 10),
+              startDate: toDateInputValue(),
             });
           } catch (assignError) {
             this.partialFailure(

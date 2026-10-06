@@ -10,6 +10,7 @@ import {
 } from '../maintenance-order.model';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
+import { toDateTimeInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { combine, min, required } from '../../../shared/validation/validators';
 
@@ -39,7 +40,7 @@ export class MaintenanceOrderFormComponent {
   protected readonly type = signal<MaintenanceType>('PREVENTIVE');
   protected readonly workshopName = signal('');
   protected readonly odometer = signal<number | null>(null);
-  protected readonly startedAt = signal(new Date().toISOString().slice(0, 16));
+  protected readonly startedAt = signal(toDateTimeInputValue());
   protected readonly description = signal('');
   protected readonly invoiceNumber = signal('');
   protected readonly submitting = signal(false);

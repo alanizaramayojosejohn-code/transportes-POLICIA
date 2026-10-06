@@ -39,6 +39,7 @@ export class VehiclesListComponent {
     'EXTRAVIADO',
     'DEVUELTO',
     'BAJA',
+    'SINIESTRADO',
   ];
   protected readonly typeOptions: VehicleType[] = [
     'CAMIONETA',
@@ -46,6 +47,12 @@ export class VehiclesListComponent {
     'MOTOCICLETA',
     'MINIBUS',
     'CAMION',
+    'CAMION_CISTERNA',
+    'CAMION_GRUA',
+    'CAMION_BOMBERO',
+    'CAMION_RESCATE',
+    'CUADRATRACK',
+    'FURGON',
     'AMBULANCIA',
     'OTRO',
   ];

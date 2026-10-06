@@ -1,8 +1,6 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 export type IconName =
-  | 'brand-shield'
-  | 'login-shield'
   | 'home'
   | 'vehicle'
   | 'compass'
@@ -23,8 +21,6 @@ export type IconName =
   | 'download'
   | 'close';
 
-const SHIELD_ICONS: ReadonlySet<IconName> = new Set(['brand-shield', 'login-shield']);
-
 /**
  * Icono SVG del sistema, copiado literal de `prototipo/` (sidebar, topbar de login). El
  * prototipo omite los atributos de trazo en el markup y los aplica por CSS global
@@ -41,8 +37,4 @@ const SHIELD_ICONS: ReadonlySet<IconName> = new Set(['brand-shield', 'login-shie
 })
 export class IconComponent {
   readonly name = input.required<IconName>();
-
-  protected readonly viewBox = computed(() =>
-    SHIELD_ICONS.has(this.name()) ? '0 0 64 64' : '0 0 24 24',
-  );
 }

@@ -1,0 +1,82 @@
+<app-card>
+  <app-report-filters [(criteria)]="criteria" [options]="options()" />
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-12-5 text-ink-muted">
+      Cargas registradas en el rango, con los kilómetros recorridos en el mismo periodo. Sólo
+      aparecen los vehículos con cargas.
+    </p>
+    <app-export-buttons
+      title="Consumo de combustible"
+      filenameBase="consumo-de-combustible"
+      [columns]="exportColumns()"
+      [filtersSummary]="filtersSummary()"
+      [fetchRows]="fetchAllForExport"
+    />
+  </div>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>{{ groupHeader() }}</th>
+        @if (showsVehicleCount()) {
+          <th appTableHeadCell>Vehículos</th>
+        }
+        <th appTableHeadCell>Cargas</th>
+        <th appTableHeadCell>Litros</th>
+        <th appTableHeadCell>Importe</th>
+        <th appTableHeadCell>Precio prom.</th>
+        <th appTableHeadCell>Km del periodo</th>
+        <th appTableHeadCell>Rendimiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of report().items; track row.groupId) {
+        <tr appTableRow>
+          <td appTableCell>
+            <span class="font-medium">{{ row.groupLabel }}</span>
+            @if (row.groupDetail) {
+              <span class="block text-12 text-ink-faint">{{ row.groupDetail }}</span>
+            }
+          </td>
+          @if (showsVehicleCount()) {
+            <td appTableCell>{{ int(row.vehicleCount) }}</td>
+          }
+          <td appTableCell>{{ int(row.records) }}</td>
+          <td appTableCell>{{ decimal(row.liters) }}</td>
+          <td appTableCell>{{ money(row.totalCost) }}</td>
+          <td appTableCell>{{ decimal(row.avgUnitPrice) }}</td>
+          <td appTableCell>{{ int(row.distanceKm) }}</td>
+          <td appTableCell>{{ decimal(row.efficiencyKmPerLiter) }}</td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="columnCount()" [loading]="loading()">
+          Sin cargas de combustible para los filtros seleccionados.
+        </tr>
+      }
+    </tbody>
+    @if (report().items.length > 0) {
+      <tfoot>
+        <tr class="border-t border-edge-strong text-13 font-semibold">
+          <td appTableCell>Total del periodo</td>
+          @if (showsVehicleCount()) {
+            <td appTableCell></td>
+          }
+          <td appTableCell>{{ int(report().totalRecords) }}</td>
+          <td appTableCell>{{ decimal(report().totalLiters) }}</td>
+          <td appTableCell>{{ money(report().totalCost) }}</td>
+          <td appTableCell></td>
+          <td appTableCell>{{ int(report().totalDistanceKm) }}</td>
+          <td appTableCell>{{ decimal(report().totalEfficiencyKmPerLiter) }}</td>
+        </tr>
+      </tfoot>
+    }
+  </app-table>
+
+  <app-pagination
+    noun="fila(s)"
+    [total]="report().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>

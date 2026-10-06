@@ -9,7 +9,7 @@ import { MaintenanceOrdersService } from '../../maintenance-orders/maintenance-o
 import { MaintenanceOrder } from '../../maintenance-orders/maintenance-order.model';
 import { ProcedureChecklistFieldsComponent } from '../../../shared/procedure-checklist/procedure-checklist-fields.component';
 import { FormValidation } from '../../../shared/validation/form-validation';
-import { combine, min, requiredIf, required } from '../../../shared/validation/validators';
+import { requiredIf, required } from '../../../shared/validation/validators';
 
 interface StockMovementFormShape {
   type: StockMovementType;
@@ -59,11 +59,20 @@ export class StockMovementFormComponent {
   }));
   protected readonly validation = new FormValidation(this.formShape, {
     sparePartId: required('Seleccione un artículo.'),
-    quantity: combine<number | null, StockMovementFormShape>(
-      required('Ingrese la cantidad.'),
-      min(0.01, 'La cantidad debe ser mayor a cero.'),
+    /// Para IN/OUT la cantidad es siempre una magnitud positiva; para
+    /// ADJUSTMENT es un delta con signo (puede bajar el stock), así que sólo
+    /// se exige que no sea cero (mismo criterio que InventoryService).
+    quantity: (value, form) => {
+      if (value === null || value === undefined) return 'Ingrese la cantidad.';
+      if (form.type === 'ADJUSTMENT') {
+        return value !== 0 ? null : 'El ajuste no puede ser de cero.';
+      }
+      return value >= 0.01 ? null : 'La cantidad debe ser mayor a cero.';
+    },
+    reason: requiredIf(
+      (form) => form.type === 'OUT' || form.type === 'ADJUSTMENT',
+      'El motivo es obligatorio.',
     ),
-    reason: requiredIf((form) => form.type === 'OUT', 'El motivo es obligatorio para una salida.'),
   });
 
   private readonly toast = inject(ToastService);
@@ -89,6 +98,14 @@ export class StockMovementFormComponent {
     return this.type() === 'OUT';
   }
 
+  protected get isAdjustment(): boolean {
+    return this.type() === 'ADJUSTMENT';
+  }
+
+  protected get quantityLabel(): string {
+    return this.isAdjustment ? 'Cantidad * (use negativo para bajar el stock)' : 'Cantidad *';
+  }
+
   protected onNumberInput(target: 'quantity' | 'unitCost', value: string): void {
     const parsed = value === '' ? null : Number(value);
     this[target].set(parsed);
@@ -110,16 +127,21 @@ export class StockMovementFormComponent {
         reason: this.reason() || undefined,
         supplier: this.supplier() || undefined,
         reference: this.reference() || undefined,
-        lotNumber: !this.isOut && this.lotNumber() ? this.lotNumber() : undefined,
-        lotExpiresAt: !this.isOut && this.lotExpiresAt() ? this.lotExpiresAt() : undefined,
+        lotNumber:
+          !this.isOut && !this.isAdjustment && this.lotNumber() ? this.lotNumber() : undefined,
+        lotExpiresAt:
+          !this.isOut && !this.isAdjustment && this.lotExpiresAt()
+            ? this.lotExpiresAt()
+            : undefined,
         vehicleId: this.isOut && this.vehicleId() ? this.vehicleId() : undefined,
         maintenanceOrderId:
           this.isOut && this.maintenanceOrderId() ? this.maintenanceOrderId() : undefined,
         checklistItems: this.isOut ? this.checklistFields()?.items() : undefined,
       });
       const part = this.parts().find((p) => p.id === this.sparePartId());
+      const typeLabel = this.isOut ? 'salida' : this.isAdjustment ? 'ajuste' : 'entrada';
       this.toast.success(
-        `Movimiento de ${this.isOut ? 'salida' : 'entrada'} registrado${part ? ` para ${part.name}` : ''}.`,
+        `Movimiento de ${typeLabel} registrado${part ? ` para ${part.name}` : ''}.`,
       );
       this.saved.emit();
     } catch (error) {

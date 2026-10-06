@@ -7,6 +7,7 @@ import { INCIDENT_TYPE_LABEL, INCIDENT_TYPES, IncidentType } from '../incident.m
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { PersonnelOption, PersonnelService } from '../../personnel/personnel.service';
 import { VEHICLE_CONDITION_LABEL, VehicleConditionCode } from '../../vehicles/vehicle.model';
+import { toDateTimeInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { required } from '../../../shared/validation/validators';
 
@@ -22,6 +23,7 @@ const POST_CONDITION_OPTIONS: VehicleConditionCode[] = [
   'REGULAR',
   'INOPERABLE',
   'SEPARADO_POR_INCIDENTE',
+  'SINIESTRADO',
 ];
 
 /** Registro de un incidente vehicular (spec 011, RF-1). */
@@ -44,7 +46,7 @@ export class IncidentFormComponent {
   protected readonly vehicleId = signal('');
   protected readonly driverId = signal('');
   protected readonly type = signal<IncidentType>('ACCIDENTE');
-  protected readonly occurredAt = signal(new Date().toISOString().slice(0, 16));
+  protected readonly occurredAt = signal(toDateTimeInputValue());
   protected readonly place = signal('');
   protected readonly description = signal('');
   protected readonly damages = signal('');

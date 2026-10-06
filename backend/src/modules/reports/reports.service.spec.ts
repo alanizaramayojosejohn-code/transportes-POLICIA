@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { ReportsService } from './reports.service.js';
 import { LogbookEntryType } from './entities/logbook-entry.entity.js';
 import { VehicleHistoryEntryType } from './entities/vehicle-history-entry.entity.js';
+import { ReportGroupBy } from './entities/consolidated-report.entity.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 function buildPrismaMock() {
@@ -409,5 +410,313 @@ describe('ReportsService.vehicleHistory', () => {
     expect(result.items[0].sparePartName).toBe('Aceite 20W50');
     expect(result.items[0].quantity).toBe(2);
     expect(result.items[0].type).toBe(VehicleHistoryEntryType.STOCK_MOVEMENT);
+  });
+});
+
+function buildConsolidatedPrismaMock() {
+  const mock = {
+    fuelRecord: { groupBy: vi.fn().mockResolvedValue([]) },
+    maintenanceOrder: { groupBy: vi.fn().mockResolvedValue([]) },
+    trip: { findMany: vi.fn().mockResolvedValue([]) },
+    vehicle: { findMany: vi.fn().mockResolvedValue([]) },
+  };
+  return { prisma: mock as unknown as PrismaService, mock };
+}
+
+/// Vehículo tal como lo trae `GROUP_VEHICLE_SELECT`: lo que necesita la
+/// etiqueta de la fila más su asignación de unidad vigente.
+function buildGroupVehicle(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'v1',
+    plate: 'ORU-123',
+    brand: 'Toyota',
+    model: 'Hilux',
+    unitAssignments: [{ unitId: 'u1', unit: { name: 'UTOP' } }],
+    ...overrides,
+  };
+}
+
+/// `Decimal` de Prisma tal como llega al servicio: un objeto que sólo sabe
+/// convertirse a texto (mismo recurso que los tests de la bitácora).
+function decimal(value: string) {
+  return { toString: () => value } as unknown as number;
+}
+
+const EXPECTED_JANUARY_RANGE = {
+  gte: new Date('2026-01-01T04:00:00.000Z'),
+  lte: new Date('2026-02-01T03:59:59.999Z'),
+};
+
+describe('ReportsService.fuelConsumptionReport', () => {
+  it('consolida las cargas por vehículo con el rendimiento del periodo (RF-18)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.fuelRecord.groupBy.mockResolvedValue([
+      {
+        vehicleId: 'v1',
+        _count: { _all: 3 },
+        _sum: { quantity: decimal('40'), totalCost: decimal('400') },
+      },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([buildGroupVehicle()] as never);
+    mock.trip.findMany.mockResolvedValue([
+      { distanceKm: 300, assignment: { vehicleId: 'v1' } },
+      { distanceKm: 100, assignment: { vehicleId: 'v1' } },
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.fuelConsumptionReport({});
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]).toEqual({
+      groupId: 'v1',
+      groupLabel: 'ORU-123',
+      groupDetail: 'Toyota Hilux · UTOP',
+      vehicleCount: 1,
+      records: 3,
+      liters: 40,
+      totalCost: 400,
+      avgUnitPrice: 10,
+      distanceKm: 400,
+      efficiencyKmPerLiter: 10,
+    });
+    expect(result.totalLiters).toBe(40);
+    expect(result.totalCost).toBe(400);
+    expect(result.totalDistanceKm).toBe(400);
+    expect(result.totalEfficiencyKmPerLiter).toBe(10);
+  });
+
+  it('suma los vehículos de la misma unidad cuando se agrupa por unidad (RF-21)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.fuelRecord.groupBy.mockResolvedValue([
+      {
+        vehicleId: 'v1',
+        _count: { _all: 2 },
+        _sum: { quantity: decimal('30'), totalCost: decimal('300') },
+      },
+      {
+        vehicleId: 'v2',
+        _count: { _all: 1 },
+        _sum: { quantity: decimal('10'), totalCost: decimal('100') },
+      },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([
+      buildGroupVehicle(),
+      buildGroupVehicle({ id: 'v2', plate: 'ORU-456' }),
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.fuelConsumptionReport({
+      groupBy: ReportGroupBy.UNIT,
+    });
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]).toMatchObject({
+      groupId: 'u1',
+      groupLabel: 'UTOP',
+      groupDetail: null,
+      vehicleCount: 2,
+      records: 3,
+      liters: 40,
+      totalCost: 400,
+    });
+  });
+
+  it('junta los vehículos sin unidad vigente en una fila aparte, no los descarta', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.fuelRecord.groupBy.mockResolvedValue([
+      {
+        vehicleId: 'v1',
+        _count: { _all: 1 },
+        _sum: { quantity: decimal('10'), totalCost: decimal('100') },
+      },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([
+      buildGroupVehicle({ unitAssignments: [] }),
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.fuelConsumptionReport({
+      groupBy: ReportGroupBy.UNIT,
+    });
+
+    expect(result.items[0]).toMatchObject({
+      groupId: 'SIN_UNIDAD',
+      groupLabel: 'Sin unidad asignada',
+      liters: 10,
+    });
+  });
+
+  it('aplica el rango como días completos de Bolivia a cargas y recorridos', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.fuelRecord.groupBy.mockResolvedValue([
+      {
+        vehicleId: 'v1',
+        _count: { _all: 1 },
+        _sum: { quantity: decimal('10'), totalCost: decimal('100') },
+      },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([buildGroupVehicle()] as never);
+    const service = new ReportsService(prisma);
+
+    await service.fuelConsumptionReport({
+      fromDate: '2026-01-01',
+      toDate: '2026-01-31',
+    });
+
+    expect(mock.fuelRecord.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ suppliedAt: EXPECTED_JANUARY_RANGE }),
+      }),
+    );
+    expect(mock.trip.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          departureAt: EXPECTED_JANUARY_RANGE,
+        }),
+      }),
+    );
+  });
+
+  it('combina el alcance por unidad con los filtros de vehículo y unidad sin que uno pise al otro (spec 015)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    const service = new ReportsService(prisma);
+
+    await service.fuelConsumptionReport(
+      { vehicleId: 'v9', unitId: 'u-elegida' },
+      ['u-alcance'],
+    );
+
+    const where = mock.fuelRecord.groupBy.mock.calls[0][0].where;
+    expect(where.vehicle.AND).toEqual(
+      expect.arrayContaining([
+        { id: 'v9' },
+        { unitAssignments: { some: { unitId: 'u-elegida', endDate: null } } },
+        {
+          unitAssignments: {
+            some: { unitId: { in: ['u-alcance'] }, endDate: null },
+          },
+        },
+      ]),
+    );
+  });
+
+  it('no consulta recorridos ni vehículos si no hubo cargas en el rango', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    const service = new ReportsService(prisma);
+
+    const result = await service.fuelConsumptionReport({});
+
+    expect(mock.trip.findMany).not.toHaveBeenCalled();
+    expect(mock.vehicle.findMany).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      items: [],
+      total: 0,
+      totalLiters: 0,
+      totalEfficiencyKmPerLiter: null,
+    });
+  });
+});
+
+describe('ReportsService.maintenanceCostReport', () => {
+  it('separa preventivas de correctivas y promedia por orden (RF-19)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.maintenanceOrder.groupBy.mockResolvedValue([
+      {
+        vehicleId: 'v1',
+        type: 'PREVENTIVE',
+        _count: { _all: 2 },
+        _sum: { totalCost: decimal('200') },
+      },
+      {
+        vehicleId: 'v1',
+        type: 'CORRECTIVE',
+        _count: { _all: 1 },
+        _sum: { totalCost: decimal('100') },
+      },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([buildGroupVehicle()] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.maintenanceCostReport({});
+
+    expect(result.items[0]).toMatchObject({
+      groupLabel: 'ORU-123',
+      orders: 3,
+      preventive: 2,
+      corrective: 1,
+      totalCost: 300,
+      avgCost: 100,
+    });
+    expect(result).toMatchObject({
+      totalOrders: 3,
+      totalPreventive: 2,
+      totalCorrective: 1,
+      totalCost: 300,
+    });
+  });
+
+  it('deja fuera las órdenes anuladas: no son un costo (RF-19)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    const service = new ReportsService(prisma);
+
+    await service.maintenanceCostReport({});
+
+    expect(mock.maintenanceOrder.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: { not: 'CANCELLED' } }),
+      }),
+    );
+  });
+});
+
+describe('ReportsService.mileageReport', () => {
+  it('cuenta salidas y retornos, y promedia sobre los recorridos cerrados (RF-20)', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.trip.findMany.mockResolvedValue([
+      {
+        distanceKm: 100,
+        returnAt: new Date('2026-01-02T00:00:00.000Z'),
+        assignment: { vehicleId: 'v1' },
+      },
+      { distanceKm: null, returnAt: null, assignment: { vehicleId: 'v1' } },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([buildGroupVehicle()] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.mileageReport({});
+
+    expect(result.items[0]).toMatchObject({
+      groupLabel: 'ORU-123',
+      trips: 2,
+      closedTrips: 1,
+      distanceKm: 100,
+      avgDistanceKm: 100,
+    });
+    expect(result).toMatchObject({
+      totalTrips: 2,
+      totalClosedTrips: 1,
+      totalDistanceKm: 100,
+    });
+  });
+
+  it('ordena por kilómetros descendente y pagina la lista ya consolidada', async () => {
+    const { prisma, mock } = buildConsolidatedPrismaMock();
+    mock.trip.findMany.mockResolvedValue([
+      { distanceKm: 100, returnAt: null, assignment: { vehicleId: 'v1' } },
+      { distanceKm: 500, returnAt: null, assignment: { vehicleId: 'v2' } },
+    ] as never);
+    mock.vehicle.findMany.mockResolvedValue([
+      buildGroupVehicle(),
+      buildGroupVehicle({ id: 'v2', plate: 'ORU-456' }),
+    ] as never);
+    const service = new ReportsService(prisma);
+
+    const result = await service.mileageReport({ skip: 0, take: 1 });
+
+    expect(result.total).toBe(2);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].groupLabel).toBe('ORU-456');
+    /// Los totales son de todo el resultado filtrado, no de la página.
+    expect(result.totalDistanceKm).toBe(600);
   });
 });

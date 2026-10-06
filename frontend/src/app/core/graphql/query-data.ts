@@ -6,7 +6,7 @@ import { OperatorFunction, filter, map } from 'rxjs';
  * `dataState`, y ninguna firma genérica acepta las tres ramas a la vez. El tipo real lo aporta
  * el `select` de cada llamada, anotando su parámetro.
  */
-interface QueryResultLike {
+export interface QueryResultLike {
   data?: unknown;
   loading: boolean;
 }

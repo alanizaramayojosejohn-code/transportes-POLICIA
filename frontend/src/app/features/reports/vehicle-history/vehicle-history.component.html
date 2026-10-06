@@ -1,21 +1,3 @@
-<app-page-head
-  title="Historial integral del vehículo"
-  description="Consolida asignaciones, recorridos, combustible, mantenimientos, incidentes y movimientos de almacén de un vehículo."
->
-  <app-export-buttons
-    title="Historial integral del vehículo"
-    filenameBase="historial-integral-vehiculo"
-    [columns]="exportColumns"
-    [filtersSummary]="filtersSummary()"
-    [fetchRows]="fetchAllForExport"
-  />
-  <a
-    routerLink="/reportes"
-    class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
-    >← Volver a Reportes</a
-  >
-</app-page-head>
-
 <app-card>
   @if (needsVehiclePicker()) {
     <app-filter-bar>
@@ -77,6 +59,30 @@
         {{ entryTypeLabel[type] }}
       </button>
     }
+  </div>
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-12-5 text-ink-muted">
+      Asignaciones, recorridos, combustible, mantenimientos, incidentes y movimientos de almacén de
+      un vehículo, en una sola línea de tiempo.
+    </p>
+    <div class="flex flex-wrap items-center gap-3">
+      @if (!needsVehiclePicker()) {
+        <!-- El CONDUCTOR llega acá desde «Mi vehículo», que es su inicio (spec 018, RF-1). -->
+        <a
+          routerLink="/mi-vehiculo"
+          class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+          >← Volver a Mi vehículo</a
+        >
+      }
+      <app-export-buttons
+        title="Historial integral del vehículo"
+        filenameBase="historial-integral-vehiculo"
+        [columns]="exportColumns"
+        [filtersSummary]="filtersSummary()"
+        [fetchRows]="fetchAllForExport"
+      />
+    </div>
   </div>
 
   @if (errorMessage()) {

@@ -58,6 +58,7 @@ const CONDITION_CODES: VehicleConditionCode[] = [
   'EXTRAVIADO',
   'DEVUELTO',
   'BAJA',
+  'SINIESTRADO',
 ];
 
 /** Orden y etiquetas de `prototipo/index.html:9557-9565` (`.drawer-tab`). */

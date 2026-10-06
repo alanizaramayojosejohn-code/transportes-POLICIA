@@ -224,7 +224,11 @@ export class VehicleHistoryComponent {
       if (plate) parts.push(`Vehículo: ${plate}`);
     }
     if (this.selectedTypes().length > 0) {
-      parts.push(`Tipo: ${this.selectedTypes().map((t) => this.entryTypeLabel[t]).join(', ')}`);
+      parts.push(
+        `Tipo: ${this.selectedTypes()
+          .map((t) => this.entryTypeLabel[t])
+          .join(', ')}`,
+      );
     }
     if (this.fromDate()) parts.push(`Desde: ${formatDateEs(this.fromDate())}`);
     if (this.toDate()) parts.push(`Hasta: ${formatDateEs(this.toDate())}`);

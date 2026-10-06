@@ -5,7 +5,7 @@ import { ReportColumn } from '../../../shared/export/report-export';
 import { UnitAssignmentFormComponent } from '../unit-assignment-form/unit-assignment-form.component';
 import { UnitAssignmentDetailComponent } from '../unit-assignment-detail/unit-assignment-detail.component';
 import { CurrentRoleService } from '../../../core/current-role.service';
-import { formatDateEs } from '../../../shared/date-format';
+import { formatDateEs, toDateInputValue } from '../../../shared/date-format';
 import { LIST_PAGE_IMPORTS } from '../../../shared/list-page.imports';
 import { loadable } from '../../../shared/loadable';
 import { PAGE_SIZE } from '../../../shared/pagination/pagination.component';
@@ -87,7 +87,7 @@ export class UnitAssignmentsListComponent {
   /// la vez, para no complicar el estado con un signal por fila.
   protected readonly activeActionVehicleId = signal<string | null>(null);
   protected readonly actionMode = signal<'close' | 'edit' | null>(null);
-  protected readonly closeDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly closeDate = signal(toDateInputValue());
   protected readonly editReason = signal('');
   protected readonly editReferenceDocument = signal('');
   protected readonly editNotes = signal('');

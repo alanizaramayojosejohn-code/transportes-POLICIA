@@ -196,10 +196,61 @@ describe('TripsService', () => {
       ).rejects.toThrow(ConflictException);
     });
 
+    /// La fecha de llegada la manda el cliente desde que una llegada puede
+    /// registrarse sin conexión y enviarse más tarde (RF-15), así que puede
+    /// venir mal.
+    it('rechaza una fecha de llegada anterior a la de salida (RF-15)', async () => {
+      vi.mocked(prisma.trip.findUnique).mockResolvedValue({
+        id: 't1',
+        returnAt: null,
+        departureAt: new Date('2026-09-10T08:00:00.000Z'),
+        departureOdometer: 100,
+        assignmentId: 'assign-1',
+      } as never);
+
+      await expect(
+        service.close(
+          't1',
+          {
+            returnAt: '2026-09-10T07:00:00.000Z',
+            returnOdometer: 150,
+          },
+          actingUser,
+        ),
+      ).rejects.toThrow(ConflictException);
+      expect(prisma.trip.update).not.toHaveBeenCalled();
+    });
+
+    it('conserva la fecha de llegada que manda el cliente (RF-15)', async () => {
+      vi.mocked(prisma.trip.findUnique).mockResolvedValue({
+        id: 't1',
+        returnAt: null,
+        departureAt: new Date('2026-09-10T08:00:00.000Z'),
+        departureOdometer: 100,
+        assignmentId: 'assign-1',
+      } as never);
+      vi.mocked(prisma.trip.update).mockResolvedValue({ id: 't1' } as never);
+
+      await service.close(
+        't1',
+        { returnAt: '2026-09-10T12:30:00.000Z', returnOdometer: 150 },
+        actingUser,
+      );
+
+      expect(prisma.trip.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            returnAt: new Date('2026-09-10T12:30:00.000Z'),
+          }),
+        }),
+      );
+    });
+
     it('calcula la distancia y completa la asignación (RF-5)', async () => {
       vi.mocked(prisma.trip.findUnique).mockResolvedValue({
         id: 't1',
         returnAt: null,
+        departureAt: new Date('2026-09-10T08:00:00.000Z'),
         departureOdometer: 100,
         assignmentId: 'assign-1',
       } as never);

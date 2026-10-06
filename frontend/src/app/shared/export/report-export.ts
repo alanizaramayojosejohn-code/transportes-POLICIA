@@ -92,41 +92,37 @@ export function exportReportToExcel<T>({
   XLSX.writeFile(workbook, `${sanitizeFilename(filenameBase)}.xlsx`);
 }
 
-/// Escudo institucional (mismo arte que `IconComponent` name="brand-shield",
-/// `icon.component.html`), rasterizado una sola vez: jsPDF necesita una
-/// imagen de raster (PNG/JPEG), no puede dibujar el SVG del ícono directo.
-const SHIELD_SVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <path d="M32 4 57 12v17c0 17-10.5 26-25 30C17.5 55 7 46 7 29V12Z" fill="#ffffff" opacity="0.95" />
-    <path d="M32 8 53 15v14c0 15-9 22.5-21 26C10 51.5 11 44.5 11 29.5V15Z" fill="#14503d" />
-    <path d="M32 15 22 30l7 0 0 12 6 0 0-12 7 0Z" fill="#ffffff" />
-  </svg>
-`.trim();
+/// Escudo institucional real (`public/Logo.webp`), rasterizado a PNG una sola vez: jsPDF
+/// no admite WebP, así que se redibuja en un canvas y se exporta como PNG. El escudo no es
+/// cuadrado (~0.8 ancho/alto): se conserva su proporción natural para no deformarlo.
+interface ShieldImage {
+  readonly dataUrl: string;
+  readonly ratio: number;
+}
 
-let shieldDataUrlPromise: Promise<string> | null = null;
+let shieldImagePromise: Promise<ShieldImage> | null = null;
 
-function loadShieldPng(): Promise<string> {
-  if (!shieldDataUrlPromise) {
-    shieldDataUrlPromise = new Promise((resolve, reject) => {
-      const svgUrl = `data:image/svg+xml;base64,${btoa(SHIELD_SVG)}`;
+function loadShieldPng(): Promise<ShieldImage> {
+  if (!shieldImagePromise) {
+    shieldImagePromise = new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = 256;
         canvas.height = 256;
+        canvas.width = Math.round(256 * (image.naturalWidth / image.naturalHeight));
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           reject(new Error('No se pudo generar el membrete'));
           return;
         }
-        ctx.drawImage(image, 0, 0, 256, 256);
-        resolve(canvas.toDataURL('image/png'));
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve({ dataUrl: canvas.toDataURL('image/png'), ratio: canvas.width / canvas.height });
       };
       image.onerror = () => reject(new Error('No se pudo cargar el escudo institucional'));
-      image.src = svgUrl;
+      image.src = '/Logo.webp';
     });
   }
-  return shieldDataUrlPromise;
+  return shieldImagePromise;
 }
 
 const GENERATED_AT_FORMAT = new Intl.DateTimeFormat('es-BO', {
@@ -154,7 +150,9 @@ export async function exportReportToPdf<T>({
 
   try {
     const shield = await loadShieldPng();
-    doc.addImage(shield, 'PNG', marginX, cursorY - 28, 34, 34);
+    const height = 34;
+    const width = height * shield.ratio;
+    doc.addImage(shield.dataUrl, 'PNG', marginX, cursorY - 28, width, height);
   } catch {
     // Sin escudo si el navegador no pudo rasterizarlo: el resto del PDF se genera igual.
   }

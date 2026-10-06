@@ -1,5 +1,4 @@
-import { Component, Signal, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, Signal, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { of } from 'rxjs';
 import { PageHeadComponent } from '../../shared/page-head/page-head.component';
@@ -18,11 +17,16 @@ import {
   TableHeadRowDirective,
   TableRowDirective,
 } from '../../shared/table/table-parts.directive';
+import { ConnectivityService } from '../../core/offline/connectivity.service';
 import { VehicleDriverAssignmentsService } from '../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { MyVehicleAssignment } from '../vehicle-driver-assignments/vehicle-driver-assignment.model';
 import { OdometerReadingsService } from '../odometer-readings/odometer-readings.service';
 import { TripsService } from '../trips/trips.service';
-import { TripPage } from '../trips/trip.model';
+import { Trip, TripPage } from '../trips/trip.model';
+import { TripFormComponent } from '../trips/trip-form/trip-form.component';
+import { TripCloseFormComponent } from '../trips/trip-close-form/trip-close-form.component';
+import { TripOutboxNoticeComponent } from '../trips/offline/trip-outbox-notice.component';
+import { TripOutboxService } from '../trips/offline/trip-outbox.service';
 import { FuelRecordsService } from '../fuel-records/fuel-records.service';
 import { FUEL_TYPE_LABEL, FuelRecordPage } from '../fuel-records/fuel-record.model';
 import { formatDateTimeEs } from '../../shared/date-format';
@@ -32,13 +36,17 @@ import { ToastService } from '../../shared/toast/toast.service';
 type Panel = 'none' | 'odometer';
 
 /**
- * «Mi vehículo» (spec 014, RF-15): página de inicio del rol CONDUCTOR. Sólo
- * muestra datos del vehículo a cargo y un resumen de su actividad reciente;
- * el registro de recorridos y de combustible vive en las pantallas
- * dedicadas (`/recorridos`, `/combustible`), acotadas a este mismo vehículo
- * cuando el usuario es CONDUCTOR (ver `TripsListComponent`/`FuelRecordsListComponent`).
- * El kilometraje suelto (RF-16) no tiene pantalla propia, así que se registra
- * aquí mismo.
+ * «Mi vehículo» (spec 014, RF-15): página de inicio del rol CONDUCTOR.
+ *
+ * Además del vehículo a cargo y su actividad reciente, es donde el conductor
+ * ve y cierra el recorrido que dejó abierto (spec 006, RF-12): registrada una
+ * salida, la llegada queda pendiente aquí arriba hasta que se registre. Antes
+ * sólo aparecía como una fila «Abierto» en la tabla de los últimos
+ * recorridos, y había que ir a `/recorridos` para cerrarla.
+ *
+ * El kilometraje suelto (RF-16) tampoco tiene pantalla propia, así que se
+ * registra aquí mismo. Las cargas de combustible siguen viviendo en
+ * `/combustible`, acotadas a este mismo vehículo.
  */
 @Component({
   imports: [
@@ -57,18 +65,79 @@ type Panel = 'none' | 'odometer';
     TableHeadCellDirective,
     TableRowDirective,
     TableCellDirective,
+    TripFormComponent,
+    TripCloseFormComponent,
+    TripOutboxNoticeComponent,
   ],
   selector: 'app-my-vehicle',
   templateUrl: './my-vehicle.component.html',
 })
 export class MyVehicleComponent {
-  protected readonly assignment: Signal<MyVehicleAssignment | null>;
+  private readonly vehicleDriverAssignmentsService = inject(VehicleDriverAssignmentsService);
+  private readonly odometerReadingsService = inject(OdometerReadingsService);
+  private readonly tripsService = inject(TripsService);
+  private readonly fuelRecordsService = inject(FuelRecordsService);
+  private readonly outbox = inject(TripOutboxService);
+  private readonly connectivity = inject(ConnectivityService);
+  private readonly toast = inject(ToastService);
+
+  /**
+   * Fuente de recarga de las consultas: cambia al recuperar la conexión y
+   * al vaciarse la cola de envíos, los dos momentos en que lo que hay en
+   * pantalla pasó a estar viejo. Hace falta porque una consulta que falló sin
+   * red se resuelve con la copia local y ahí se queda: el `watchQuery` ya
+   * terminó y no va a volver a emitir solo.
+   */
+  private readonly reloadKey = computed(
+    () => `${this.connectivity.online()}:${this.outbox.flushedAt()}`,
+  );
+
+  private readonly assignmentResult = loadable(
+    this.reloadKey,
+    () => this.vehicleDriverAssignmentsService.myAssignment(),
+    null as MyVehicleAssignment | null,
+  );
+  protected readonly assignment = this.assignmentResult.value;
+
+  private readonly vehicleContext = computed(() => ({
+    vehicleId: this.assignment()?.vehicleId ?? null,
+    reload: this.reloadKey(),
+  }));
+
+  private readonly serverOpenTrip = loadable(
+    this.vehicleContext,
+    ({ vehicleId }) =>
+      vehicleId ? this.tripsService.openTripFor(vehicleId) : of(null as Trip | null),
+    null as Trip | null,
+  );
+
+  /**
+   * Recorrido abierto tal como lo ve el conductor: el que tiene el servidor
+   * o, si la salida todavía no se pudo enviar, el que está en cola. Para
+   * registrar la llegada da igual cuál de los dos sea.
+   */
+  protected readonly openTrip = computed<Trip | null>(() => {
+    const vehicleId = this.assignment()?.vehicleId;
+    if (!vehicleId) return null;
+    const queued = this.outbox.queuedOpenTrips().find((trip) => trip.vehicle.id === vehicleId);
+    return queued ?? this.serverOpenTrip.value();
+  });
+
+  /// Llegada ya registrada sin conexión: para el conductor está hecha, pero
+  /// el servidor sigue viendo el recorrido abierto. No se vuelve a pedir.
+  protected readonly arrivalQueued = computed(() => {
+    const trip = this.openTrip();
+    return trip !== null && this.outbox.arrivalFor(trip.id) !== null;
+  });
+
   protected readonly recentTrips: Signal<TripPage>;
   protected readonly recentTripsLoading: Signal<boolean>;
   protected readonly recentFuelRecords: Signal<FuelRecordPage>;
   protected readonly recentFuelRecordsLoading: Signal<boolean>;
 
   protected readonly panel = signal<Panel>('none');
+  protected readonly showDepartureForm = signal(false);
+  protected readonly showArrivalForm = signal(false);
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly formatDateTime = formatDateTimeEs;
@@ -77,35 +146,20 @@ export class MyVehicleComponent {
   protected readonly odometerValue = signal<number | null>(null);
   protected readonly odometerNotes = signal('');
 
-  private readonly toast = inject(ToastService);
-
-  constructor(
-    private readonly vehicleDriverAssignmentsService: VehicleDriverAssignmentsService,
-    private readonly odometerReadingsService: OdometerReadingsService,
-    private readonly tripsService: TripsService,
-    private readonly fuelRecordsService: FuelRecordsService,
-  ) {
-    // Se asigna aquí, no como inicializador de campo: un inicializador de
-    // campo se ejecuta antes de que las propiedades de parámetro del
-    // constructor queden asignadas (mismo motivo que UnitFormComponent).
-    this.assignment = toSignal(this.vehicleDriverAssignmentsService.myAssignment(), {
-      initialValue: null,
-    });
+  constructor() {
     const trips = loadable(
-      this.assignment,
-      (assignment) =>
-        assignment
-          ? this.tripsService.list({ vehicleId: assignment.vehicleId, take: 5 })
-          : of({ items: [], total: 0 }),
+      this.vehicleContext,
+      ({ vehicleId }) =>
+        vehicleId ? this.tripsService.list({ vehicleId, take: 5 }) : of({ items: [], total: 0 }),
       { items: [], total: 0 },
     );
     this.recentTrips = trips.value;
     this.recentTripsLoading = trips.loading;
     const fuelRecords = loadable(
-      this.assignment,
-      (assignment) =>
-        assignment
-          ? this.fuelRecordsService.list({ vehicleId: assignment.vehicleId, take: 5 })
+      this.vehicleContext,
+      ({ vehicleId }) =>
+        vehicleId
+          ? this.fuelRecordsService.list({ vehicleId, take: 5 })
           : of({ items: [], total: 0 }),
       { items: [], total: 0 },
     );

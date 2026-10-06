@@ -1,0 +1,79 @@
+<app-card>
+  <app-report-filters [(criteria)]="criteria" [options]="options()" />
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-12-5 text-ink-muted">
+      Órdenes registradas en el rango, sin contar las anuladas. Sólo aparecen los vehículos con
+      órdenes en el periodo.
+    </p>
+    <app-export-buttons
+      title="Costos de mantenimiento"
+      filenameBase="costos-de-mantenimiento"
+      [columns]="exportColumns()"
+      [filtersSummary]="filtersSummary()"
+      [fetchRows]="fetchAllForExport"
+    />
+  </div>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>{{ groupHeader() }}</th>
+        @if (showsVehicleCount()) {
+          <th appTableHeadCell>Vehículos</th>
+        }
+        <th appTableHeadCell>Órdenes</th>
+        <th appTableHeadCell>Preventivas</th>
+        <th appTableHeadCell>Correctivas</th>
+        <th appTableHeadCell>Costo total</th>
+        <th appTableHeadCell>Costo prom.</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of report().items; track row.groupId) {
+        <tr appTableRow>
+          <td appTableCell>
+            <span class="font-medium">{{ row.groupLabel }}</span>
+            @if (row.groupDetail) {
+              <span class="block text-12 text-ink-faint">{{ row.groupDetail }}</span>
+            }
+          </td>
+          @if (showsVehicleCount()) {
+            <td appTableCell>{{ int(row.vehicleCount) }}</td>
+          }
+          <td appTableCell>{{ int(row.orders) }}</td>
+          <td appTableCell>{{ int(row.preventive) }}</td>
+          <td appTableCell>{{ int(row.corrective) }}</td>
+          <td appTableCell>{{ money(row.totalCost) }}</td>
+          <td appTableCell>{{ money(row.avgCost) }}</td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="columnCount()" [loading]="loading()">
+          Sin órdenes de mantenimiento para los filtros seleccionados.
+        </tr>
+      }
+    </tbody>
+    @if (report().items.length > 0) {
+      <tfoot>
+        <tr class="border-t border-edge-strong text-13 font-semibold">
+          <td appTableCell>Total del periodo</td>
+          @if (showsVehicleCount()) {
+            <td appTableCell></td>
+          }
+          <td appTableCell>{{ int(report().totalOrders) }}</td>
+          <td appTableCell>{{ int(report().totalPreventive) }}</td>
+          <td appTableCell>{{ int(report().totalCorrective) }}</td>
+          <td appTableCell>{{ money(report().totalCost) }}</td>
+          <td appTableCell></td>
+        </tr>
+      </tfoot>
+    }
+  </app-table>
+
+  <app-pagination
+    noun="fila(s)"
+    [total]="report().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>

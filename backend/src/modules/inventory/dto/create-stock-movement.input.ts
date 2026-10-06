@@ -22,11 +22,16 @@ export class CreateStockMovementInput {
 
   @Field(() => StockMovementType)
   @IsEnum(StockMovementType)
-  type!: 'IN' | 'OUT';
+  type!: 'IN' | 'OUT' | 'ADJUSTMENT';
 
+  /**
+   * Para IN/OUT es siempre una magnitud positiva; para ADJUSTMENT es un
+   * delta con signo que el servicio suma directo al saldo (sube o baja
+   * según el conteo real). El rango válido depende de `type`, así que se
+   * valida en `InventoryService.registerMovement`, no aquí.
+   */
   @Field(() => Float)
   @IsNumber()
-  @Min(0.01)
   quantity!: number;
 
   @Field(() => Float, { nullable: true })
@@ -35,6 +40,11 @@ export class CreateStockMovementInput {
   @Min(0)
   unitCost?: number;
 
+  /** Obligatorio cuando `type` es ADJUSTMENT (un ajuste sin motivo no deja
+   * rastro de por qué cambió el saldo); opcional en IN/OUT. Depende de
+   * `type`, así que esa obligatoriedad se valida en
+   * `InventoryService.registerMovement`, no aquí (ver comentario en
+   * `quantity` arriba: mismo motivo). */
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()

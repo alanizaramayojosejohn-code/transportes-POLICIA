@@ -1,7 +1,10 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell.component';
 import { authGuard } from './core/guards/auth.guard';
 import { homeGuard, roleGuard } from './core/guards/role.guard';
+import { CurrentRoleService } from './core/current-role.service';
+import { firstReportUrlFor } from './features/reports/report-tab';
 
 export const routes: Routes = [
   {
@@ -171,28 +174,63 @@ export const routes: Routes = [
           ),
       },
       {
+        // Spec 018: Reportes es una sola pantalla con una pestaña por reporte; cada pestaña es
+        // una ruta hija con su propio rol. `/reportes` no muestra nada por sí misma.
         path: 'reportes',
         loadComponent: () =>
           import('./features/reports/reports.component').then((m) => m.ReportsComponent),
-      },
-      {
-        path: 'reportes/movimientos-almacen',
-        // Spec 018: mismo dominio que Inventario (Kardex), sin Combustible ni Transportes.
-        canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'MANTENIMIENTO', 'ALMACEN'])],
-        loadComponent: () =>
-          import('./features/inventory/stock-movements-list/stock-movements-list.component').then(
-            (m) => m.StockMovementsListComponent,
-          ),
-      },
-      {
-        path: 'reportes/historial-vehiculo',
-        // Spec 018 RF-12/RF-13/RF-16: ADMINISTRADOR y CONSULTA sin acotar, TRANSPORTES por
-        // unidad y CONDUCTOR siempre al vehículo del que está a cargo (sin selector).
-        canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'CONDUCTOR'])],
-        loadComponent: () =>
-          import('./features/reports/vehicle-history/vehicle-history.component').then(
-            (m) => m.VehicleHistoryComponent,
-          ),
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            // Qué reporte abrir depende del rol, así que el destino se resuelve al navegar
+            // (`RedirectFunction` corre en contexto de inyección).
+            redirectTo: () => firstReportUrlFor(inject(CurrentRoleService).role()),
+          },
+          {
+            path: 'combustible',
+            canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'COMBUSTIBLE'])],
+            loadComponent: () =>
+              import('./features/reports/consolidated/fuel-consumption-report.component').then(
+                (m) => m.FuelConsumptionReportComponent,
+              ),
+          },
+          {
+            path: 'mantenimiento',
+            canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'MANTENIMIENTO'])],
+            loadComponent: () =>
+              import('./features/reports/consolidated/maintenance-cost-report.component').then(
+                (m) => m.MaintenanceCostReportComponent,
+              ),
+          },
+          {
+            path: 'kilometraje',
+            canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'COMBUSTIBLE'])],
+            loadComponent: () =>
+              import('./features/reports/consolidated/mileage-report.component').then(
+                (m) => m.MileageReportComponent,
+              ),
+          },
+          {
+            path: 'movimientos-almacen',
+            // Mismo dominio que Inventario (Kardex), sin Combustible ni Transportes.
+            canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'MANTENIMIENTO', 'ALMACEN'])],
+            loadComponent: () =>
+              import('./features/inventory/stock-movements-list/stock-movements-list.component').then(
+                (m) => m.StockMovementsListComponent,
+              ),
+          },
+          {
+            path: 'historial-vehiculo',
+            // RF-12/RF-13/RF-16: ADMINISTRADOR y CONSULTA sin acotar, TRANSPORTES por unidad
+            // y CONDUCTOR siempre al vehículo del que está a cargo (sin selector).
+            canActivate: [roleGuard(['ADMINISTRADOR', 'CONSULTA', 'TRANSPORTES', 'CONDUCTOR'])],
+            loadComponent: () =>
+              import('./features/reports/vehicle-history/vehicle-history.component').then(
+                (m) => m.VehicleHistoryComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'area-transportes',

@@ -11,6 +11,7 @@ import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service'
 import { VehicleDriverAssignmentsService } from '../../vehicle-driver-assignments/vehicle-driver-assignments.service';
 import { UsersService } from '../../users/users.service';
 import { POLICE_RANK_OPTIONS } from '../../../shared/police-ranks';
+import { toDateInputValue } from '../../../shared/date-format';
 import { FormValidation } from '../../../shared/validation/form-validation';
 import { requiredIf, required } from '../../../shared/validation/validators';
 
@@ -220,7 +221,7 @@ export class DriverFormComponent {
     if (value.vehicleId === previousVehicleId) {
       return;
     }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = toDateInputValue();
     if (value.vehicleId) {
       await this.vehicleDriverAssignmentsService.assign({
         vehicleId: value.vehicleId,

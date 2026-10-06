@@ -237,6 +237,9 @@ model Vehicle {
 /// existía en el enum y ese módulo no podía escribirlo aunque quisiera. El
 /// spec 008 (Mantenimiento) no llegó a necesitar un valor "en mantenimiento"
 /// aquí: usa `MaintenanceOrder.status` en su lugar, no este historial.
+/// `SINIESTRADO` se agregó durante la importación del censo 2025 (vehículo
+/// destruido en un siniestro, distinto de `INOPERABLE` por falla mecánica y
+/// de `BAJA`, que es la baja administrativa formal del inventario).
 enum VehicleConditionCode {
   BUENO
   REGULAR
@@ -247,6 +250,7 @@ enum VehicleConditionCode {
   DEVUELTO
   BAJA
   SEPARADO_POR_INCIDENTE
+  SINIESTRADO
 
   @@map("vehicle_condition_code")
 }
@@ -269,12 +273,21 @@ model VehicleCondition {
   @@map("vehicle_condition")
 }
 
+/// `CAMION` se mantiene para camiones genéricos; los cuatro valores
+/// `CAMION_*` cubren los vehículos especializados del censo 2025 que antes
+/// colapsaban ahí sin poder distinguirse (cisterna, grúa, bomberos, rescate).
 enum VehicleType {
   AUTOMOVIL
   CAMIONETA
   MOTOCICLETA
   MINIBUS
   CAMION
+  CAMION_CISTERNA
+  CAMION_GRUA
+  CAMION_BOMBERO
+  CAMION_RESCATE
+  CUADRATRACK
+  FURGON
   AMBULANCIA
   OTRO
 

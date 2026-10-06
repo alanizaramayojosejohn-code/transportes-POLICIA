@@ -1,4 +1,12 @@
 <app-modal title="Nuevo recorrido" (closed)="cancelled.emit()">
+  @if (!online()) {
+    <p
+      class="mx-6 mt-5 rounded-sm border border-edge border-l-[3px] border-l-amber bg-surface-2 px-[14px] py-[11px] text-12-5 leading-relaxed text-ink-muted"
+    >
+      Sin conexión: la salida se guardará en este equipo y se enviará sola en cuanto haya red.
+    </p>
+  }
+
   <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
     @if (isConductor) {
       <app-field label="Vehículo">
@@ -87,13 +95,21 @@
       />
     </app-field>
 
-    <app-field label="Estado del vehículo en salida">
-      <input
+    <app-trip-condition-field
+      label="Estado del vehículo en salida"
+      [(code)]="conditionCode"
+      [(otherText)]="conditionOther"
+      [otherErrorText]="validation.error('conditionOther')"
+    />
+
+    <app-field label="Observaciones de salida" full>
+      <textarea
         appFieldControl
-        placeholder="Bueno"
-        [value]="departureConditionNotes()"
-        (input)="departureConditionNotes.set($any($event.target).value)"
-      />
+        rows="2"
+        placeholder="Novedades al momento de salir (opcional)"
+        [value]="observations()"
+        (input)="observations.set($any($event.target).value)"
+      ></textarea>
     </app-field>
   </div>
 

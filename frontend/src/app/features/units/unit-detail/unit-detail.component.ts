@@ -13,7 +13,7 @@ import { loadable } from '../../../shared/loadable';
 import { ManagerAssignmentFormComponent } from '../manager-assignment-form/manager-assignment-form.component';
 import { UnitsService } from '../units.service';
 import { VehiclesService } from '../../vehicles/vehicles.service';
-import { formatDateEs } from '../../../shared/date-format';
+import { formatDateEs, toDateInputValue } from '../../../shared/date-format';
 import { activationConfirm } from '../../../shared/confirm/activation-confirm';
 import { ConfirmService } from '../../../shared/confirm/confirm.service';
 import { errorMessage } from '../../../shared/error-message';
@@ -44,7 +44,7 @@ export class UnitDetailComponent {
   protected readonly formatDate = formatDateEs;
   protected readonly showAssignForm = signal(false);
   protected readonly closingAssignment = signal(false);
-  protected readonly closeDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly closeDate = signal(toDateInputValue());
   protected readonly actionError = signal<string | null>(null);
 
   private readonly unitId$ = toObservable(this.unitId);
