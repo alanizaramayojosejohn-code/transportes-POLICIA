@@ -1,6 +1,5 @@
 import {
   Args,
-  Context,
   Mutation,
   Parent,
   Query,
@@ -18,10 +17,12 @@ import { VehicleFilterArgs } from './dto/vehicle-filter.args.js';
 import { RegisterVehicleConditionInput } from './dto/register-vehicle-condition.input.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
-
-interface GqlContext {
-  req?: { headers: Record<string, string | string[] | undefined> };
-}
+import { unitScopeFor } from '../../common/unit-scope.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { ProceduresService } from '../procedures/procedures.service.js';
+import { ProcedureChecklistItem } from '../procedures/entities/procedure-checklist-item.entity.js';
+import { UpdateProcedureChecklistItemInput } from '../procedures/dto/update-procedure-checklist-item.input.js';
 
 /**
  * No decide nada: valida la forma de la entrada (ValidationPipe global) y
@@ -30,11 +31,17 @@ interface GqlContext {
  */
 @Resolver(() => Vehicle)
 export class VehiclesResolver {
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly proceduresService: ProceduresService,
+  ) {}
 
   @Query(() => VehiclePage, { name: 'vehicles' })
-  findAll(@Args() filters: VehicleFilterArgs) {
-    return this.vehiclesService.findAll(filters);
+  findAll(
+    @Args() filters: VehicleFilterArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.vehiclesService.findAll(filters, unitScopeFor(user));
   }
 
   @Query(() => Vehicle, { name: 'vehicle' })
@@ -50,6 +57,12 @@ export class VehiclesResolver {
   @ResolveField(() => [VehicleCondition])
   conditionHistory(@Parent() vehicle: Vehicle) {
     return this.vehiclesService.getConditionHistory(vehicle.id);
+  }
+
+  /// Spec 016 RF-17.
+  @ResolveField(() => [ProcedureChecklistItem])
+  procedureChecklistItems(@Parent() vehicle: Vehicle) {
+    return this.proceduresService.listItems('vehicleId', vehicle.id);
   }
 
   @UseGuards(RolesGuard)
@@ -75,13 +88,20 @@ export class VehiclesResolver {
   registerVehicleCondition(
     @Args('vehicleId') vehicleId: string,
     @Args('input') input: RegisterVehicleConditionInput,
-    @Context() context: GqlContext,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const role = context.req?.headers['x-user-role'];
-    return this.vehiclesService.registerCondition(
-      vehicleId,
-      input,
-      (Array.isArray(role) ? role[0] : role) ?? null,
-    );
+    return this.vehiclesService.registerCondition(vehicleId, input, user.role);
+  }
+
+  /// Spec 016 RF-15/RF-20: mismo permiso que registrar el vehículo.
+  @UseGuards(RolesGuard)
+  @Roles('ADMINISTRADOR', 'TRANSPORTES')
+  @Mutation(() => [ProcedureChecklistItem])
+  updateVehicleChecklist(
+    @Args('vehicleId') vehicleId: string,
+    @Args({ name: 'items', type: () => [UpdateProcedureChecklistItemInput] })
+    items: UpdateProcedureChecklistItemInput[],
+  ) {
+    return this.proceduresService.updateItems('vehicleId', vehicleId, items);
   }
 }

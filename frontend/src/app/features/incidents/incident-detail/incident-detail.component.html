@@ -1,0 +1,34 @@
+@if (incident(); as i) {
+  <app-modal title="Detalle del incidente" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="IN" [title]="i.vehicle.plate" [subtitle]="subtitle()">
+        <app-badge tone="amber">{{ typeLabel[i.type] }}</app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Conductor">{{ driverName() }}</app-data-cell>
+        <app-data-cell label="Unidad">{{
+          i.vehicle.currentUnit?.name || 'Sin asignar'
+        }}</app-data-cell>
+        <app-data-cell label="Fecha y hora">{{ formatDateTime(i.occurredAt) }}</app-data-cell>
+        <app-data-cell label="Tipo">{{ typeLabel[i.type] }}</app-data-cell>
+        <app-data-cell label="Lugar">{{ i.place }}</app-data-cell>
+        <app-data-cell label="Referencia">{{ i.policeReportNumber || '—' }}</app-data-cell>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <app-detail-section label="Descripción del hecho">{{ i.description }}</app-detail-section>
+        <app-detail-section label="Daños observados">{{
+          i.damages || 'Sin daños registrados.'
+        }}</app-detail-section>
+        <app-detail-section label="Referencia policial">{{
+          i.policeReportNumber || 'Sin denuncia ni informe policial registrado.'
+        }}</app-detail-section>
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

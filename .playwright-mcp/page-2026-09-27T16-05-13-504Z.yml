@@ -1,0 +1,81 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=e14]:
+      - link [ref=e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=e23]
+      - button [ref=e34]
+      - button [ref=e44]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=e57] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=e65]
+    - generic [ref=e76]: Sistema de información vehicular
+  - generic [ref=e77]:
+    - banner [ref=e78]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=e81]
+      - generic [ref=e82]:
+        - generic [ref=e83]: En línea
+        - generic [ref=e85]:
+          - button "Tema claro" [ref=e86]
+          - button "Tema oscuro" [ref=e91]
+        - generic [ref=e95]:
+          - generic [ref=e96]: AD
+          - generic [ref=e97]:
+            - strong [ref=e98]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=e99]
+    - main [ref=e100]:
+      - generic [ref=e101]:
+        - generic "Panel principal" [ref=e102]:
+          - generic [ref=e104]:
+            - heading "Panel principal" [level=2] [ref=e105]
+            - paragraph [ref=e106]: Vista general de la información vehicular.
+        - generic [ref=e107]:
+          - generic [ref=e109]:
+            - generic [ref=e110]: V
+            - generic [ref=e111]:
+              - generic [ref=e112]: "0"
+              - generic [ref=e113]: Vehículos registrados
+          - generic [ref=e115]:
+            - generic [ref=e116]: ✓
+            - generic [ref=e117]:
+              - generic [ref=e118]: "0"
+              - generic [ref=e119]: Vehículos operativos
+          - generic [ref=e121]:
+            - generic [ref=e122]: C
+            - generic [ref=e123]:
+              - generic [ref=e124]: "0"
+              - generic [ref=e125]: Conductores activos
+          - generic [ref=e127]:
+            - generic [ref=e128]: KM
+            - generic [ref=e129]:
+              - generic [ref=e130]: "0"
+              - generic [ref=e131]: Recorridos este mes
+        - generic [ref=e132]:
+          - heading "Recorridos por mes" [level=3] [ref=e135]
+          - generic [ref=e138]:
+            - heading "Estado del parque automotor" [level=3] [ref=e139]
+            - generic [ref=e143]:
+              - generic [ref=e144]: Operativos 0%
+              - generic [ref=e146]: Mantenimiento 0%
+              - generic [ref=e148]: Inoperables 0%
+              - generic [ref=e150]: Otros 0%
+        - generic [ref=e153]:
+          - heading "Seguimiento" [level=3] [ref=e154]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - strong [ref=e157]: "0"
+              - text: artículos bajo stock mínimo
+            - generic [ref=e158]:
+              - strong [ref=e159]: "0"
+              - text: mantenimientos en proceso
+            - generic [ref=e160]:
+              - strong [ref=e161]: "0"
+              - text: recorridos abiertos

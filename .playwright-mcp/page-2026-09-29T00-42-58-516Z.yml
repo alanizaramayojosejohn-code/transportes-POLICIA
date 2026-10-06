@@ -1,0 +1,75 @@
+- generic [ref=f16e2]:
+  - generic [ref=f16e4]:
+    - complementary [ref=f16e5]:
+      - generic [ref=f16e12]:
+        - heading "Sistema de Información Vehicular" [level=1] [ref=f16e13]
+        - text: Comando Departamental · Oruro
+      - navigation [ref=f16e14]:
+        - link [ref=f16e15] [cursor=pointer]:
+          - /url: /
+        - button [ref=f16e22]
+        - button [ref=f16e33]
+        - button [ref=f16e43]
+        - link [ref=f16e52] [cursor=pointer]:
+          - /url: /reportes
+        - link [ref=f16e57] [cursor=pointer]:
+          - /url: /tramites
+        - button [ref=f16e65]
+      - generic [ref=f16e76]: Sistema de información vehicular
+    - generic [ref=f16e77]:
+      - banner [ref=f16e78]:
+        - generic [ref=f16e79]:
+          - generic [ref=f16e80]: ⌕
+          - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f16e81]
+        - generic [ref=f16e82]:
+          - generic [ref=f16e83]: En línea
+          - generic [ref=f16e85]:
+            - button "Tema claro" [ref=f16e86]
+            - button "Tema oscuro" [ref=f16e91]
+          - generic [ref=f16e95]:
+            - generic [ref=f16e96]: AD
+            - generic [ref=f16e97]:
+              - strong [ref=f16e98]: Administrador del Sistema
+              - text: Administrador
+          - button "Cerrar sesión" [ref=f16e99]
+      - main [ref=f16e100]:
+        - generic [ref=f16e101]:
+          - generic "Historial integral del vehículo" [ref=f16e102]:
+            - generic [ref=f16e103]:
+              - generic [ref=f16e104]:
+                - heading "Historial integral del vehículo" [level=2] [ref=f16e105]
+                - paragraph [ref=f16e106]: Consolida asignaciones, recorridos, combustible, mantenimientos, incidentes y movimientos de almacén de un vehículo.
+              - generic [ref=f16e107]:
+                - generic "Historial integral del vehículo" [ref=f16e108]:
+                  - generic [ref=f16e109]:
+                    - button [ref=f16e110]
+                    - button [ref=f16e115]
+                - link "← Volver a Reportes" [ref=f16e120] [cursor=pointer]:
+                  - /url: /reportes
+          - generic [ref=f16e122]:
+            - generic [ref=f16e124]:
+              - combobox [ref=f16e125]:
+                - option "Seleccione un vehículo"
+                - option "PRUEBA" [selected]
+              - textbox "Fecha desde" [ref=f16e126]
+              - textbox "Fecha hasta" [ref=f16e127]
+              - button "Limpiar filtros" [ref=f16e128]
+            - generic [ref=f16e129]:
+              - button "Cambio de unidad" [ref=f16e130]
+              - button "Cambio de conductor" [ref=f16e131]
+              - button "Recorrido" [ref=f16e132]
+              - button "Combustible" [ref=f16e133]
+              - button "Mantenimiento" [ref=f16e134]
+              - button "Incidente" [ref=f16e135]
+              - button "Movimiento de almacén" [ref=f16e136]
+            - table [ref=f16e141]:
+              - rowgroup [ref=f16e142]:
+                - row [ref=f16e143]:
+                  - columnheader "Fecha" [ref=f16e144]
+                  - columnheader "Tipo" [ref=f16e145]
+                  - columnheader "Detalle" [ref=f16e146]
+              - rowgroup [ref=f16e147]:
+                - row [ref=f16e148]:
+                  - cell "Sin eventos para los filtros seleccionados." [ref=f16e149]
+            - paragraph [ref=f16e152]: 0 evento(s) en total.
+  - generic: No hay datos para exportar con los filtros actuales.

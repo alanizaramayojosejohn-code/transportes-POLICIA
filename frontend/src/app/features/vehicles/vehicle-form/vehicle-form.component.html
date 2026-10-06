@@ -1,142 +1,284 @@
 <app-modal
-  [title]="isEdit ? 'Editar vehículo' : 'Registro de vehículo'"
+  eyebrow="GESTIÓN VEHICULAR"
+  [title]="isEdit ? 'Editar vehículo' : 'Registrar vehículo'"
+  description="Complete los datos técnicos y el registro fotográfico de la movilidad."
+  wide
   (closed)="cancelled.emit()"
 >
-  <div class="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Placa *</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().plate"
-        (input)="patch({ plate: $any($event.target).value })"
-      />
-    </label>
-
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Placa DNFR</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().plateDnfr ?? ''"
-        (input)="patch({ plateDnfr: $any($event.target).value })"
-      />
-    </label>
-
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Tipo de vehículo *</span>
-      <select
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        (change)="patch({ type: $any($event.target).value })"
+  <section
+    class="mx-[18px] mt-[18px] overflow-hidden rounded-[14px] border border-edge bg-surface min-[600px]:mx-[22px]"
+  >
+    <div
+      class="flex items-center justify-between gap-4 border-b border-edge bg-surface-2 px-[17px] py-[15px] max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-2.5"
+    >
+      <div class="flex min-w-0 items-center gap-[11px]">
+        <span
+          class="flex h-[31px] w-[31px] flex-none items-center justify-center rounded-[9px] bg-green-bg text-[10px] font-extrabold text-accent"
+          >01</span
+        >
+        <div>
+          <h4 class="text-13 font-bold text-ink">Datos de identificación</h4>
+          <p class="text-[10.5px] text-ink-muted">
+            Información técnica y administrativa principal.
+          </p>
+        </div>
+      </div>
+      <span class="flex-none whitespace-nowrap text-[9.5px] text-ink-faint"
+        >* Campos obligatorios</span
       >
-        @for (type of types; track type) {
-          <option [value]="type" [selected]="type === form().type">{{ typeLabels[type] }}</option>
-        }
-      </select>
-    </label>
+    </div>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Marca</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().brand ?? ''"
-        (input)="patch({ brand: $any($event.target).value })"
-      />
-    </label>
+    <div class="grid grid-cols-1 gap-x-[15px] gap-y-[13px] p-[17px] min-[860px]:grid-cols-2">
+      <app-field label="Placa *" [errorText]="validation.error('plate')">
+        <input
+          appFieldControl
+          [invalid]="!!validation.error('plate')"
+          [value]="form().plate"
+          (input)="patch({ plate: $any($event.target).value })"
+          (blur)="validation.touch('plate')"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Modelo</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().model ?? ''"
-        (input)="patch({ model: $any($event.target).value })"
-      />
-    </label>
+      <app-field label="Placa DNFR">
+        <input
+          appFieldControl
+          [value]="form().plateDnfr ?? ''"
+          (input)="patch({ plateDnfr: $any($event.target).value })"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Año</span>
-      <input
-        type="number"
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().year ?? ''"
-        (input)="
-          patch({ year: $any($event.target).value ? +$any($event.target).value : undefined })
-        "
-      />
-    </label>
+      <app-field label="Tipo de vehículo *" [errorText]="validation.error('type')">
+        <select
+          appFieldControl
+          [invalid]="!!validation.error('type')"
+          (change)="patch({ type: $any($event.target).value })"
+          (blur)="validation.touch('type')"
+        >
+          @for (type of types; track type) {
+            <option [value]="type" [selected]="type === form().type">{{ typeLabels[type] }}</option>
+          }
+        </select>
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Número de chasis</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().chassisNumber ?? ''"
-        (input)="patch({ chassisNumber: $any($event.target).value })"
-      />
-    </label>
+      @if (!isEdit && isTransportes) {
+        <app-field label="Unidad *">
+          @if (units().length > 1) {
+            <select
+              appFieldControl
+              [value]="selectedUnitId()"
+              (change)="selectedUnitId.set($any($event.target).value)"
+            >
+              <option value="" disabled>Seleccione una unidad</option>
+              @for (u of units(); track u.id) {
+                <option [value]="u.id">{{ u.name }}</option>
+              }
+            </select>
+          } @else if (units().length === 1) {
+            <input appFieldControl [value]="units()[0].name" disabled />
+          } @else {
+            <input appFieldControl value="Sin unidad a cargo" disabled />
+          }
+        </app-field>
+      }
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Número de motor</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().engineNumber ?? ''"
-        (input)="patch({ engineNumber: $any($event.target).value })"
-      />
-    </label>
+      <app-field label="Marca">
+        <input
+          appFieldControl
+          [value]="form().brand ?? ''"
+          (input)="patch({ brand: $any($event.target).value })"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Color</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().color ?? ''"
-        (input)="patch({ color: $any($event.target).value })"
-      />
-    </label>
+      <app-field label="Modelo">
+        <input
+          appFieldControl
+          [value]="form().model ?? ''"
+          (input)="patch({ model: $any($event.target).value })"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">País de origen</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().origin ?? ''"
-        (input)="patch({ origin: $any($event.target).value })"
-      />
-    </label>
+      <app-field label="Año" [errorText]="validation.error('year')">
+        <input
+          appFieldControl
+          type="number"
+          [invalid]="!!validation.error('year')"
+          [value]="form().year ?? ''"
+          (input)="
+            patch({ year: $any($event.target).value ? +$any($event.target).value : undefined })
+          "
+          (blur)="validation.touch('year')"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Fuente de recepción</span>
-      <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().receptionSource ?? ''"
-        (input)="patch({ receptionSource: $any($event.target).value })"
-      />
-    </label>
+      <app-field label="Número de chasis">
+        <input
+          appFieldControl
+          [value]="form().chassisNumber ?? ''"
+          (input)="patch({ chassisNumber: $any($event.target).value })"
+        />
+      </app-field>
 
-    <label class="flex flex-col gap-1.5 sm:col-span-2">
-      <span class="text-xs font-semibold text-ink-muted">Observaciones</span>
-      <textarea
-        class="min-h-16 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="form().observations ?? ''"
-        (input)="patch({ observations: $any($event.target).value })"
-      ></textarea>
-    </label>
-  </div>
+      <app-field label="Número de motor">
+        <input
+          appFieldControl
+          [value]="form().engineNumber ?? ''"
+          (input)="patch({ engineNumber: $any($event.target).value })"
+        />
+      </app-field>
 
-  @if (errorMessage()) {
-    <p class="px-6 text-[13px] text-red">{{ errorMessage() }}</p>
+      <app-field label="Color">
+        <input
+          appFieldControl
+          [value]="form().color ?? ''"
+          (input)="patch({ color: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="País de origen">
+        <input
+          appFieldControl
+          [value]="form().origin ?? ''"
+          (input)="patch({ origin: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Fuente de recepción">
+        <input
+          appFieldControl
+          [value]="form().receptionSource ?? ''"
+          (input)="patch({ receptionSource: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Observaciones" full>
+        <textarea
+          appFieldControl
+          [value]="form().observations ?? ''"
+          (input)="patch({ observations: $any($event.target).value })"
+        ></textarea>
+      </app-field>
+    </div>
+  </section>
+
+  <section
+    class="mx-[18px] mb-[18px] mt-[18px] overflow-hidden rounded-[14px] border border-edge bg-surface min-[600px]:mx-[22px]"
+  >
+    <div
+      class="flex items-center justify-between gap-4 border-b border-edge bg-surface-2 px-[17px] py-[15px] max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-2.5"
+    >
+      <div class="flex min-w-0 items-center gap-[11px]">
+        <span
+          class="flex h-[31px] w-[31px] flex-none items-center justify-center rounded-[9px] bg-green-bg text-[10px] font-extrabold text-accent"
+          >02</span
+        >
+        <div>
+          <h4 class="text-13 font-bold text-ink">Registro fotográfico</h4>
+          <p class="text-[10.5px] text-ink-muted">{{ photoHelp() }}</p>
+        </div>
+      </div>
+      <div
+        class="flex flex-none items-baseline gap-[3px] rounded-[10px] border border-edge bg-surface px-[10px] py-[7px] font-extrabold text-ink"
+      >
+        <span class="text-[16px] text-accent">{{ photosCompleted() }}</span>
+        <span class="text-12">/</span>
+        <span class="text-12">{{ photoSlots().length }}</span>
+        <small class="ml-[3px] text-[9.5px] font-semibold text-ink-muted">fotografías</small>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 p-[17px] min-[600px]:grid-cols-2 min-[820px]:grid-cols-3">
+      @for (slot of photoSlots(); track slot.key; let i = $index) {
+        <article
+          class="min-w-0 overflow-hidden rounded-xl border transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px"
+          [class]="photos()[slot.key] ? 'border-green-500/45' : 'border-edge'"
+        >
+          <div class="relative aspect-[16/10] overflow-hidden bg-surface-2">
+            @if (photos()[slot.key]; as photo) {
+              <img [src]="photo" [alt]="slot.label" class="h-full w-full object-cover" />
+            } @else {
+              <div
+                class="flex h-full w-full flex-col items-center justify-center gap-1.5 text-ink-faint"
+              >
+                <app-icon name="camera" class="h-[29px] w-[29px] opacity-80" />
+                <span class="text-[9.5px] font-semibold">Sin fotografía</span>
+              </div>
+            }
+            <span
+              class="absolute left-2 top-2 min-w-[25px] rounded-[7px] bg-black/[78%] px-1.5 py-0.5 text-center text-[9px] font-extrabold text-white backdrop-blur-[8px]"
+            >
+              {{ (i + 1).toString().padStart(2, '0') }}
+            </span>
+            @if (photos()[slot.key]) {
+              <span
+                class="absolute right-2 top-2 rounded-[7px] bg-green-bg/[92%] px-1.5 py-0.5 text-[9px] font-extrabold text-green-700 backdrop-blur-[8px] dark:text-green-300"
+                >Cargada</span
+              >
+            }
+          </div>
+          <div class="p-[11px]">
+            <strong class="block text-11-5 text-ink"
+              >{{ slot.label }} <span class="text-red">*</span></strong
+            >
+            <small class="mt-[3px] block min-h-7 text-[9.5px] leading-[1.4] text-ink-muted">{{
+              slot.hint
+            }}</small>
+            <div class="mt-[9px] flex items-center gap-[7px]">
+              <label
+                class="relative flex min-h-8 flex-1 cursor-pointer items-center justify-center rounded-lg border border-edge-strong bg-surface-2 px-2 text-center text-[9.5px] font-bold text-ink transition-colors hover:border-green-500 hover:bg-green-bg hover:text-accent"
+              >
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/*"
+                  class="absolute h-px w-px opacity-0"
+                  (change)="onPhotoSelected(slot.key, $event)"
+                />
+                {{ photos()[slot.key] ? 'Reemplazar' : 'Agregar foto' }}
+              </label>
+              @if (photos()[slot.key]) {
+                <button
+                  type="button"
+                  class="min-h-8 flex-none rounded-lg border border-transparent px-2 text-[9px] font-bold text-ink-muted hover:border-red/30 hover:bg-red-bg hover:text-red"
+                  [attr.aria-label]="'Eliminar fotografía ' + slot.label"
+                  (click)="removePhoto(slot.key)"
+                >
+                  Eliminar
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+    <div
+      class="mx-[17px] mb-[17px] grid grid-cols-[18px_1fr] gap-2 rounded-[9px] border border-dashed border-edge-strong bg-surface-2 p-[11px] text-ink-muted"
+    >
+      <app-icon name="shield-info" class="h-[17px] w-[17px] text-accent" />
+      <span class="text-[9.5px] leading-[1.45]">
+        Las fotografías se optimizan en el navegador antes de subirse. Se guardan recién al pulsar
+        «Guardar»: si cancela este formulario, los cambios de fotos no se aplican.
+      </span>
+    </div>
+  </section>
+
+  @if (!isEdit) {
+    <app-procedure-checklist-fields action="VEHICLE_REGISTRATION" />
   }
 
-  <div class="sticky bottom-0 flex justify-end gap-2.5 border-t border-edge bg-surface px-6 py-4">
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
     <button
       type="button"
-      class="rounded-md border border-edge-strong px-4 py-2 text-[13px] font-semibold text-ink"
-      (click)="cancelled.emit()"
-    >
-      Cancelar
-    </button>
-    <button
-      type="button"
-      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent disabled:opacity-60"
-      [disabled]="submitting()"
+      appButton
+      variant="primary"
+      [disabled]="submitting() || (!isEdit && isTransportes && units().length === 0)"
       (click)="submit()"
     >
       {{ isEdit ? 'Guardar cambios' : 'Guardar vehículo' }}
     </button>
-  </div>
+  </app-form-actions>
 </app-modal>

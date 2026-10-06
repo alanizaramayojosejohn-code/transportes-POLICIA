@@ -1,0 +1,41 @@
+@if (order(); as o) {
+  <app-modal title="Detalle del mantenimiento" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="MT" [title]="o.vehicle.plate" [subtitle]="subtitle()">
+        <app-badge [tone]="statusTone[o.status]">{{ statusLabel[o.status] }}</app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Tipo">{{ typeLabel[o.type] }}</app-data-cell>
+        <app-data-cell label="Taller">{{ o.workshopName || '—' }}</app-data-cell>
+        <app-data-cell label="Ingreso">{{ formatDateTime(o.startedAt) }}</app-data-cell>
+        <app-data-cell label="Salida">{{ formatDateTime(o.finishedAt) }}</app-data-cell>
+        <app-data-cell label="KM ingreso">{{ o.odometer }}</app-data-cell>
+        <app-data-cell label="Costo">Bs. {{ o.totalCost.toFixed(2) }}</app-data-cell>
+        <app-data-cell label="Código de orden">{{ o.code }}</app-data-cell>
+        <app-data-cell label="Nº de factura">{{ o.invoiceNumber || '—' }}</app-data-cell>
+      </div>
+
+      <div class="mt-4">
+        <app-detail-section label="Trabajo realizado / requerido">{{
+          o.description
+        }}</app-detail-section>
+      </div>
+
+      @if (o.procedureChecklistItems.length > 0) {
+        <h4 class="mb-2.5 mt-4 font-serif text-14-5 font-semibold">Trámites</h4>
+        <div class="flex flex-wrap gap-2">
+          @for (item of o.procedureChecklistItems; track item.id) {
+            <app-badge [tone]="item.completed ? 'green' : 'gray'">
+              {{ item.procedureType.name }}
+            </app-badge>
+          }
+        </div>
+      }
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

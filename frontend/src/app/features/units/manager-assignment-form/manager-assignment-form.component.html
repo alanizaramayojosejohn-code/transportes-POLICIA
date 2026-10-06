@@ -1,70 +1,202 @@
 <app-modal title="Designar encargado de transportes" (closed)="cancelled.emit()">
-  <div class="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
-    <label class="flex flex-col gap-1.5 sm:col-span-2">
-      <span class="text-xs font-semibold text-ink-muted">Personal *</span>
-      <select
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
-        [value]="officerId()"
-        (change)="officerId.set($any($event.target).value)"
-      >
-        <option value="">Seleccionar...</option>
-        @for (officer of officers(); track officer.id) {
-          <option [value]="officer.id">
-            {{ officer.rank ? officer.rank + ' ' : '' }}{{ officer.firstName }}
-            {{ officer.lastName }}
-          </option>
-        }
-      </select>
-    </label>
-
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Fecha desde *</span>
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Unidad *" full [errorText]="validation.error('selectedUnitId')">
       <input
+        appFieldControl
+        list="managerUnitOptions"
+        placeholder="Buscar unidad por nombre..."
+        [invalid]="!!validation.error('selectedUnitId')"
+        [value]="unitQuery()"
+        (input)="onUnitQueryInput($any($event.target).value)"
+        (blur)="validation.touch('selectedUnitId')"
+      />
+      <datalist id="managerUnitOptions">
+        @for (unit of units(); track unit.id) {
+          <option [value]="unit.name"></option>
+        }
+      </datalist>
+    </app-field>
+
+    <div
+      class="inline-flex w-fit gap-1 rounded-full border border-edge bg-surface-2/70 p-1 shadow-[0_1px_1px_rgba(8,20,15,.03)] backdrop-blur-sm min-[860px]:col-span-2"
+    >
+      <button
+        type="button"
+        class="min-h-[34px] rounded-full px-3.5 text-11-5 font-semibold transition-colors duration-150"
+        [class]="
+          mode() === 'existing'
+            ? 'bg-surface text-green-700 shadow-sm dark:text-green-300'
+            : 'bg-transparent text-ink-muted hover:text-ink'
+        "
+        (click)="mode.set('existing')"
+      >
+        Personal existente
+      </button>
+      <button
+        type="button"
+        class="min-h-[34px] rounded-full px-3.5 text-11-5 font-semibold transition-colors duration-150"
+        [class]="
+          mode() === 'new'
+            ? 'bg-surface text-green-700 shadow-sm dark:text-green-300'
+            : 'bg-transparent text-ink-muted hover:text-ink'
+        "
+        (click)="mode.set('new')"
+      >
+        Nuevo personal
+      </button>
+    </div>
+
+    @if (mode() === 'existing') {
+      <app-field label="Personal *" full [errorText]="validation.error('officerId')">
+        <select
+          appFieldControl
+          [invalid]="!!validation.error('officerId')"
+          [value]="officerId()"
+          (change)="officerId.set($any($event.target).value)"
+          (blur)="validation.touch('officerId')"
+        >
+          <option value="">Seleccionar...</option>
+          @for (officer of officers(); track officer.id) {
+            <option [value]="officer.id">
+              {{ officer.rank ? officer.rank + ' ' : '' }}{{ officer.firstName }}
+              {{ officer.lastName }}
+            </option>
+          }
+        </select>
+      </app-field>
+    } @else {
+      <app-field label="CI *" [errorText]="validation.error('newOfficerCi')">
+        <input
+          appFieldControl
+          [invalid]="!!validation.error('newOfficerCi')"
+          [value]="newOfficer().ci"
+          (input)="patchNewOfficer({ ci: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerCi')"
+        />
+      </app-field>
+
+      <app-field label="Complemento">
+        <input
+          appFieldControl
+          placeholder="1A"
+          [value]="newOfficer().ciComplement"
+          (input)="patchNewOfficer({ ciComplement: $any($event.target).value })"
+        />
+      </app-field>
+
+      <app-field label="Nombres *" [errorText]="validation.error('newOfficerFirstName')">
+        <input
+          appFieldControl
+          [invalid]="!!validation.error('newOfficerFirstName')"
+          [value]="newOfficer().firstName"
+          (input)="patchNewOfficer({ firstName: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerFirstName')"
+        />
+      </app-field>
+
+      <app-field label="Apellidos *" [errorText]="validation.error('newOfficerLastName')">
+        <input
+          appFieldControl
+          [invalid]="!!validation.error('newOfficerLastName')"
+          [value]="newOfficer().lastName"
+          (input)="patchNewOfficer({ lastName: $any($event.target).value })"
+          (blur)="validation.touch('newOfficerLastName')"
+        />
+      </app-field>
+
+      <app-field label="Grado">
+        <select
+          appFieldControl
+          [value]="newOfficer().rank"
+          (change)="patchNewOfficer({ rank: $any($event.target).value })"
+        >
+          <option value="">Seleccionar...</option>
+          @for (rank of rankOptions; track rank) {
+            <option [value]="rank">{{ rank }}</option>
+          }
+        </select>
+      </app-field>
+
+      <app-field label="Teléfono">
+        <input
+          appFieldControl
+          [value]="newOfficer().phone"
+          (input)="patchNewOfficer({ phone: $any($event.target).value })"
+        />
+      </app-field>
+    }
+
+    <app-field label="Fecha desde *" [errorText]="validation.error('startDate')">
+      <input
+        appFieldControl
         type="date"
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        [invalid]="!!validation.error('startDate')"
         [value]="startDate()"
         (input)="startDate.set($any($event.target).value)"
+        (blur)="validation.touch('startDate')"
       />
-    </label>
+    </app-field>
 
-    <label class="flex flex-col gap-1.5">
-      <span class="text-xs font-semibold text-ink-muted">Documento / referencia</span>
+    <app-field label="Documento / referencia">
       <input
-        class="rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        appFieldControl
         [value]="referenceDocument()"
         (input)="referenceDocument.set($any($event.target).value)"
       />
-    </label>
+    </app-field>
 
-    <label class="flex flex-col gap-1.5 sm:col-span-2">
-      <span class="text-xs font-semibold text-ink-muted">Observaciones</span>
+    <app-field label="Observaciones" full>
       <textarea
-        class="min-h-16 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13.5px] text-ink"
+        appFieldControl
         [value]="notes()"
         (input)="notes.set($any($event.target).value)"
       ></textarea>
-    </label>
+    </app-field>
+
+    <div class="flex flex-col gap-3 min-[860px]:col-span-2">
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="createAccount()"
+          (change)="createAccount.set($any($event.target).checked)"
+        />
+        Crear cuenta de acceso del encargado
+      </label>
+
+      @if (createAccount()) {
+        <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
+          <app-field label="Usuario *" [errorText]="validation.error('username')">
+            <input
+              appFieldControl
+              [invalid]="!!validation.error('username')"
+              [value]="username()"
+              (input)="username.set($any($event.target).value)"
+              (blur)="validation.touch('username')"
+            />
+          </app-field>
+          <app-field label="Contraseña *" [errorText]="validation.error('password')">
+            <input
+              appFieldControl
+              type="password"
+              [invalid]="!!validation.error('password')"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              (blur)="validation.touch('password')"
+            />
+          </app-field>
+        </div>
+      }
+    </div>
   </div>
 
   @if (errorMessage()) {
-    <p class="px-6 text-[13px] text-red">{{ errorMessage() }}</p>
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
   }
 
-  <div class="sticky bottom-0 flex justify-end gap-2.5 border-t border-edge bg-surface px-6 py-4">
-    <button
-      type="button"
-      class="rounded-md border border-edge-strong px-4 py-2 text-[13px] font-semibold text-ink"
-      (click)="cancelled.emit()"
-    >
-      Cancelar
-    </button>
-    <button
-      type="button"
-      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent disabled:opacity-60"
-      [disabled]="submitting()"
-      (click)="submit()"
-    >
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
       Guardar designación
     </button>
-  </div>
+  </app-form-actions>
 </app-modal>

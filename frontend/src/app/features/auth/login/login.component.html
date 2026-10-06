@@ -1,0 +1,201 @@
+<div class="flex min-h-screen">
+  <!-- Panel institucional -->
+  <section
+    class="relative hidden w-full max-w-[480px] flex-col justify-between overflow-hidden bg-green-800 px-10 py-12 text-white lg:flex"
+  >
+    <div
+      class="pointer-events-none absolute inset-0 opacity-[.07]"
+      style="
+        background-image: repeating-radial-gradient(
+          circle at 0% 0%,
+          transparent 0 6px,
+          currentColor 6px 7px
+        );
+      "
+    ></div>
+
+    <div class="relative z-10 flex flex-col gap-7">
+      <img
+        src="/icons/icon-192x192.png"
+        alt="Escudo de la Policía Boliviana"
+        class="h-[74px] w-[74px] object-contain"
+      />
+
+      <div>
+        <p class="text-11 font-semibold tracking-[.08em] text-white/70">POLICÍA BOLIVIANA</p>
+        <h1 class="mt-2 font-serif text-[clamp(28px,4vw,38px)] font-semibold leading-tight">
+          Sistema de Información Vehicular
+        </h1>
+        <p class="mt-2 text-13-5 text-white/70">Comando Departamental de Policía · Oruro</p>
+      </div>
+
+      <div class="h-px w-full bg-white/15"></div>
+
+      <div class="flex gap-3">
+        <div class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-white/10">
+          <app-icon name="clipboard-check" class="h-[18px] w-[18px]" />
+        </div>
+        <div>
+          <strong class="block text-13-5 font-semibold"
+            >Gestión integral del parque automotor</strong
+          >
+          <span class="text-12-5 text-white/70">
+            Control vehicular, recorridos, combustible, mantenimiento, inventario y trazabilidad
+            institucional.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <p class="relative z-10 text-11 text-white/60">Área de Transportes · Gestión institucional</p>
+  </section>
+
+  <!-- Panel de acceso -->
+  <section class="flex flex-1 flex-col items-center justify-center bg-surface px-6 py-12">
+    @if (pwaInstall.canInstall()) {
+      <div
+        class="relative mb-5 flex w-full max-w-sm items-start gap-3 rounded-[10px] border border-green-700/25 bg-green-bg px-4 py-3.5 dark:border-green-400/25"
+      >
+        <div
+          class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-green-700 text-white dark:bg-green-400 dark:text-green-900"
+        >
+          <app-icon name="download" class="h-[18px] w-[18px]" />
+        </div>
+        <div class="flex-1 pr-5">
+          <strong class="block text-13 font-semibold text-ink">Instalar la aplicación</strong>
+          <span class="mt-0.5 block text-12-5 text-ink-muted">
+            Acceso rápido desde tu dispositivo, sin pasar por el navegador.
+          </span>
+          <div class="mt-2.5 flex gap-2">
+            <button type="button" appButton variant="primary" size="sm" (click)="installPwa()">
+              Instalar
+            </button>
+            <button type="button" appButton size="sm" (click)="dismissInstall()">Ahora no</button>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full text-ink-faint hover:bg-surface-3 hover:text-ink"
+          aria-label="Cerrar sugerencia de instalación"
+          (click)="dismissInstall()"
+        >
+          <app-icon name="close" class="h-3.5 w-3.5" />
+        </button>
+      </div>
+    }
+
+    <div class="mb-6 flex w-full max-w-sm justify-end">
+      <div class="flex items-center gap-1 rounded-full border border-edge bg-surface-2 p-0.5">
+        <button
+          type="button"
+          class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-ink-faint"
+          [class]="
+            themeService.theme() === 'light'
+              ? 'bg-green-700 text-white dark:bg-green-400 dark:text-green-900'
+              : ''
+          "
+          (click)="themeService.theme.set('light')"
+          aria-label="Tema claro"
+        >
+          <app-icon name="theme-sun" class="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          class="flex h-[26px] w-[26px] items-center justify-center rounded-full text-ink-faint"
+          [class]="
+            themeService.theme() === 'dark'
+              ? 'bg-green-700 text-white dark:bg-green-400 dark:text-green-900'
+              : ''
+          "
+          (click)="themeService.theme.set('dark')"
+          aria-label="Tema oscuro"
+        >
+          <app-icon name="theme-moon" class="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <div class="w-full max-w-sm">
+      <span class="text-11 font-semibold uppercase tracking-[.06em] text-ink-faint">
+        Acceso institucional
+      </span>
+
+      <h2 class="mt-1 font-serif text-23 font-semibold text-ink">Iniciar sesión</h2>
+      <p class="mt-1 text-13-5 text-ink-muted">
+        Ingrese sus credenciales institucionales para acceder al sistema.
+      </p>
+
+      <form class="mt-6 flex flex-col gap-[19px]" (submit)="$event.preventDefault(); submit()">
+        <label class="flex flex-col gap-[7px]" for="loginUsuario">
+          <span class="text-12 font-semibold text-ink-muted">Usuario</span>
+          <div class="relative flex items-center">
+            <app-icon
+              name="user-circle"
+              class="pointer-events-none absolute left-[14px] h-[19px] w-[19px] text-ink-faint"
+            />
+            <input
+              id="loginUsuario"
+              class="h-[51px] w-full rounded-[10px] border bg-surface pl-[45px] pr-[14px] text-13-5 text-ink outline-none transition-[border-color,box-shadow] focus:border-green-500 focus:shadow-[0_0_0_3px_rgba(35,127,92,.10)]"
+              [class]="validation.error('username') ? 'border-red' : 'border-edge-strong'"
+              placeholder="Ingrese su usuario"
+              autocomplete="username"
+              [value]="username()"
+              (input)="username.set($any($event.target).value)"
+              (blur)="validation.touch('username')"
+            />
+          </div>
+          @if (validation.error('username'); as error) {
+            <span class="text-12 text-red">{{ error }}</span>
+          }
+        </label>
+
+        <label class="flex flex-col gap-[7px]" for="loginPass">
+          <span class="text-12 font-semibold text-ink-muted">Contraseña</span>
+          <div class="relative flex items-center">
+            <app-icon
+              name="lock"
+              class="pointer-events-none absolute left-[14px] h-[19px] w-[19px] text-ink-faint"
+            />
+            <input
+              id="loginPass"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              class="h-[51px] w-full rounded-[10px] border bg-surface pl-[45px] pr-[46px] text-13-5 text-ink outline-none transition-[border-color,box-shadow] focus:border-green-500 focus:shadow-[0_0_0_3px_rgba(35,127,92,.10)]"
+              [class]="validation.error('password') ? 'border-red' : 'border-edge-strong'"
+              placeholder="Ingrese su contraseña"
+              autocomplete="current-password"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              (blur)="validation.touch('password')"
+            />
+            <button
+              type="button"
+              class="absolute right-[9px] flex h-8 w-8 items-center justify-center rounded-[6px] text-ink-faint hover:bg-surface-3 hover:text-green-700"
+              [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              (click)="togglePasswordVisible()"
+            >
+              <app-icon [name]="passwordVisible() ? 'eye-off' : 'eye'" class="h-[19px] w-[19px]" />
+            </button>
+          </div>
+          @if (validation.error('password'); as error) {
+            <span class="text-12 text-red">{{ error }}</span>
+          }
+        </label>
+
+        @if (errorMessage()) {
+          <p class="text-13 text-red">{{ errorMessage() }}</p>
+        }
+
+        <button
+          type="submit"
+          class="mt-1 flex h-[51px] w-full items-center justify-center gap-[9px] rounded-[10px] border border-green-700 bg-green-700 text-13 font-semibold text-white shadow-[0_5px_16px_rgba(14,59,44,.13)] transition-[background,border-color,box-shadow] hover:border-green-800 hover:bg-green-800 hover:shadow-[0_7px_20px_rgba(14,59,44,.18)] disabled:opacity-60 dark:border-green-400 dark:bg-green-400 dark:text-green-900 dark:hover:border-green-300 dark:hover:bg-green-300"
+          [disabled]="submitting()"
+        >
+          <span>{{ submitting() ? 'Ingresando…' : 'Ingresar al sistema' }}</span>
+          @if (!submitting()) {
+            <app-icon name="arrow-right" class="h-[18px] w-[18px]" />
+          }
+        </button>
+      </form>
+    </div>
+  </section>
+</div>

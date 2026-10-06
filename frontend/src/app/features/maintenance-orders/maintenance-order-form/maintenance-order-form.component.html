@@ -1,0 +1,90 @@
+<app-modal title="Registro de mantenimiento" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Vehículo *" [errorText]="validation.error('vehicleId')">
+      <select
+        appFieldControl
+        [invalid]="!!validation.error('vehicleId')"
+        [value]="vehicleId()"
+        (change)="vehicleId.set($any($event.target).value)"
+        (blur)="validation.touch('vehicleId')"
+      >
+        <option value="">Seleccionar...</option>
+        @for (vehicle of vehicles(); track vehicle.id) {
+          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Tipo *">
+      <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
+        @for (t of types; track t) {
+          <option [value]="t">{{ typeLabel[t] }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Taller">
+      <input
+        appFieldControl
+        [value]="workshopName()"
+        (input)="workshopName.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Kilometraje de ingreso *" [errorText]="validation.error('odometer')">
+      <input
+        appFieldControl
+        type="number"
+        [invalid]="!!validation.error('odometer')"
+        [value]="odometer()"
+        (input)="onOdometerInput($any($event.target).value)"
+        (blur)="validation.touch('odometer')"
+      />
+    </app-field>
+
+    <app-field label="Fecha de ingreso">
+      <input
+        appFieldControl
+        type="datetime-local"
+        [value]="startedAt()"
+        (input)="startedAt.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Número de factura">
+      <input
+        appFieldControl
+        [value]="invoiceNumber()"
+        (input)="invoiceNumber.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field
+      label="Descripción / diagnóstico *"
+      full
+      [errorText]="validation.error('description')"
+    >
+      <textarea
+        appFieldControl
+        rows="3"
+        [invalid]="!!validation.error('description')"
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+        (blur)="validation.touch('description')"
+      ></textarea>
+    </app-field>
+  </div>
+
+  <app-procedure-checklist-fields action="MAINTENANCE_ORDER" />
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar
+    </button>
+  </app-form-actions>
+</app-modal>

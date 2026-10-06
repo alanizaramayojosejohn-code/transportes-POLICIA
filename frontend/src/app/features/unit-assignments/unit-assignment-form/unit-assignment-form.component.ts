@@ -1,14 +1,25 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { NoticeComponent } from '../../../shared/notice/notice.component';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UnitAssignmentsService } from '../unit-assignments.service';
 import { VehicleOption, VehiclesService } from '../../vehicles/vehicles.service';
 import { UnitOption } from '../../units/unit.model';
 import { UnitsService } from '../../units/units.service';
+import { toDateInputValue } from '../../../shared/date-format';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { required } from '../../../shared/validation/validators';
+
+interface UnitAssignmentFormShape {
+  vehicleId: string;
+  unitId: string;
+  startDate: string;
+}
 
 /** Nueva asignación de vehículo a unidad (spec 003, RF-01/RF-02). */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS, NoticeComponent],
   selector: 'app-unit-assignment-form',
   templateUrl: './unit-assignment-form.component.html',
 })
@@ -21,12 +32,25 @@ export class UnitAssignmentFormComponent {
 
   protected readonly vehicleId = signal('');
   protected readonly unitId = signal('');
-  protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly startDate = signal(toDateInputValue());
   protected readonly reason = signal('');
   protected readonly referenceDocument = signal('');
   protected readonly notes = signal('');
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  private readonly formShape = computed<UnitAssignmentFormShape>(() => ({
+    vehicleId: this.vehicleId(),
+    unitId: this.unitId(),
+    startDate: this.startDate(),
+  }));
+  protected readonly validation = new FormValidation(this.formShape, {
+    vehicleId: required('Seleccione un vehículo.'),
+    unitId: required('Seleccione una unidad.'),
+    startDate: required('Ingrese la fecha de inicio.'),
+  });
+
+  private readonly toast = inject(ToastService);
 
   constructor(
     private readonly unitAssignmentsService: UnitAssignmentsService,
@@ -38,8 +62,7 @@ export class UnitAssignmentFormComponent {
   }
 
   protected async submit(): Promise<void> {
-    if (!this.vehicleId() || !this.unitId()) {
-      this.errorMessage.set('Debe seleccionar vehículo y unidad.');
+    if (!this.validation.validateAll()) {
       return;
     }
 
@@ -54,11 +77,14 @@ export class UnitAssignmentFormComponent {
         referenceDocument: this.referenceDocument() || undefined,
         notes: this.notes() || undefined,
       });
+      const plate = this.vehicles().find((v) => v.id === this.vehicleId())?.plate;
+      const unit = this.units().find((u) => u.id === this.unitId())?.name;
+      this.toast.success(
+        plate && unit ? `Vehículo ${plate} asignado a ${unit}.` : 'Asignación registrada.',
+      );
       this.saved.emit();
     } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo registrar la asignación.',
-      );
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo registrar la asignación.'));
     } finally {
       this.submitting.set(false);
     }

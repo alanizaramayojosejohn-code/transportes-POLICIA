@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
+import { fetchAllPages } from '../../shared/export/report-export';
 import {
   CloseUnitAssignmentInput,
   CreateUnitAssignmentInput,
@@ -78,11 +80,24 @@ export class UnitAssignmentsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map(
-          (result) =>
-            (result.data?.unitAssignments as UnitAssignmentPage) ?? { items: [], total: 0 },
-        ),
+        queryData((data: UnitAssignmentsQueryResult) => data.unitAssignments, {
+          items: [],
+          total: 0,
+        }),
       );
+  }
+
+  /// Para exportar: todo el resultado filtrado, no sólo la página actual.
+  async listAll(filter: Omit<UnitAssignmentFilter, 'skip' | 'take'>): Promise<UnitAssignment[]> {
+    return fetchAllPages((skip, take) =>
+      firstValueFrom(
+        this.apollo.query<UnitAssignmentsQueryResult>({
+          query: UNIT_ASSIGNMENTS_QUERY,
+          variables: { ...filter, skip, take },
+          fetchPolicy: 'network-only',
+        }),
+      ).then((result) => result.data?.unitAssignments ?? { items: [], total: 0 }),
+    );
   }
 
   async create(input: CreateUnitAssignmentInput): Promise<UnitAssignment> {

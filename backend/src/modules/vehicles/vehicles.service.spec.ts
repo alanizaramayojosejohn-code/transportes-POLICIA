@@ -22,6 +22,15 @@ function buildPrismaMock() {
     unitAssignment: {
       updateMany: vi.fn(),
     },
+    vehicleDriverAssignment: {
+      updateMany: vi.fn(),
+    },
+    procedureType: {
+      findMany: vi.fn(),
+    },
+    procedureChecklistItem: {
+      createMany: vi.fn(),
+    },
     $transaction: vi.fn(),
   };
   // Soporta las dos formas de $transaction que usa el servicio: un arreglo
@@ -125,6 +134,33 @@ describe('VehiclesService', () => {
           chassisNumber: 'DUP123',
         } as never),
       ).rejects.toThrow(ConflictException);
+    });
+
+    it('guarda el checklist de trámites junto con el vehículo (spec 016, RF-9/RF-10)', async () => {
+      vi.mocked(prisma.vehicle.create).mockResolvedValue({
+        id: 'v1',
+        plate: 'ABC123',
+      } as never);
+      vi.mocked(prisma.procedureType.findMany).mockResolvedValue([
+        { id: 't1' },
+      ] as never);
+
+      await service.create({
+        plate: 'ABC-123',
+        type: 'CAMIONETA',
+        checklistItems: [{ procedureTypeId: 't1', completed: true }],
+      } as never);
+
+      expect(prisma.procedureChecklistItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            procedureTypeId: 't1',
+            completed: true,
+            documentCode: undefined,
+            vehicleId: 'v1',
+          },
+        ],
+      });
     });
   });
 

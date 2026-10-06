@@ -1,5 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsOptional,
@@ -7,8 +8,11 @@ import {
   Length,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { VehicleType } from '../../../generated/prisma/enums.js';
+import { ProcedureChecklistItemInput } from '../../procedures/dto/procedure-checklist-item.input.js';
 
 /**
  * RF-01/RF-03: placa y tipo son los únicos campos obligatorios; el resto se
@@ -79,4 +83,12 @@ export class CreateVehicleInput {
   @IsOptional()
   @IsString()
   observations?: string;
+
+  /** Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar. */
+  @Field(() => [ProcedureChecklistItemInput], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProcedureChecklistItemInput)
+  checklistItems?: ProcedureChecklistItemInput[];
 }

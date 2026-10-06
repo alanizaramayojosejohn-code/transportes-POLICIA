@@ -1,0 +1,218 @@
+<app-modal [title]="isEdit ? 'Editar conductor' : 'Nuevo conductor'" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="CI *" [errorText]="validation.error('ci')">
+      <input
+        appFieldControl
+        [invalid]="!!validation.error('ci')"
+        [value]="form().ci"
+        (input)="patch({ ci: $any($event.target).value })"
+        (blur)="validation.touch('ci')"
+      />
+    </app-field>
+
+    <app-field label="Grado">
+      <select
+        appFieldControl
+        [value]="form().rank"
+        (change)="patch({ rank: $any($event.target).value })"
+      >
+        <option value="">Seleccionar...</option>
+        @for (rank of rankOptions; track rank) {
+          <option [value]="rank">{{ rank }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Nombres *" [errorText]="validation.error('firstName')">
+      <input
+        appFieldControl
+        [invalid]="!!validation.error('firstName')"
+        [value]="form().firstName"
+        (input)="patch({ firstName: $any($event.target).value })"
+        (blur)="validation.touch('firstName')"
+      />
+    </app-field>
+
+    <app-field label="Apellidos *" [errorText]="validation.error('lastName')">
+      <input
+        appFieldControl
+        [invalid]="!!validation.error('lastName')"
+        [value]="form().lastName"
+        (input)="patch({ lastName: $any($event.target).value })"
+        (blur)="validation.touch('lastName')"
+      />
+    </app-field>
+
+    <app-field label="Complemento">
+      <input
+        appFieldControl
+        placeholder="1A"
+        [value]="form().ciComplement"
+        (input)="patch({ ciComplement: $any($event.target).value })"
+      />
+    </app-field>
+
+    <div class="flex flex-wrap items-center gap-4 min-[860px]:col-span-2">
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isDriver"
+          (change)="patch({ isDriver: $any($event.target).checked })"
+        />
+        Conductor
+      </label>
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isOfficer"
+          (change)="patch({ isOfficer: $any($event.target).checked })"
+        />
+        Encargado de transportes
+      </label>
+      <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+        <input
+          type="checkbox"
+          [checked]="form().isAdmin"
+          (change)="patch({ isAdmin: $any($event.target).checked })"
+        />
+        Personal administrativo
+      </label>
+    </div>
+
+    @if (form().isDriver) {
+      <app-field label="Número de licencia *" [errorText]="validation.error('licenseNumber')">
+        <input
+          appFieldControl
+          [invalid]="!!validation.error('licenseNumber')"
+          [value]="form().licenseNumber"
+          (input)="patch({ licenseNumber: $any($event.target).value })"
+          (blur)="validation.touch('licenseNumber')"
+        />
+      </app-field>
+
+      <app-field label="Categoría *" [errorText]="validation.error('licenseCategory')">
+        <select
+          appFieldControl
+          [invalid]="!!validation.error('licenseCategory')"
+          [value]="form().licenseCategory"
+          (change)="patch({ licenseCategory: $any($event.target).value })"
+          (blur)="validation.touch('licenseCategory')"
+        >
+          <option value="">Seleccionar...</option>
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+          <option>M</option>
+          <option>P</option>
+        </select>
+      </app-field>
+
+      <app-field
+        label="Vencimiento de licencia *"
+        [errorText]="validation.error('licenseExpiresAt')"
+      >
+        <input
+          appFieldControl
+          type="date"
+          [invalid]="!!validation.error('licenseExpiresAt')"
+          [value]="form().licenseExpiresAt"
+          (input)="patch({ licenseExpiresAt: $any($event.target).value })"
+          (blur)="validation.touch('licenseExpiresAt')"
+        />
+      </app-field>
+    }
+
+    <app-field label="Unidad">
+      <select
+        appFieldControl
+        [value]="form().unitId"
+        (change)="patch({ unitId: $any($event.target).value })"
+      >
+        <option value="">Sin asignar</option>
+        @for (unit of units(); track unit.id) {
+          <option [value]="unit.id">{{ unit.name }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Teléfono">
+      <input
+        appFieldControl
+        [value]="form().phone"
+        (input)="patch({ phone: $any($event.target).value })"
+      />
+    </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        placeholder="Observaciones adicionales"
+        [value]="form().observations"
+        (input)="patch({ observations: $any($event.target).value })"
+      ></textarea>
+    </app-field>
+
+    @if (form().isDriver) {
+      <app-field label="Vehículo a cargo" full>
+        <select
+          appFieldControl
+          [value]="form().vehicleId"
+          (change)="patch({ vehicleId: $any($event.target).value })"
+        >
+          <option value="">Sin vehículo asignado</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
+
+      @if (canCreateAccount) {
+        <div class="flex flex-col gap-3 min-[860px]:col-span-2">
+          <label class="inline-flex items-center gap-1.5 text-12-5 text-ink">
+            <input
+              type="checkbox"
+              [checked]="form().createAccount"
+              (change)="patch({ createAccount: $any($event.target).checked })"
+            />
+            Crear cuenta de acceso de conductor
+          </label>
+
+          @if (form().createAccount) {
+            <div class="grid grid-cols-1 gap-4 min-[860px]:grid-cols-2">
+              <app-field label="Usuario *" [errorText]="validation.error('username')">
+                <input
+                  appFieldControl
+                  [invalid]="!!validation.error('username')"
+                  [value]="form().username"
+                  (input)="patch({ username: $any($event.target).value })"
+                  (blur)="validation.touch('username')"
+                />
+              </app-field>
+              <app-field label="Contraseña *" [errorText]="validation.error('password')">
+                <input
+                  appFieldControl
+                  type="password"
+                  [invalid]="!!validation.error('password')"
+                  [value]="form().password"
+                  (input)="patch({ password: $any($event.target).value })"
+                  (blur)="validation.touch('password')"
+                />
+              </app-field>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      {{ isEdit ? 'Guardar cambios' : 'Guardar conductor' }}
+    </button>
+  </app-form-actions>
+</app-modal>

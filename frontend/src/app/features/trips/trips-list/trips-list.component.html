@@ -1,0 +1,113 @@
+<app-page-head title="Recorridos" description="Control de salida, llegada y kilometraje.">
+  <app-export-buttons
+    title="Historial de recorridos"
+    filenameBase="historial-de-recorridos"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWriteTrips()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Nuevo recorrido
+    </button>
+  }
+</app-page-head>
+
+<app-trip-outbox-notice />
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo, conductor o destino..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="open()" (change)="open.set($any($event.target).value)">
+      <option value="">Todos</option>
+      <option value="true">Abiertos</option>
+      <option value="false">Cerrados</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Conductor</th>
+        <th appTableHeadCell>Destino</th>
+        <th appTableHeadCell>Salida</th>
+        <th appTableHeadCell>Llegada</th>
+        <th appTableHeadCell>KM</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (trip of page().items; track trip.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ trip.vehicle.plate }}</td>
+          <td appTableCell>{{ trip.driver.firstName }} {{ trip.driver.lastName }}</td>
+          <td appTableCell>{{ trip.destination }}</td>
+          <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
+          <td appTableCell>{{ formatDateTime(trip.returnAt) }}</td>
+          <td appTableCell>{{ trip.distanceKm ?? '—' }}</td>
+          <td appTableCell>
+            <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
+              {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailTripId.set(trip.id)"
+              >
+                Ver
+              </button>
+              @if (!trip.returnAt && currentRole.canWriteTrips()) {
+                @if (arrivalQueued(trip.id)) {
+                  <app-badge tone="blue">Llegada sin enviar</app-badge>
+                } @else {
+                  <button type="button" appButton size="sm" (click)="openClose(trip.id)">
+                    Registrar llegada
+                  </button>
+                }
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
+          Sin recorridos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="recorrido(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-trip-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (closingTripId()) {
+  <app-trip-close-form
+    [trip]="closingTrip!"
+    (saved)="closeCloseForm()"
+    (cancelled)="closeCloseForm()"
+  />
+}
+
+@if (detailTrip; as trip) {
+  <app-trip-detail [trip]="trip" (closed)="detailTripId.set(null)" />
+}

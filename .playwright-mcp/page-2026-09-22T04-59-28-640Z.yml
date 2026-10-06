@@ -1,0 +1,31 @@
+- generic [ref=f16e4]:
+  - generic [ref=f16e5]:
+    - generic [ref=f16e6]:
+      - generic [ref=f16e12]:
+        - paragraph [ref=f16e13]: POLICÍA BOLIVIANA
+        - heading "Sistema de Información Vehicular" [level=1] [ref=f16e14]
+        - paragraph [ref=f16e15]: Comando Departamental de Policía · Oruro
+      - generic [ref=f16e25]:
+        - strong [ref=f16e26]: Gestión integral del parque automotor
+        - text: Control vehicular, recorridos, combustible, mantenimiento, inventario y trazabilidad institucional.
+    - paragraph [ref=f16e27]: Área de Transportes · Gestión institucional
+  - generic [ref=f16e28]:
+    - generic [ref=f16e30]:
+      - button "Tema claro" [ref=f16e31]
+      - button "Tema oscuro" [ref=f16e36]
+    - generic [ref=f16e40]:
+      - text: Acceso institucional
+      - heading "Iniciar sesión" [level=2] [ref=f16e41]
+      - paragraph [ref=f16e42]: Ingrese sus credenciales institucionales para acceder al sistema.
+      - generic [ref=f16e43]:
+        - generic [ref=f16e44]:
+          - generic [ref=f16e45]: Usuario
+          - textbox "Usuario" [ref=f16e47]:
+            - /placeholder: Ingrese su usuario
+        - generic [ref=f16e48]:
+          - generic [ref=f16e49]: Contraseña
+          - generic [ref=f16e50]:
+            - textbox "Contraseña Mostrar contraseña" [ref=f16e51]:
+              - /placeholder: Ingrese su contraseña
+            - button "Mostrar contraseña" [ref=f16e52]
+        - button "Ingresar al sistema" [ref=f16e57]

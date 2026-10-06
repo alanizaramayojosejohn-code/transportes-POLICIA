@@ -1,0 +1,105 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e4]:
+    - complementary [ref=f4e5]:
+      - generic [ref=f4e12]:
+        - heading "Sistema de Información Vehicular" [level=1] [ref=f4e13]
+        - text: Comando Departamental · Oruro
+      - navigation [ref=f4e14]:
+        - link [ref=f4e15] [cursor=pointer]:
+          - /url: /
+        - button [ref=f4e22]
+        - generic [ref=f4e33]:
+          - link "Vehículos" [ref=f4e34] [cursor=pointer]:
+            - /url: /vehiculos
+          - link "Asignaciones" [ref=f4e35] [cursor=pointer]:
+            - /url: /asignaciones
+          - link "Conductores" [ref=f4e36] [cursor=pointer]:
+            - /url: /conductores
+          - link "Unidades" [ref=f4e37] [cursor=pointer]:
+            - /url: /unidades
+          - link "Documentación" [ref=f4e38] [cursor=pointer]:
+            - /url: /documentacion
+        - button [ref=f4e39]
+        - button [ref=f4e49]
+        - link [ref=f4e58] [cursor=pointer]:
+          - /url: /reportes
+        - link [ref=f4e62] [cursor=pointer]:
+          - /url: /tramites
+        - button [ref=f4e70]
+      - generic [ref=f4e81]: Sistema de información vehicular
+    - generic [ref=f4e82]:
+      - banner [ref=f4e83]:
+        - generic [ref=f4e84]:
+          - generic [ref=f4e85]: ⌕
+          - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f4e86]
+        - generic [ref=f4e87]:
+          - generic [ref=f4e88]: En línea
+          - generic [ref=f4e90]:
+            - button "Tema claro" [ref=f4e91]
+            - button "Tema oscuro" [ref=f4e96]
+          - generic [ref=f4e100]:
+            - generic [ref=f4e101]: AD
+            - generic [ref=f4e102]:
+              - strong [ref=f4e103]: Administrador del Sistema
+              - text: Administrador
+          - button "Cerrar sesión" [ref=f4e104]
+      - main [ref=f4e105]:
+        - generic [ref=f4e106]:
+          - generic "Vehículos" [ref=f4e107]:
+            - generic [ref=f4e108]:
+              - generic [ref=f4e109]:
+                - heading "Vehículos" [level=2] [ref=f4e110]
+                - paragraph [ref=f4e111]: Registro y consulta centralizada del parque automotor.
+              - generic [ref=f4e112]:
+                - generic "Vehículos por unidad" [ref=f4e113]:
+                  - generic [ref=f4e114]:
+                    - button [ref=f4e115]
+                    - button [ref=f4e120]
+                - button "+ Nuevo vehículo" [ref=f4e125]
+          - generic [ref=f4e127]:
+            - generic [ref=f4e129]:
+              - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f4e130]
+              - combobox [ref=f4e131]:
+                - option "Todas las condiciones" [selected]
+                - option "Bueno"
+                - option "Regular"
+                - option "Deteriorado"
+                - option "Fuera de uso"
+                - option "Inoperable"
+                - option "Extraviado"
+                - option "Devuelto"
+                - option "Dado de baja"
+              - combobox [ref=f4e132]:
+                - option "Todos los tipos" [selected]
+                - option "Camioneta"
+                - option "Automóvil"
+                - option "Motocicleta"
+                - option "Minibús"
+                - option "Camión"
+                - option "Ambulancia"
+                - option "Otro"
+            - table [ref=f4e135]:
+              - rowgroup [ref=f4e136]:
+                - row [ref=f4e137]:
+                  - columnheader "Placa" [ref=f4e138]
+                  - columnheader "Marca" [ref=f4e139]
+                  - columnheader "Modelo" [ref=f4e140]
+                  - columnheader "Unidad" [ref=f4e141]
+                  - columnheader "Condición" [ref=f4e142]
+                  - columnheader "Último KM" [ref=f4e143]
+                  - columnheader [ref=f4e144]
+              - rowgroup [ref=f4e145]:
+                - row [ref=f4e146]:
+                  - cell "PRUEBA" [ref=f4e147]
+                  - cell "prueba" [ref=f4e148]
+                  - cell "prueba" [ref=f4e149]
+                  - cell "Sin unidad asignada" [ref=f4e150]
+                  - cell "Sin evaluar" [ref=f4e151]
+                  - cell "—" [ref=f4e154]
+                  - cell [ref=f4e155]:
+                    - generic [ref=f4e156]:
+                      - button "Ver" [ref=f4e157]
+                      - button "Editar" [ref=f4e158]
+                      - button "Eliminar" [ref=f4e159]
+            - paragraph [ref=f4e162]: 1 vehículo(s) en total.
+  - generic: Bad Request Exception

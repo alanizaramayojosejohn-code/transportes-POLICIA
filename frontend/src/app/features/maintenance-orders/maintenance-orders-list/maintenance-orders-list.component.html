@@ -1,0 +1,132 @@
+<app-page-head
+  title="Mantenimiento"
+  description="Historial de mantenimientos realizados a las movilidades."
+>
+  <app-export-buttons
+    title="Mantenimientos"
+    filenameBase="mantenimientos"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWriteMaintenance()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Registrar mantenimiento
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo o taller..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ typeLabel[t] }}</option>
+      }
+    </select>
+    <select appFilterControl [value]="status()" (change)="status.set($any($event.target).value)">
+      <option value="">Todos los estados</option>
+      <option value="IN_PROGRESS">En proceso</option>
+      <option value="COMPLETED">Finalizado</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Taller</th>
+        <th appTableHeadCell>KM ingreso</th>
+        <th appTableHeadCell>Costo</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of page().items; track order.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(order.startedAt) }}</td>
+          <td appTableCell class="font-medium">{{ order.vehicle.plate }}</td>
+          <td appTableCell>{{ typeLabel[order.type] }}</td>
+          <td appTableCell>{{ order.workshopName || '—' }}</td>
+          <td appTableCell>{{ order.odometer }}</td>
+          <td appTableCell>
+            {{ order.status === 'COMPLETED' ? 'Bs. ' + order.totalCost.toFixed(2) : '—' }}
+          </td>
+          <td appTableCell>
+            <app-badge [tone]="statusTone[order.status]">
+              {{ statusLabel[order.status] }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailOrderId.set(order.id)"
+              >
+                Ver
+              </button>
+              @if (order.procedureChecklistItems.length > 0) {
+                <button type="button" appButton size="sm" (click)="checklistOrderId.set(order.id)">
+                  Trámites
+                </button>
+              }
+              @if (order.status === 'IN_PROGRESS' && currentRole.canWriteMaintenance()) {
+                <button type="button" appButton size="sm" (click)="openFinish(order.id)">
+                  Finalizar
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
+          Sin órdenes de mantenimiento registradas todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="orden(es)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-maintenance-order-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (finishingOrderId()) {
+  <app-maintenance-order-finish-form
+    [order]="finishingOrder!"
+    (saved)="closeFinishForm()"
+    (cancelled)="closeFinishForm()"
+  />
+}
+
+@if (checklistOrderId()) {
+  <app-procedure-checklist-modal
+    [items]="checklistItems()"
+    [editable]="currentRole.canWriteMaintenance()"
+    [onSave]="saveChecklist"
+    (closed)="checklistOrderId.set(null)"
+  />
+}
+
+@if (detailOrder(); as order) {
+  <app-maintenance-order-detail [order]="order" (closed)="detailOrderId.set(null)" />
+}

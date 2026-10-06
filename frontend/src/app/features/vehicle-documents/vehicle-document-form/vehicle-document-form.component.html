@@ -1,0 +1,74 @@
+<app-modal title="Registrar documento en expediente" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Vehículo *" [errorText]="validation.error('vehicleId')">
+      <select
+        appFieldControl
+        [invalid]="!!validation.error('vehicleId')"
+        [value]="vehicleId()"
+        (change)="vehicleId.set($any($event.target).value)"
+        (blur)="validation.touch('vehicleId')"
+      >
+        <option value="">Seleccionar...</option>
+        @for (vehicle of vehicles(); track vehicle.id) {
+          <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Tipo *">
+      <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
+        @for (t of types; track t) {
+          <option [value]="t">{{ typeLabel[t] }}</option>
+        }
+      </select>
+    </app-field>
+
+    <app-field label="Número / referencia">
+      <input
+        appFieldControl
+        [value]="documentNumber()"
+        (input)="documentNumber.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Fecha de emisión">
+      <input
+        appFieldControl
+        type="date"
+        [value]="issuedAt()"
+        (input)="issuedAt.set($any($event.target).value)"
+      />
+    </app-field>
+
+    <app-field label="Fecha de vencimiento *" [errorText]="validation.error('expiresAt')">
+      <input
+        appFieldControl
+        type="date"
+        [invalid]="!!validation.error('expiresAt')"
+        [value]="expiresAt()"
+        (input)="expiresAt.set($any($event.target).value)"
+        (blur)="validation.touch('expiresAt')"
+      />
+    </app-field>
+
+    <app-field label="Observaciones" full>
+      <textarea
+        appFieldControl
+        rows="2"
+        [value]="notes()"
+        (input)="notes.set($any($event.target).value)"
+      ></textarea>
+    </app-field>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar documento
+    </button>
+  </app-form-actions>
+</app-modal>

@@ -1,0 +1,44 @@
+<app-page-head title="Almacén" description="Resumen del catálogo de repuestos."></app-page-head>
+
+<div class="mb-4 grid grid-cols-2 gap-4 min-[1080px]:grid-cols-3">
+  <app-stat-card icon="R" [value]="spareParts().total" label="Repuestos activos" />
+  <app-stat-card icon="!" [value]="lowStockItems().length" label="Con stock bajo" />
+  <app-stat-card icon="Ct" [value]="categories().length" label="Categorías" />
+</div>
+
+<app-card>
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-14-5 font-semibold">Repuestos con stock bajo</h2>
+    <a
+      routerLink="/inventario"
+      class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+      >Ir a inventario</a
+    >
+  </div>
+  <app-table>
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Código</th>
+        <th appTableHeadCell>Nombre</th>
+        <th appTableHeadCell>Stock actual</th>
+        <th appTableHeadCell>Stock mínimo</th>
+        <th appTableHeadCell>Ubicación</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (part of lowStockItems(); track part.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ part.code }}</td>
+          <td appTableCell>{{ part.name }}</td>
+          <td appTableCell>{{ part.currentStock }} {{ part.unit }}</td>
+          <td appTableCell>{{ part.minStock }} {{ part.unit }}</td>
+          <td appTableCell>{{ part.location || '—' }}</td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="5" [loading]="loading()">
+          Ningún repuesto bajo el mínimo.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>

@@ -1,0 +1,82 @@
+- generic [ref=f2e79]:
+  - complementary [ref=f2e80]:
+    - generic [ref=f2e87]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f2e88]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f2e89]:
+      - link [ref=f2e90] [cursor=pointer]:
+        - /url: /
+      - button [ref=f2e98]
+      - button [ref=f2e109]
+      - button [ref=f2e119]
+      - link [ref=f2e128] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f2e132] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f2e140]
+    - generic [ref=f2e151]: Sistema de información vehicular
+  - generic [ref=f2e152]:
+    - banner [ref=f2e153]:
+      - generic [ref=f2e154]:
+        - generic [ref=f2e155]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..."
+      - generic [ref=f2e156]:
+        - generic [ref=f2e157]: En línea
+        - generic [ref=f2e159]:
+          - button "Tema claro" [ref=f2e160]
+          - button "Tema oscuro" [ref=f2e165]
+        - button "Instalar PWA" [ref=f2e169]
+        - generic [ref=f2e170]:
+          - generic [ref=f2e171]: AD
+          - generic [ref=f2e172]:
+            - strong [ref=f2e173]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f2e174]
+    - main [ref=f2e175]:
+      - generic [ref=f2e176]:
+        - generic "Panel principal" [ref=f2e177]:
+          - generic [ref=f2e179]:
+            - heading "Panel principal" [level=2] [ref=f2e180]
+            - paragraph [ref=f2e181]: Vista general de la información vehicular.
+        - generic [ref=f2e182]:
+          - generic [ref=f2e184]:
+            - generic [ref=f2e185]: V
+            - generic [ref=f2e186]:
+              - generic [ref=f2e187]: "0"
+              - generic [ref=f2e188]: Vehículos registrados
+          - generic [ref=f2e190]:
+            - generic [ref=f2e191]: ✓
+            - generic [ref=f2e192]:
+              - generic [ref=f2e193]: "0"
+              - generic [ref=f2e194]: Vehículos operativos
+          - generic [ref=f2e196]:
+            - generic [ref=f2e197]: C
+            - generic [ref=f2e198]:
+              - generic [ref=f2e199]: "0"
+              - generic [ref=f2e200]: Conductores activos
+          - generic [ref=f2e202]:
+            - generic [ref=f2e203]: KM
+            - generic [ref=f2e204]:
+              - generic [ref=f2e205]: "0"
+              - generic [ref=f2e206]: Recorridos este mes
+        - generic [ref=f2e207]:
+          - heading "Recorridos por mes" [level=3] [ref=f2e210]
+          - generic [ref=f2e213]:
+            - heading "Estado del parque automotor" [level=3] [ref=f2e214]
+            - generic [ref=f2e218]:
+              - generic [ref=f2e219]: Operativos 0%
+              - generic [ref=f2e221]: Mantenimiento 0%
+              - generic [ref=f2e223]: Inoperables 0%
+              - generic [ref=f2e225]: Otros 0%
+        - generic [ref=f2e228]:
+          - heading "Seguimiento" [level=3] [ref=f2e229]
+          - generic [ref=f2e230]:
+            - generic [ref=f2e231]:
+              - strong [ref=f2e232]: "0"
+              - text: artículos bajo stock mínimo
+            - generic [ref=f2e233]:
+              - strong [ref=f2e234]: "0"
+              - text: mantenimientos en proceso
+            - generic [ref=f2e235]:
+              - strong [ref=f2e236]: "0"
+              - text: recorridos abiertos

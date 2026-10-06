@@ -1,0 +1,48 @@
+<app-modal small title="Trámites de este registro" (closed)="closed.emit()">
+  <div class="flex flex-col gap-3 px-6 py-5">
+    @if (draftItems().length === 0) {
+      <p class="text-13 text-ink-dim">No hay trámites configurados para esta acción.</p>
+    }
+    @for (item of draftItems(); track item.id) {
+      <div class="grid grid-cols-1 items-center gap-2 min-[560px]:grid-cols-[1fr_auto]">
+        <label class="flex items-center gap-2 text-13 text-ink">
+          <input
+            type="checkbox"
+            class="h-4 w-4 rounded border-edge-strong"
+            [checked]="item.completed"
+            [disabled]="!editable()"
+            (change)="toggle(item.id)"
+          />
+          {{ item.procedureType.name }}
+        </label>
+        <input
+          appFieldControl
+          placeholder="Código físico (opcional)"
+          class="min-[560px]:w-56"
+          [value]="item.documentCode || ''"
+          [disabled]="!editable()"
+          (input)="setDocumentCode(item.id, $any($event.target).value)"
+        />
+      </div>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    @if (editable() && draftItems().length > 0) {
+      <button
+        type="button"
+        appButton
+        variant="primary"
+        [disabled]="submitting()"
+        (click)="submit()"
+      >
+        Guardar
+      </button>
+    }
+  </app-form-actions>
+</app-modal>

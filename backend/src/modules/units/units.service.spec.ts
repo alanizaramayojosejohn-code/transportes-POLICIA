@@ -12,8 +12,9 @@ function buildPrismaMock() {
       create: vi.fn(),
       update: vi.fn(),
     },
-    officer: {
+    personnel: {
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
     transportManagerAssignment: {
       findFirst: vi.fn(),
@@ -150,7 +151,7 @@ describe('UnitsService', () => {
         id: 'u1',
         isActive: true,
       } as never);
-      vi.mocked(prisma.officer.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'o1',
         isActive: false,
       } as never);
@@ -169,7 +170,7 @@ describe('UnitsService', () => {
         id: 'u1',
         isActive: true,
       } as never);
-      vi.mocked(prisma.officer.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'o1',
         isActive: true,
       } as never);
@@ -191,7 +192,7 @@ describe('UnitsService', () => {
         id: 'u1',
         isActive: true,
       } as never);
-      vi.mocked(prisma.officer.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'o2',
         isActive: true,
       } as never);
@@ -223,7 +224,7 @@ describe('UnitsService', () => {
         id: 'u1',
         isActive: true,
       } as never);
-      vi.mocked(prisma.officer.findUnique).mockResolvedValue({
+      vi.mocked(prisma.personnel.findUnique).mockResolvedValue({
         id: 'o2',
         isActive: true,
       } as never);

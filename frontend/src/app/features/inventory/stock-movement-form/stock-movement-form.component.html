@@ -1,0 +1,136 @@
+<app-modal title="Movimiento de inventario" (closed)="cancelled.emit()">
+  <div class="grid grid-cols-1 gap-4 px-6 py-5 min-[860px]:grid-cols-2">
+    <app-field label="Tipo *">
+      <select appFieldControl [value]="type()" (change)="type.set($any($event.target).value)">
+        <option value="IN">Entrada</option>
+        <option value="OUT">Salida</option>
+        <option value="ADJUSTMENT">Ajuste</option>
+      </select>
+    </app-field>
+
+    <app-field label="Artículo *" [errorText]="validation.error('sparePartId')">
+      <select
+        appFieldControl
+        [invalid]="!!validation.error('sparePartId')"
+        [value]="sparePartId()"
+        (change)="sparePartId.set($any($event.target).value)"
+        (blur)="validation.touch('sparePartId')"
+      >
+        <option value="">Seleccionar...</option>
+        @for (part of parts(); track part.id) {
+          <option [value]="part.id">
+            {{ part.name }} ({{ part.currentStock }} {{ part.unit }})
+          </option>
+        }
+      </select>
+    </app-field>
+
+    <app-field [label]="quantityLabel" [errorText]="validation.error('quantity')">
+      <input
+        appFieldControl
+        type="number"
+        [invalid]="!!validation.error('quantity')"
+        [value]="quantity()"
+        (input)="onNumberInput('quantity', $any($event.target).value)"
+        (blur)="validation.touch('quantity')"
+      />
+    </app-field>
+
+    @if (isOut || isAdjustment) {
+      <app-field label="Motivo *" full [errorText]="validation.error('reason')">
+        <input
+          appFieldControl
+          [placeholder]="isAdjustment ? 'Conteo físico mensual' : 'Cambio de aceite'"
+          [invalid]="!!validation.error('reason')"
+          [value]="reason()"
+          (input)="reason.set($any($event.target).value)"
+          (blur)="validation.touch('reason')"
+        />
+      </app-field>
+    }
+
+    @if (!isOut && !isAdjustment) {
+      <app-field label="Precio unitario">
+        <input
+          appFieldControl
+          type="number"
+          step="0.01"
+          [value]="unitCost()"
+          (input)="onNumberInput('unitCost', $any($event.target).value)"
+        />
+      </app-field>
+      <app-field label="Proveedor">
+        <input
+          appFieldControl
+          [value]="supplier()"
+          (input)="supplier.set($any($event.target).value)"
+        />
+      </app-field>
+      <app-field label="Lote">
+        <input
+          appFieldControl
+          [value]="lotNumber()"
+          (input)="lotNumber.set($any($event.target).value)"
+        />
+      </app-field>
+      <app-field label="Vencimiento del lote">
+        <input
+          appFieldControl
+          type="date"
+          [value]="lotExpiresAt()"
+          (input)="lotExpiresAt.set($any($event.target).value)"
+        />
+      </app-field>
+    }
+
+    @if (isOut) {
+      <app-field label="Vehículo destino">
+        <select
+          appFieldControl
+          [value]="vehicleId()"
+          (change)="vehicleId.set($any($event.target).value)"
+        >
+          <option value="">Sin vehículo</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
+      <app-field label="Orden de mantenimiento relacionada">
+        <select
+          appFieldControl
+          [value]="maintenanceOrderId()"
+          (change)="maintenanceOrderId.set($any($event.target).value)"
+        >
+          <option value="">Sin orden relacionada</option>
+          @for (order of maintenanceOrders(); track order.id) {
+            <option [value]="order.id">{{ order.code }} · {{ order.vehicle.plate }}</option>
+          }
+        </select>
+      </app-field>
+    }
+
+    <app-field label="Documento / referencia" full>
+      <input
+        appFieldControl
+        [value]="reference()"
+        (input)="reference.set($any($event.target).value)"
+      />
+    </app-field>
+  </div>
+
+  @if (isOut) {
+    <app-procedure-checklist-fields action="SPARE_PART_DELIVERY" />
+  }
+
+  @if (errorMessage()) {
+    <p class="px-6 text-13 text-red">{{ errorMessage() }}</p>
+  }
+
+  <app-form-actions>
+    <button type="button" appButton (click)="cancelled.emit()">Cancelar</button>
+    <button type="button" appButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      Guardar movimiento
+    </button>
+  </app-form-actions>
+</app-modal>

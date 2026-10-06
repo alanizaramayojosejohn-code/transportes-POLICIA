@@ -1,24 +1,36 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ModalComponent } from '../../../shared/modal/modal.component';
+import { FORM_MODAL_IMPORTS } from '../../../shared/form-modal.imports';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { UnitsService } from '../units.service';
 import { CreateUnitInput, Unit, UnitOption } from '../unit.model';
+import { FormValidation } from '../../../shared/validation/form-validation';
+import { maxLength, required } from '../../../shared/validation/validators';
 
 /** Alta y edición de unidad (spec 002, RF-01/RF-04). Sólo el nombre es obligatorio. */
 @Component({
-  imports: [ModalComponent],
+  imports: [...FORM_MODAL_IMPORTS],
   selector: 'app-unit-form',
   templateUrl: './unit-form.component.html',
 })
 export class UnitFormComponent {
   readonly unit = input<Unit | null>(null);
-  readonly saved = output<void>();
+  /// Emite la unidad creada o editada: el llamador la usa para encadenar la
+  /// designación de encargado en el mismo flujo de alta (spec 002, enmienda).
+  readonly saved = output<Unit>();
   readonly cancelled = output<void>();
 
   protected readonly units: () => UnitOption[];
   protected readonly form = signal<CreateUnitInput>({ name: '' });
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly validation = new FormValidation(this.form, {
+    name: required<string, CreateUnitInput>('El nombre es obligatorio.'),
+    code: maxLength<CreateUnitInput>(30, 'El código no puede superar los 30 caracteres.'),
+  });
+
+  private readonly toast = inject(ToastService);
 
   constructor(private readonly unitsService: UnitsService) {
     // Se asigna aquí, no como inicializador de campo: un inicializador de
@@ -59,8 +71,7 @@ export class UnitFormComponent {
 
   protected async submit(): Promise<void> {
     const value = this.form();
-    if (!value.name.trim()) {
-      this.errorMessage.set('El nombre es obligatorio.');
+    if (!this.validation.validateAll()) {
       return;
     }
 
@@ -68,16 +79,15 @@ export class UnitFormComponent {
     this.errorMessage.set(null);
     try {
       const current = this.unit();
-      if (current) {
-        await this.unitsService.update(current.id, value);
-      } else {
-        await this.unitsService.create(value);
-      }
-      this.saved.emit();
-    } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'No se pudo guardar la unidad.',
+      const result = current
+        ? await this.unitsService.update(current.id, value)
+        : await this.unitsService.create(value);
+      this.toast.success(
+        current ? `Unidad ${result.name} actualizada.` : `Unidad ${result.name} registrada.`,
       );
+      this.saved.emit(result);
+    } catch (error) {
+      this.errorMessage.set(this.toast.reportError(error, 'No se pudo guardar la unidad.'));
     } finally {
       this.submitting.set(false);
     }

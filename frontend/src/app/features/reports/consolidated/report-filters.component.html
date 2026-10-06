@@ -1,0 +1,60 @@
+<app-filter-bar>
+  <select
+    appFilterControl
+    title="Agrupación del reporte"
+    [value]="criteria().groupBy"
+    (change)="patch({ groupBy: $any($event.target).value })"
+  >
+    @for (option of groupByOptions; track option) {
+      <option [value]="option">{{ groupByLabel[option] }}</option>
+    }
+  </select>
+  <select
+    appFilterControl
+    title="Vehículo"
+    [value]="criteria().vehicleId"
+    (change)="patch({ vehicleId: $any($event.target).value })"
+  >
+    <option value="">Todos los vehículos</option>
+    @for (vehicle of options().vehicles; track vehicle.id) {
+      <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+    }
+  </select>
+  <select
+    appFilterControl
+    title="Unidad"
+    [value]="criteria().unitId"
+    (change)="patch({ unitId: $any($event.target).value })"
+  >
+    <option value="">Todas las unidades</option>
+    @for (unit of options().units; track unit.id) {
+      <option [value]="unit.id">{{ unit.name }}</option>
+    }
+  </select>
+  <select
+    appFilterControl
+    title="Tipo de vehículo"
+    [value]="criteria().vehicleType"
+    (change)="patch({ vehicleType: $any($event.target).value })"
+  >
+    <option value="">Todos los tipos</option>
+    @for (type of vehicleTypes; track type) {
+      <option [value]="type">{{ vehicleTypeLabel[type] }}</option>
+    }
+  </select>
+  <input
+    appFilterControl
+    type="date"
+    title="Desde"
+    [value]="criteria().fromDate"
+    (input)="patch({ fromDate: $any($event.target).value })"
+  />
+  <input
+    appFilterControl
+    type="date"
+    title="Hasta"
+    [value]="criteria().toDate"
+    (input)="patch({ toDate: $any($event.target).value })"
+  />
+  <button type="button" appButton size="sm" (click)="clear()">Limpiar filtros</button>
+</app-filter-bar>

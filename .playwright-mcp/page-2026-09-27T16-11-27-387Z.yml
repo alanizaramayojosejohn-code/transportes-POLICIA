@@ -1,0 +1,176 @@
+- generic [ref=f7e4]:
+  - complementary [ref=f7e5]:
+    - generic [ref=f7e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f7e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f7e14]:
+      - link [ref=f7e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f7e22]
+      - generic [ref=f7e33]:
+        - link "Vehículos" [ref=f7e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f7e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f7e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f7e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f7e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f7e39]
+      - button [ref=f7e49]
+      - link [ref=f7e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f7e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f7e70]
+    - generic [ref=f7e81]: Sistema de información vehicular
+  - generic [ref=f7e82]:
+    - banner [ref=f7e83]:
+      - generic [ref=f7e84]:
+        - generic [ref=f7e85]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f7e86]
+      - generic [ref=f7e87]:
+        - generic [ref=f7e88]: En línea
+        - generic [ref=f7e90]:
+          - button "Tema claro" [ref=f7e91]
+          - button "Tema oscuro" [ref=f7e96]
+        - generic [ref=f7e100]:
+          - generic [ref=f7e101]: AD
+          - generic [ref=f7e102]:
+            - strong [ref=f7e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f7e104]
+    - main [ref=f7e105]:
+      - generic [ref=f7e106]:
+        - generic "Vehículos" [ref=f7e107]:
+          - generic [ref=f7e108]:
+            - generic [ref=f7e109]:
+              - heading "Vehículos" [level=2] [ref=f7e110]
+              - paragraph [ref=f7e111]: Registro y consulta centralizada del parque automotor.
+            - button "+ Nuevo vehículo" [ref=f7e113]
+        - generic [ref=f7e115]:
+          - generic [ref=f7e117]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f7e118]
+            - combobox [ref=f7e119]:
+              - option "Todas las condiciones" [selected]
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+            - combobox [ref=f7e120]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Ambulancia"
+              - option "Otro"
+          - generic [ref=f7e121]:
+            - table [ref=f7e123]:
+              - rowgroup [ref=f7e124]:
+                - row [ref=f7e125]:
+                  - columnheader "Placa" [ref=f7e126]
+                  - columnheader "Marca" [ref=f7e127]
+                  - columnheader "Modelo" [ref=f7e128]
+                  - columnheader "Unidad" [ref=f7e129]
+                  - columnheader "Condición" [ref=f7e130]
+                  - columnheader "Último KM" [ref=f7e131]
+                  - columnheader [ref=f7e132]
+              - rowgroup [ref=f7e133]:
+                - row [ref=f7e134]:
+                  - cell "PRUEBA" [ref=f7e135]
+                  - cell "prueba" [ref=f7e136]
+                  - cell "prueba" [ref=f7e137]
+                  - cell "Sin unidad asignada" [ref=f7e138]
+                  - cell "Sin evaluar" [ref=f7e139]
+                  - cell "—" [ref=f7e142]
+                  - cell [ref=f7e143]:
+                    - generic [ref=f7e144]:
+                      - button "Ver" [ref=f7e145]
+                      - button "Editar" [ref=f7e146]
+                      - button "Eliminar" [ref=f7e147]
+            - paragraph [ref=f7e148]: 1 vehículo(s) en total.
+        - generic [ref=f7e149]:
+          - button "Cerrar" [ref=f7e150]
+          - dialog "PRUEBA · prueba prueba" [active] [ref=f7e151]:
+            - generic [ref=f7e152]:
+              - button "Cerrar" [ref=f7e153]: ✕
+              - text: EXPEDIENTE VEHICULAR
+              - heading "PRUEBA · prueba prueba" [level=2] [ref=f7e154]
+              - paragraph [ref=f7e155]: Información centralizada e historial de la movilidad
+            - generic [ref=f7e156]:
+              - generic [ref=f7e159]:
+                - button "General" [ref=f7e160]
+                - button "Asignaciones" [ref=f7e161]
+                - button "Conductores" [ref=f7e162]
+                - button "Recorridos" [ref=f7e163]
+                - button "Combustible" [ref=f7e164]
+                - button "Mantenimiento" [ref=f7e165]
+                - button "Documentos" [ref=f7e166]
+                - button "Incidentes" [ref=f7e167]
+              - generic [ref=f7e168]:
+                - generic [ref=f7e169]:
+                  - img "Frontal" [ref=f7e170]
+                  - generic [ref=f7e171]: Frontal
+                  - button "Fotografía anterior" [ref=f7e172]
+                  - button "Fotografía siguiente" [ref=f7e176]
+                  - generic [ref=f7e180]: 1 / 2
+                - generic [ref=f7e181]:
+                  - button "Ver fotografía 1" [ref=f7e182]
+                  - button "Ver fotografía 2" [ref=f7e183]
+              - generic [ref=f7e184]:
+                - heading "Información general" [level=4] [ref=f7e185]
+                - generic [ref=f7e186]:
+                  - generic [ref=f7e188]:
+                    - generic [ref=f7e189]: Placa
+                    - strong [ref=f7e190]: PRUEBA
+                  - generic [ref=f7e192]:
+                    - generic [ref=f7e193]: Placa DNFR
+                    - strong [ref=f7e194]: prueba
+                  - generic [ref=f7e196]:
+                    - generic [ref=f7e197]: Tipo
+                    - strong [ref=f7e198]: Automóvil
+                  - generic [ref=f7e200]:
+                    - generic [ref=f7e201]: Marca
+                    - strong [ref=f7e202]: prueba
+                  - generic [ref=f7e204]:
+                    - generic [ref=f7e205]: Modelo
+                    - strong [ref=f7e206]: prueba
+                  - generic [ref=f7e208]:
+                    - generic [ref=f7e209]: Año
+                    - strong [ref=f7e210]: "2000"
+                  - generic [ref=f7e212]:
+                    - generic [ref=f7e213]: Chasis
+                    - strong [ref=f7e214]: prueba
+                  - generic [ref=f7e216]:
+                    - generic [ref=f7e217]: Motor
+                    - strong [ref=f7e218]: prueba
+                  - generic [ref=f7e220]:
+                    - generic [ref=f7e221]: Color
+                    - strong [ref=f7e222]: "`rueba"
+                  - generic [ref=f7e224]:
+                    - generic [ref=f7e225]: Unidad
+                    - strong [ref=f7e226]: Sin asignar
+                  - generic [ref=f7e228]:
+                    - generic [ref=f7e229]: Estado
+                    - strong [ref=f7e230]:
+                      - generic [ref=f7e231]: Sin evaluar
+                  - generic [ref=f7e234]:
+                    - generic [ref=f7e235]: Último KM
+                    - strong [ref=f7e236]: —
+                  - generic [ref=f7e238]:
+                    - generic [ref=f7e239]: Conductor encargado
+                    - strong [ref=f7e240]: Sin conductor asignado
+                  - generic [ref=f7e242]:
+                    - generic [ref=f7e243]: Encargado de transportes
+                    - strong [ref=f7e244]: Sin encargado
+                - button "Registrar condición" [ref=f7e246]
+                - heading "Historial de condición" [level=4] [ref=f7e247]
+                - paragraph [ref=f7e248]: Sin evaluar todavía.

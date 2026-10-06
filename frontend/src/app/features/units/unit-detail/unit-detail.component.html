@@ -1,150 +1,159 @@
 @if (unit(); as u) {
-  <app-drawer eyebrow="UNIDAD" [title]="u.name" (closed)="closed.emit()">
-    <div class="mb-5 grid grid-cols-2 gap-3">
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Código</span>
-        <strong class="text-[13.5px] font-semibold">{{ u.code || '—' }}</strong>
+  <app-modal title="Ficha de unidad" (closed)="closed.emit()">
+    <div class="px-[22px] pb-5">
+      <div class="mb-5 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 min-[640px]:grid-cols-3">
+        <app-data-cell label="Código">{{ u.code || '—' }}</app-data-cell>
+        <app-data-cell label="Unidad">{{ u.name }}</app-data-cell>
+        <app-data-cell label="Tipo">{{ u.type || '—' }}</app-data-cell>
+        <app-data-cell label="Unidad superior">{{
+          u.parent?.name || 'Sin superior'
+        }}</app-data-cell>
+        <app-data-cell label="Ubicación">{{ u.location || '—' }}</app-data-cell>
+        <app-data-cell label="Estado">
+          <app-badge [tone]="u.isActive ? 'green' : 'gray'">{{
+            u.isActive ? 'Activa' : 'Inactiva'
+          }}</app-badge>
+        </app-data-cell>
+        <app-data-cell label="Vehículos actuales">{{ u.activeVehicleCount }}</app-data-cell>
+        <app-data-cell label="Encargado actual">{{
+          u.currentManager
+            ? u.currentManager.officer.rank +
+              ' ' +
+              u.currentManager.officer.firstName +
+              ' ' +
+              u.currentManager.officer.lastName
+            : 'Sin encargado'
+        }}</app-data-cell>
       </div>
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Estado</span>
-        <app-badge [tone]="u.isActive ? 'green' : 'gray'">{{
-          u.isActive ? 'Activa' : 'Inactiva'
-        }}</app-badge>
-      </div>
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Tipo</span>
-        <strong class="text-[13.5px] font-semibold">{{ u.type || '—' }}</strong>
-      </div>
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Ubicación</span>
-        <strong class="text-[13.5px] font-semibold">{{ u.location || '—' }}</strong>
-      </div>
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Unidad superior</span>
-        <strong class="text-[13.5px] font-semibold">{{ u.parent?.name || 'Sin superior' }}</strong>
-      </div>
-      <div class="rounded-md border border-edge bg-surface-2 p-3">
-        <span class="block text-[11px] text-ink-faint">Vehículos asignados</span>
-        <strong class="text-[13.5px] font-semibold">{{ u.activeVehicleCount }}</strong>
-      </div>
-    </div>
 
-    @if (canWrite()) {
-      <div class="mb-5 flex flex-wrap gap-2.5">
-        <button
-          type="button"
-          class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
-          (click)="editRequested.emit()"
-        >
-          Editar unidad
-        </button>
-        <button
-          type="button"
-          class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
-          (click)="toggleActive()"
-        >
-          {{ u.isActive ? 'Dar de baja' : 'Reactivar' }}
-        </button>
-        @if (!u.currentManager) {
-          <button
-            type="button"
-            class="rounded-md bg-accent-strong px-3.5 py-2 text-[12.5px] font-semibold text-on-accent"
-            (click)="showAssignForm.set(true)"
-          >
-            Designar encargado
+      @if (canWrite()) {
+        <div class="mb-5 flex flex-wrap gap-2.5">
+          <button type="button" appButton size="sm" (click)="editRequested.emit()">
+            Editar unidad
           </button>
-        } @else {
-          <button
-            type="button"
-            class="rounded-md border border-edge-strong px-3.5 py-2 text-[12.5px] font-semibold text-ink"
-            (click)="closingAssignment.set(!closingAssignment())"
-          >
-            Cerrar designación
+          <button type="button" appButton size="sm" (click)="toggleActive()">
+            {{ u.isActive ? 'Dar de baja' : 'Reactivar' }}
           </button>
-        }
-      </div>
-    }
-
-    @if (actionError()) {
-      <p class="mb-4 text-[13px] text-red">{{ actionError() }}</p>
-    }
-
-    @if (closingAssignment()) {
-      <div class="mb-5 rounded-md border border-edge bg-surface-2 p-4">
-        <label class="mb-3 flex flex-col gap-1.5">
-          <span class="text-xs font-semibold text-ink-muted">Fecha de fin *</span>
-          <input
-            type="date"
-            class="rounded-md border border-edge bg-surface px-3 py-2 text-[13.5px]"
-            [value]="closeDate()"
-            (input)="closeDate.set($any($event.target).value)"
-          />
-        </label>
-        <div class="flex justify-end gap-2">
-          <button
-            type="button"
-            class="rounded-md border border-edge-strong px-3.5 py-1.5 text-[12.5px] font-semibold"
-            (click)="closingAssignment.set(false)"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            class="rounded-md bg-accent-strong px-3.5 py-1.5 text-[12.5px] font-semibold text-on-accent"
-            (click)="closeAssignment()"
-          >
-            Confirmar
-          </button>
-        </div>
-      </div>
-    }
-
-    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Encargado vigente</h4>
-    @if (u.currentManager; as m) {
-      <div class="mb-5 rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
-        <strong>{{ m.officer.rank }} {{ m.officer.firstName }} {{ m.officer.lastName }}</strong>
-        <p class="text-ink-faint">Desde {{ formatDate(m.startDate) }}</p>
-      </div>
-    } @else {
-      <p class="mb-5 text-[12.5px] text-ink-muted">Sin encargado.</p>
-    }
-
-    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Historial de encargados</h4>
-    @if (u.managerHistory.length === 0) {
-      <p class="mb-5 text-[12.5px] text-ink-muted">Sin designaciones registradas.</p>
-    } @else {
-      <div class="mb-5 flex flex-col gap-2">
-        @for (entry of u.managerHistory; track entry.id) {
-          <div class="rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
-            <strong
-              >{{ entry.officer.rank }} {{ entry.officer.firstName }}
-              {{ entry.officer.lastName }}</strong
+          @if (!u.currentManager) {
+            <button
+              type="button"
+              appButton
+              variant="primary"
+              size="sm"
+              (click)="showAssignForm.set(true)"
             >
-            <p class="text-ink-faint">
-              {{ formatDate(entry.startDate) }} –
-              {{ entry.endDate ? formatDate(entry.endDate) : 'vigente' }}
-            </p>
-          </div>
-        }
-      </div>
-    }
+              Designar encargado
+            </button>
+          } @else {
+            <button
+              type="button"
+              appButton
+              size="sm"
+              (click)="closingAssignment.set(!closingAssignment())"
+            >
+              Cerrar designación
+            </button>
+          }
+        </div>
+      }
 
-    <h4 class="mb-2.5 font-serif text-[14.5px] font-semibold">Sub-unidades</h4>
-    @if (u.children.length === 0) {
-      <p class="text-[12.5px] text-ink-muted">No tiene sub-unidades.</p>
-    } @else {
-      <div class="flex flex-col gap-2">
-        @for (child of u.children; track child.id) {
-          <div class="rounded-md border border-edge bg-surface-2 p-3 text-[12.5px]">
-            <strong>{{ child.name }}</strong>
-            <app-badge [tone]="child.isActive ? 'green' : 'gray'">
-              {{ child.isActive ? 'Activa' : 'Inactiva' }}
-            </app-badge>
+      @if (actionError()) {
+        <p class="mb-4 text-13 text-red">{{ actionError() }}</p>
+      }
+
+      @if (closingAssignment()) {
+        <div class="mb-5 rounded-sm border border-edge bg-surface-2 p-4">
+          <app-field label="Fecha de fin *" class="mb-3">
+            <input
+              appFieldControl
+              type="date"
+              [value]="closeDate()"
+              (input)="closeDate.set($any($event.target).value)"
+            />
+          </app-field>
+          <div class="flex justify-end gap-2">
+            <button type="button" appButton size="sm" (click)="closingAssignment.set(false)">
+              Cancelar
+            </button>
+            <button type="button" appButton variant="primary" size="sm" (click)="closeAssignment()">
+              Confirmar
+            </button>
           </div>
-        }
-      </div>
-    }
-  </app-drawer>
+        </div>
+      }
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Encargado vigente</h4>
+      @if (u.currentManager; as m) {
+        <app-timeline-item class="mb-5">
+          <strong>{{ m.officer.rank }} {{ m.officer.firstName }} {{ m.officer.lastName }}</strong>
+          <p class="text-ink-faint">Desde {{ formatDate(m.startDate) }}</p>
+        </app-timeline-item>
+      } @else {
+        <p class="mb-5 text-12-5 text-ink-muted">Sin encargado.</p>
+      }
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Historial de encargados</h4>
+      @if (u.managerHistory.length === 0) {
+        <p class="mb-5 text-12-5 text-ink-muted">Sin designaciones registradas.</p>
+      } @else {
+        <div class="mb-5 flex flex-col gap-2">
+          @for (entry of u.managerHistory; track entry.id) {
+            <app-timeline-item>
+              <strong
+                >{{ entry.officer.rank }} {{ entry.officer.firstName }}
+                {{ entry.officer.lastName }}</strong
+              >
+              <p class="text-ink-faint">
+                {{ formatDate(entry.startDate) }} –
+                {{ entry.endDate ? formatDate(entry.endDate) : 'vigente' }}
+              </p>
+            </app-timeline-item>
+          }
+        </div>
+      }
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Vehículos de la unidad</h4>
+      @if (vehicles().items.length === 0) {
+        <p class="mb-5 text-12-5 text-ink-muted">Sin vehículos asignados.</p>
+      } @else {
+        <div class="mb-5 flex flex-col gap-2">
+          @for (v of vehicles().items; track v.id) {
+            <app-timeline-item>
+              <div class="flex items-center justify-between">
+                <strong>{{ v.plate }}</strong>
+                <span class="text-ink-faint">{{
+                  v.currentDriver
+                    ? (v.currentDriver.rank ? v.currentDriver.rank + ' ' : '') +
+                      v.currentDriver.firstName +
+                      ' ' +
+                      v.currentDriver.lastName
+                    : 'Sin conductor asignado'
+                }}</span>
+              </div>
+            </app-timeline-item>
+          }
+        </div>
+      }
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Sub-unidades</h4>
+      @if (u.children.length === 0) {
+        <p class="text-12-5 text-ink-muted">No tiene sub-unidades.</p>
+      } @else {
+        <div class="flex flex-col gap-2">
+          @for (child of u.children; track child.id) {
+            <app-timeline-item>
+              <div class="flex items-center justify-between">
+                <strong>{{ child.name }}</strong>
+                <app-badge [tone]="child.isActive ? 'green' : 'gray'">
+                  {{ child.isActive ? 'Activa' : 'Inactiva' }}
+                </app-badge>
+              </div>
+            </app-timeline-item>
+          }
+        </div>
+      }
+    </div>
+  </app-modal>
 
   @if (showAssignForm()) {
     <app-manager-assignment-form
@@ -153,4 +162,14 @@
       (cancelled)="showAssignForm.set(false)"
     />
   }
+} @else {
+  <app-modal title="Ficha de unidad" (closed)="closed.emit()">
+    <div class="flex items-center justify-center px-[22px] py-16">
+      @if (loading()) {
+        <app-spinner size="lg" label="Cargando la ficha…" />
+      } @else {
+        <p class="text-13 text-ink-muted">No se encontró la unidad solicitada.</p>
+      }
+    </div>
+  </app-modal>
 }

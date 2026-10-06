@@ -1,0 +1,97 @@
+<app-page-head
+  title="Incidentes"
+  description="Trazabilidad de hechos relacionados con vehículos y conductores."
+>
+  <app-export-buttons
+    title="Incidentes vehiculares"
+    filenameBase="incidentes-vehiculares"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWrite()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Registrar incidente
+    </button>
+  }
+</app-page-head>
+
+<app-notice class="mb-4">
+  Este módulo registra el incidente y sus antecedentes vehiculares. No contempla ni administra
+  procesos disciplinarios.
+</app-notice>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo, conductor o lugar..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ typeLabel[t] }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Conductor</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Lugar</th>
+        <th appTableHeadCell>Referencia</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (incident of page().items; track incident.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(incident.occurredAt) }}</td>
+          <td appTableCell class="font-medium">{{ incident.vehicle.plate }}</td>
+          <td appTableCell>
+            {{ incident.driver ? incident.driver.firstName + ' ' + incident.driver.lastName : '—' }}
+          </td>
+          <td appTableCell>{{ typeLabel[incident.type] }}</td>
+          <td appTableCell>{{ incident.place }}</td>
+          <td appTableCell>{{ incident.policeReportNumber || incident.code }}</td>
+          <td appTableCell class="text-right">
+            <button
+              type="button"
+              appButton
+              size="sm"
+              variant="soft"
+              (click)="detailIncidentId.set(incident.id)"
+            >
+              Ver
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin incidentes registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="incidente(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-incident-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailIncident(); as incident) {
+  <app-incident-detail [incident]="incident" (closed)="detailIncidentId.set(null)" />
+}

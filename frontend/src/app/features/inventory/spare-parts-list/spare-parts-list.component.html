@@ -1,0 +1,144 @@
+<app-page-head title="Inventario" description="Repuestos, lubricantes, filtros y materiales.">
+  <app-export-buttons
+    title="Kardex / Inventario"
+    filenameBase="kardex-inventario"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWriteInventory()) {
+    <button type="button" appButton (click)="showPartForm.set(true)">+ Artículo</button>
+    <button type="button" appButton variant="primary" (click)="showMovementForm.set(true)">
+      + Movimiento
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por código o nombre..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select
+      appFilterControl
+      [value]="categoryId()"
+      (change)="categoryId.set($any($event.target).value)"
+    >
+      <option value="">Todas las categorías</option>
+      @for (category of categories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ typeLabels[t] }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="isActive()"
+      (change)="isActive.set($any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Código</th>
+        <th appTableHeadCell>Artículo</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Categoría</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Stock</th>
+        <th appTableHeadCell>Mínimo</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (part of page().items; track part.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ part.code }}</td>
+          <td appTableCell>{{ part.name }}</td>
+          <td appTableCell>{{ typeLabels[part.type] }}</td>
+          <td appTableCell>{{ part.category?.name || '—' }}</td>
+          <td appTableCell>{{ part.unit }}</td>
+          <td appTableCell>{{ part.currentStock }}</td>
+          <td appTableCell>{{ part.minStock }}</td>
+          <td appTableCell>
+            @if (!part.isActive) {
+              <app-badge tone="gray">Inactivo</app-badge>
+            } @else if (isLowStock(part.currentStock, part.minStock)) {
+              <app-badge tone="red">Bajo stock</app-badge>
+            } @else {
+              <app-badge tone="green">Disponible</app-badge>
+            }
+          </td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailPartId.set(part.id)"
+              >
+                Ver
+              </button>
+              @if (currentRole.canWriteInventory()) {
+                <button type="button" appButton size="sm" (click)="edit(part.id)">Editar</button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="toggleActive(part.id, part.isActive)"
+                >
+                  {{ part.isActive ? 'Dar de baja' : 'Reactivar' }}
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="9" [loading]="loading()">
+          Sin artículos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="artículo(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showPartForm()) {
+  <app-spare-part-form (saved)="closePartForm()" (cancelled)="closePartForm()" />
+}
+
+@if (editingPartId()) {
+  <app-spare-part-form
+    [part]="editingPart"
+    (saved)="closePartForm()"
+    (cancelled)="closePartForm()"
+  />
+}
+
+@if (showMovementForm()) {
+  <app-stock-movement-form (saved)="closeMovementForm()" (cancelled)="closeMovementForm()" />
+}
+
+@if (detailPart(); as part) {
+  <app-spare-part-detail [part]="part" (closed)="detailPartId.set(null)" />
+}

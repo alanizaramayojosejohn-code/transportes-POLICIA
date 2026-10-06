@@ -4,6 +4,26 @@
 > `personal_policial`, `encargado_transportes_unidad`) y con el prototipo `index.html`
 > (pantalla «Unidades y encargados de transportes»). Continúa el spec 001, que dejó
 > deliberadamente fuera la unidad a la que pertenece un vehículo.
+>
+> **Fusión posterior con `Personnel`:** el modelo `Officer` que este spec introdujo para el
+> personal policial se fusionó con `Driver` (spec 005) en un único modelo `Personnel`, con
+> banderas independientes `isDriver` / `isOfficer` / `isAdmin` — la misma persona puede conducir,
+> ser encargada de transportes, tener cuenta de sistema, o cualquier combinación, y puede ganar o
+> perder un rol con el tiempo sin volver a registrarse. Lo que este spec describe como «personal
+> policial» u «`Officer`» es ahora una ficha de `Personnel`; designar a alguien como encargado
+> (RF-18) marca `isOfficer = true` automáticamente si todavía no lo tenía. El resto del documento
+> (RF-13 a RF-25) sigue siendo válido tal cual: sólo cambió el nombre de la tabla subyacente.
+>
+> **Enmienda (spec 014/015):** el botón «+ Personal» de la vista de Unidades se retira; registrar
+> personal policial pasa a hacerse exclusivamente desde Conductores (spec 005) o Área de Transportes
+> (spec 015), nunca desde Unidades. La designación de encargado (RF-18) pasa a ofrecerse también
+> **en el mismo formulario de alta de la unidad** (no sólo como acción posterior sobre una unidad ya
+> creada), y opcionalmente crea de una vez la cuenta de acceso del encargado con rol `TRANSPORTES`
+> (spec 015). Desde esa cuenta, `TRANSPORTES` deja de ser un permiso global: opera acotado a las
+> unidades donde la persona es encargada de transportes vigente (spec 015, RF-12 a RF-15) —
+> `ADMINISTRADOR` sigue sin acotamiento. Un encargado de transportes puede además ser conductor de un
+> vehículo (spec 014) sin que una cosa excluya la otra: son banderas independientes de la misma
+> ficha.
 
 ## Contexto y objetivo
 
@@ -210,7 +230,7 @@ implementación no lo invente dos veces:
 | `unidad` | `Unit` / tabla `unit` |
 | `id_unidad_superior` | `parentId` |
 | `codigo`, `nombre`, `tipo`, `ubicacion` | `code`, `name`, `type`, `location` |
-| `personal_policial` | `Officer` / tabla `officer` |
+| `personal_policial` | `Personnel` / tabla `personnel`, con `isOfficer = true` |
 | `ci`, `complemento` | `ci`, `ciComplement` |
 | `nombres`, `apellidos`, `grado` | `firstName`, `lastName`, `rank` |
 | `id_unidad_actual` | `currentUnitId` |

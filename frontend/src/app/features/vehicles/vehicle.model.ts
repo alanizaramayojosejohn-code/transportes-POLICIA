@@ -1,5 +1,22 @@
+import {
+  ProcedureChecklistItem,
+  ProcedureChecklistItemDraft,
+} from '../procedure-types/procedure-type.model';
+
 export type VehicleType =
-  'AUTOMOVIL' | 'CAMIONETA' | 'MOTOCICLETA' | 'MINIBUS' | 'CAMION' | 'AMBULANCIA' | 'OTRO';
+  | 'AUTOMOVIL'
+  | 'CAMIONETA'
+  | 'MOTOCICLETA'
+  | 'MINIBUS'
+  | 'CAMION'
+  | 'CAMION_CISTERNA'
+  | 'CAMION_GRUA'
+  | 'CAMION_BOMBERO'
+  | 'CAMION_RESCATE'
+  | 'CUADRATRACK'
+  | 'FURGON'
+  | 'AMBULANCIA'
+  | 'OTRO';
 
 export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
   AUTOMOVIL: 'Automóvil',
@@ -7,6 +24,12 @@ export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
   MOTOCICLETA: 'Motocicleta',
   MINIBUS: 'Minibús',
   CAMION: 'Camión',
+  CAMION_CISTERNA: 'Camión cisterna',
+  CAMION_GRUA: 'Camión grúa',
+  CAMION_BOMBERO: 'Camión de bomberos',
+  CAMION_RESCATE: 'Camión de rescate',
+  CUADRATRACK: 'Cuadratrack',
+  FURGON: 'Furgón',
   AMBULANCIA: 'Ambulancia',
   OTRO: 'Otro',
 };
@@ -19,7 +42,9 @@ export type VehicleConditionCode =
   | 'INOPERABLE'
   | 'EXTRAVIADO'
   | 'DEVUELTO'
-  | 'BAJA';
+  | 'BAJA'
+  | 'SEPARADO_POR_INCIDENTE'
+  | 'SINIESTRADO';
 
 export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   BUENO: 'Bueno',
@@ -30,6 +55,8 @@ export const VEHICLE_CONDITION_LABEL: Record<VehicleConditionCode, string> = {
   EXTRAVIADO: 'Extraviado',
   DEVUELTO: 'Devuelto',
   BAJA: 'Dado de baja',
+  SEPARADO_POR_INCIDENTE: 'Separado por incidente',
+  SINIESTRADO: 'Siniestrado',
 };
 
 /** Colores de badge por condición, siguiendo la paleta del diseño (spec 001). */
@@ -42,6 +69,8 @@ export const VEHICLE_CONDITION_BADGE: Record<VehicleConditionCode, 'green' | 'am
   EXTRAVIADO: 'red',
   DEVUELTO: 'amber',
   BAJA: 'red',
+  SEPARADO_POR_INCIDENTE: 'red',
+  SINIESTRADO: 'red',
 };
 
 export interface VehicleCondition {
@@ -57,6 +86,26 @@ export interface UnitAssignmentSummary {
   startDate: string;
   endDate: string | null;
   unit: { id: string; name: string };
+}
+
+export interface VehicleDriverSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  rank: string | null;
+}
+
+export interface DriverAssignmentSummary {
+  id: string;
+  startDate: string;
+  endDate: string | null;
+  driver: VehicleDriverSummary;
+}
+
+export interface VehicleCurrentUnit {
+  id: string;
+  name: string;
+  currentManager: { officer: VehicleDriverSummary } | null;
 }
 
 export interface Vehicle {
@@ -77,8 +126,16 @@ export interface Vehicle {
   createdAt: string;
   currentCondition: VehicleCondition | null;
   conditionHistory: VehicleCondition[];
-  currentUnit: { id: string; name: string } | null;
+  currentUnit: VehicleCurrentUnit | null;
   unitAssignmentHistory: UnitAssignmentSummary[];
+  /// Conductor encargado vigente (spec 014).
+  currentDriver: VehicleDriverSummary | null;
+  driverAssignmentHistory: DriverAssignmentSummary[];
+  /// Mayor kilometraje conocido entre recorridos, combustible y lecturas
+  /// sueltas (spec 014); null si el vehículo no tiene ninguna todavía.
+  lastOdometer: number | null;
+  /// Checklist de trámites de su registro (spec 016, RF-17).
+  procedureChecklistItems: ProcedureChecklistItem[];
 }
 
 export interface VehiclePage {
@@ -108,6 +165,8 @@ export interface CreateVehicleInput {
   origin?: string;
   receptionSource?: string;
   observations?: string;
+  /// Spec 016 RF-9/RF-10: checklist de trámites mostrado al registrar.
+  checklistItems?: ProcedureChecklistItemDraft[];
 }
 
 export type UpdateVehicleInput = Partial<CreateVehicleInput>;
@@ -115,4 +174,17 @@ export type UpdateVehicleInput = Partial<CreateVehicleInput>;
 export interface RegisterVehicleConditionInput {
   code: VehicleConditionCode;
   reason?: string;
+}
+
+export interface VehiclePhoto {
+  id: string;
+  slotKey: string;
+  dataUrl: string;
+  vehicleId: string;
+}
+
+export interface SetVehiclePhotoInput {
+  vehicleId: string;
+  slotKey: string;
+  dataUrl: string;
 }

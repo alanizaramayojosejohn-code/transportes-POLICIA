@@ -1,0 +1,41 @@
+@if (trip(); as t) {
+  <app-modal title="Detalle del recorrido" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="RC" [title]="t.vehicle.plate" [subtitle]="subtitle()">
+        <app-badge [tone]="t.returnAt ? 'gray' : 'amber'">
+          {{ t.returnAt ? 'Cerrado' : 'Abierto' }}
+        </app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Conductor">{{ driverName() }}</app-data-cell>
+        <app-data-cell label="Unidad">{{
+          t.vehicle.currentUnit?.name || 'Sin asignar'
+        }}</app-data-cell>
+        <app-data-cell label="Salida">{{ formatDateTime(t.departureAt) }}</app-data-cell>
+        <app-data-cell label="Llegada">{{ formatDateTime(t.returnAt) }}</app-data-cell>
+        <app-data-cell label="KM inicial">{{ t.departureOdometer }}</app-data-cell>
+        <app-data-cell label="KM final">{{ t.returnOdometer ?? '—' }}</app-data-cell>
+        <app-data-cell label="KM recorridos">{{ t.distanceKm ?? '—' }}</app-data-cell>
+        <app-data-cell label="Combustible">{{ fuelLevels() }}</app-data-cell>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <app-detail-section label="Destino / motivo">{{ t.destination }}</app-detail-section>
+        <app-detail-section label="Estado del vehículo">{{
+          conditionNotes() || 'Sin observaciones de condición.'
+        }}</app-detail-section>
+        <app-detail-section label="Daños observados">{{
+          t.damagesFound || 'Sin daños registrados.'
+        }}</app-detail-section>
+        <app-detail-section label="Observaciones">{{
+          t.incidentNotes || 'Sin observaciones.'
+        }}</app-detail-section>
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

@@ -1,0 +1,39 @@
+@if (assignment(); as a) {
+  <app-modal title="Detalle de asignación" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="AS" [title]="a.vehicle.plate" [subtitle]="subtitle()">
+        <app-badge [tone]="isCurrent() ? 'green' : 'amber'">
+          {{ isCurrent() ? 'Actual' : 'Histórica' }}
+        </app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Vehículo">{{ a.vehicle.plate }}</app-data-cell>
+        <app-data-cell label="Unidad">{{ a.unit.name }}</app-data-cell>
+        <app-data-cell label="Fecha inicio">{{ formatDate(a.startDate) }}</app-data-cell>
+        <app-data-cell label="Fecha fin">{{
+          a.endDate ? formatDate(a.endDate) : 'Sin cerrar'
+        }}</app-data-cell>
+        <app-data-cell label="Documento">{{ a.referenceDocument || '—' }}</app-data-cell>
+        <app-data-cell label="Estado">
+          <app-badge [tone]="isCurrent() ? 'green' : 'amber'">
+            {{ isCurrent() ? 'Actual' : 'Histórica' }}
+          </app-badge>
+        </app-data-cell>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <app-detail-section label="Motivo">{{
+          a.reason || 'Sin motivo registrado.'
+        }}</app-detail-section>
+        <app-detail-section label="Observaciones">{{
+          a.notes || 'Sin observaciones.'
+        }}</app-detail-section>
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

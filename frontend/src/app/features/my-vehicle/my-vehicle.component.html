@@ -1,0 +1,222 @@
+<app-page-head
+  title="Mi vehículo"
+  description="Vehículo del que es conductor encargado."
+></app-page-head>
+
+@if (assignment(); as a) {
+  <app-trip-outbox-notice />
+
+  @if (openTrip(); as trip) {
+    <app-card class="mb-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h2 class="text-14-5 font-semibold">
+              {{ arrivalQueued() ? 'Llegada registrada' : 'Llegada pendiente' }}
+            </h2>
+            <app-badge [tone]="arrivalQueued() ? 'blue' : 'amber'">
+              {{ arrivalQueued() ? 'Sin enviar' : 'Pendiente' }}
+            </app-badge>
+          </div>
+          <p class="mt-1 text-12-5 text-ink-muted">
+            @if (arrivalQueued()) {
+              La llegada quedó registrada en este equipo y se enviará al reconectar.
+            } @else {
+              El vehículo está en la calle. Registre la llegada al volver.
+            }
+          </p>
+        </div>
+
+        @if (!arrivalQueued()) {
+          <button
+            type="button"
+            appButton
+            variant="primary"
+            class="flex-none"
+            (click)="showArrivalForm.set(true)"
+          >
+            Registrar llegada
+          </button>
+        }
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 min-[640px]:grid-cols-4">
+        <app-data-cell label="Destino">{{ trip.destination }}</app-data-cell>
+        <app-data-cell label="Salida">{{ formatDateTime(trip.departureAt) }}</app-data-cell>
+        <app-data-cell label="KM de salida">{{ trip.departureOdometer }}</app-data-cell>
+        <app-data-cell label="Estado en salida">{{
+          trip.departureConditionNotes || '—'
+        }}</app-data-cell>
+      </div>
+    </app-card>
+  }
+
+  <app-card>
+    <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 min-[640px]:grid-cols-3">
+      <app-data-cell label="Placa">{{ a.vehicle.plate }}</app-data-cell>
+      <app-data-cell label="Unidad">{{
+        a.vehicle.currentUnit?.name || 'Sin asignar'
+      }}</app-data-cell>
+      <app-data-cell label="Kilometraje actual">{{ a.vehicle.lastOdometer ?? '—' }}</app-data-cell>
+      <app-data-cell label="Encargado de transportes">
+        @if (a.vehicle.currentUnit?.currentManager?.officer; as m) {
+          {{ (m.rank ? m.rank + ' ' : '') + m.firstName + ' ' + m.lastName }}
+        } @else {
+          Sin encargado
+        }
+      </app-data-cell>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      @if (!openTrip()) {
+        <button type="button" appButton variant="primary" (click)="showDepartureForm.set(true)">
+          Registrar salida
+        </button>
+      }
+      <button type="button" appButton (click)="toggleOdometerPanel()">Registrar kilometraje</button>
+      <button type="button" appButton variant="soft" routerLink="/reportes/historial-vehiculo">
+        Ver historial completo
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="mt-3 text-13 text-red">{{ errorMessage() }}</p>
+    }
+
+    @if (panel() === 'odometer') {
+      <div class="mt-4 rounded-sm border border-edge bg-surface-2 p-4">
+        <app-field label="Kilometraje actual *" class="mb-3">
+          <input
+            appFieldControl
+            type="number"
+            [value]="odometerValue() ?? ''"
+            (input)="
+              odometerValue.set(
+                $any($event.target).value === '' ? null : +$any($event.target).value
+              )
+            "
+          />
+        </app-field>
+        <app-field label="Observaciones" class="mb-3">
+          <textarea
+            appFieldControl
+            [value]="odometerNotes()"
+            (input)="odometerNotes.set($any($event.target).value)"
+          ></textarea>
+        </app-field>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            appButton
+            variant="primary"
+            size="sm"
+            [disabled]="submitting()"
+            (click)="registerOdometer()"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+    }
+  </app-card>
+
+  <app-card class="mt-4">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos recorridos</h2>
+      <a
+        routerLink="/recorridos"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a recorridos</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Destino</th>
+          <th appTableHeadCell>Salida</th>
+          <th appTableHeadCell>Llegada</th>
+          <th appTableHeadCell>KM</th>
+          <th appTableHeadCell>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trip of recentTrips().items; track trip.id) {
+          <tr appTableRow>
+            <td appTableCell>{{ trip.destination }}</td>
+            <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
+            <td appTableCell>{{ formatDateTime(trip.returnAt) }}</td>
+            <td appTableCell>{{ trip.distanceKm ?? '—' }}</td>
+            <td appTableCell>
+              <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
+                {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
+              </app-badge>
+            </td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="5" [loading]="recentTripsLoading()">
+            Sin recorridos registrados todavía.
+          </tr>
+        }
+      </tbody>
+    </app-table>
+  </app-card>
+
+  <app-card class="mt-4">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos cargos de combustible</h2>
+      <a
+        routerLink="/combustible"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a combustible</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Fecha</th>
+          <th appTableHeadCell>Tipo</th>
+          <th appTableHeadCell>Litros</th>
+          <th appTableHeadCell>Costo total</th>
+          <th appTableHeadCell>Vale</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of recentFuelRecords().items; track record.id) {
+          <tr appTableRow>
+            <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+            <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+            <td appTableCell>{{ record.quantity }}</td>
+            <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+            <td appTableCell>{{ record.ticketNumber || '—' }}</td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="5" [loading]="recentFuelRecordsLoading()">
+            Sin cargas de combustible registradas todavía.
+          </tr>
+        }
+      </tbody>
+    </app-table>
+  </app-card>
+
+  @if (showDepartureForm()) {
+    <app-trip-form
+      (saved)="showDepartureForm.set(false)"
+      (cancelled)="showDepartureForm.set(false)"
+    />
+  }
+
+  @if (showArrivalForm()) {
+    @if (openTrip(); as trip) {
+      <app-trip-close-form
+        [trip]="trip"
+        (saved)="showArrivalForm.set(false)"
+        (cancelled)="showArrivalForm.set(false)"
+      />
+    }
+  }
+} @else {
+  <app-notice>
+    Todavía no tiene un vehículo a cargo. Solicite su asignación al encargado de transportes de su
+    unidad.
+  </app-notice>
+}

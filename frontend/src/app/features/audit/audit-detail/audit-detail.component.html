@@ -1,0 +1,57 @@
+@if (entry(); as e) {
+  <app-modal
+    eyebrow="TRAZABILIDAD"
+    title="Detalle de auditoría"
+    [description]="e.description"
+    small
+    (closed)="closed.emit()"
+  >
+    <div class="px-[22px] py-5">
+      <div class="mb-5 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Fecha y hora">{{ formatDateTime(e.createdAt) }}</app-data-cell>
+        <app-data-cell label="Usuario">
+          @if (e.user; as u) {
+            {{ u.username }}
+            <span class="text-ink-faint">· {{ u.fullName }}</span>
+          } @else {
+            <span class="text-ink-faint">Usuario eliminado</span>
+          }
+        </app-data-cell>
+        <app-data-cell label="Módulo">{{ moduleLabel[e.module] || e.module }}</app-data-cell>
+        <app-data-cell label="Acción">
+          <app-badge [tone]="actionTone[e.action]">{{ actionLabel[e.action] }}</app-badge>
+        </app-data-cell>
+        <app-data-cell label="Entidad / referencia">
+          {{ e.entityLabel || e.entity }}
+          @if (e.entityLabel) {
+            <span class="text-ink-faint">· {{ e.entity }}</span>
+          }
+        </app-data-cell>
+        <app-data-cell label="Origen">{{ e.ipAddress || '—' }}</app-data-cell>
+      </div>
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Descripción</h4>
+      <div class="mb-5 rounded-sm border border-edge bg-surface-2 p-3 text-12-5 text-ink-muted">
+        {{ e.description }}
+      </div>
+
+      <h4 class="mb-2.5 font-serif text-14-5 font-semibold">Detalle del evento</h4>
+      @if (e.after) {
+        <pre
+          class="max-h-[240px] overflow-auto rounded-sm border border-edge bg-surface-2 p-3 text-11-5 leading-relaxed text-ink-muted"
+          >{{ e.after }}</pre>
+      } @else {
+        <p class="text-12-5 text-ink-muted">Sin datos registrados para este evento.</p>
+      }
+
+      @if (e.userAgent) {
+        <h4 class="mb-2.5 mt-5 font-serif text-14-5 font-semibold">Equipo</h4>
+        <p class="break-words text-12-5 text-ink-muted">{{ e.userAgent }}</p>
+      }
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

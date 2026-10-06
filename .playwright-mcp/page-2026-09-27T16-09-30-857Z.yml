@@ -1,0 +1,99 @@
+- generic [ref=f2e4]:
+  - complementary [ref=f2e5]:
+    - generic [ref=f2e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f2e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f2e14]:
+      - link [ref=f2e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f2e22]
+      - generic [ref=f2e33]:
+        - link "Vehículos" [ref=f2e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f2e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f2e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f2e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f2e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f2e39]
+      - button [ref=f2e49]
+      - link [ref=f2e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f2e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f2e70]
+    - generic [ref=f2e81]: Sistema de información vehicular
+  - generic [ref=f2e82]:
+    - banner [ref=f2e83]:
+      - generic [ref=f2e84]:
+        - generic [ref=f2e85]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f2e86]
+      - generic [ref=f2e87]:
+        - generic [ref=f2e88]: En línea
+        - generic [ref=f2e90]:
+          - button "Tema claro" [ref=f2e91]
+          - button "Tema oscuro" [ref=f2e96]
+        - generic [ref=f2e100]:
+          - generic [ref=f2e101]: AD
+          - generic [ref=f2e102]:
+            - strong [ref=f2e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f2e104]
+    - main [ref=f2e105]:
+      - generic [ref=f2e106]:
+        - generic "Vehículos" [ref=f2e107]:
+          - generic [ref=f2e108]:
+            - generic [ref=f2e109]:
+              - heading "Vehículos" [level=2] [ref=f2e110]
+              - paragraph [ref=f2e111]: Registro y consulta centralizada del parque automotor.
+            - button "+ Nuevo vehículo" [ref=f2e113]
+        - generic [ref=f2e115]:
+          - generic [ref=f2e117]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f2e118]
+            - combobox [ref=f2e119]:
+              - option "Todas las condiciones" [selected]
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+            - combobox [ref=f2e120]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Ambulancia"
+              - option "Otro"
+          - generic [ref=f2e121]:
+            - table [ref=f2e123]:
+              - rowgroup [ref=f2e124]:
+                - row [ref=f2e125]:
+                  - columnheader "Placa" [ref=f2e126]
+                  - columnheader "Marca" [ref=f2e127]
+                  - columnheader "Modelo" [ref=f2e128]
+                  - columnheader "Unidad" [ref=f2e129]
+                  - columnheader "Condición" [ref=f2e130]
+                  - columnheader "Último KM" [ref=f2e131]
+                  - columnheader [ref=f2e132]
+              - rowgroup [ref=f2e133]:
+                - row [ref=f2e134]:
+                  - cell "PRUEBA" [ref=f2e135]
+                  - cell "prueba" [ref=f2e136]
+                  - cell "prueba" [ref=f2e137]
+                  - cell "Sin unidad asignada" [ref=f2e138]
+                  - cell "Sin evaluar" [ref=f2e139]
+                  - cell "—" [ref=f2e142]
+                  - cell [ref=f2e143]:
+                    - generic [ref=f2e144]:
+                      - button "Ver" [ref=f2e145]
+                      - button "Editar" [ref=f2e146]
+                      - button "Eliminar" [ref=f2e147]
+            - paragraph [ref=f2e148]: 1 vehículo(s) en total.

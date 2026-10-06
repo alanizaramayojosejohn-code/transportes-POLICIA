@@ -1,0 +1,255 @@
+- generic [ref=f3e4]:
+  - complementary [ref=f3e5]:
+    - generic [ref=f3e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f3e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f3e14]:
+      - link [ref=f3e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f3e22]
+      - button [ref=f3e33]
+      - button [ref=f3e43]
+      - generic [ref=f3e52]:
+        - link "Mantenimientos" [ref=f3e53] [cursor=pointer]:
+          - /url: /mantenimiento
+        - link "Inventario" [ref=f3e54] [cursor=pointer]:
+          - /url: /inventario
+      - link [ref=f3e55] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f3e59] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f3e67]
+    - generic [ref=f3e78]: Sistema de información vehicular
+  - generic [ref=f3e79]:
+    - banner [ref=f3e80]:
+      - generic [ref=f3e81]:
+        - generic [ref=f3e82]: ⌕
+        - textbox "Buscar vehículos" [ref=f3e83]:
+          - /placeholder: Buscar vehículo por placa, marca, modelo o chasis...
+      - generic [ref=f3e84]:
+        - generic [ref=f3e85]: En línea
+        - generic [ref=f3e87]:
+          - button "Tema claro" [ref=f3e88]
+          - button "Tema oscuro" [ref=f3e93]
+        - generic [ref=f3e97]:
+          - generic [ref=f3e98]: AD
+          - generic [ref=f3e99]:
+            - strong [ref=f3e100]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f3e101]
+    - main [ref=f3e102]:
+      - generic [ref=f3e103]:
+        - generic "Inventario" [ref=f3e104]:
+          - generic [ref=f3e105]:
+            - generic [ref=f3e106]:
+              - heading "Inventario" [level=2] [ref=f3e107]
+              - paragraph [ref=f3e108]: Repuestos, lubricantes, filtros y materiales.
+            - generic [ref=f3e109]:
+              - generic "Kardex / Inventario" [ref=f3e110]:
+                - generic [ref=f3e111]:
+                  - button [ref=f3e112]
+                  - button [ref=f3e117]
+              - button "+ Artículo" [ref=f3e122]
+              - button "+ Movimiento" [ref=f3e123]
+        - generic [ref=f3e125]:
+          - generic [ref=f3e127]:
+            - textbox "Buscar por código o nombre..." [ref=f3e128]
+            - combobox [ref=f3e129]:
+              - option "Todas las categorías" [selected]
+              - option "Filtro"
+              - option "Fluido"
+              - option "Lubricante"
+              - option "Material"
+              - option "Otro"
+              - option "Repuesto"
+            - combobox [ref=f3e130]:
+              - option "Todos los tipos" [selected]
+              - option "Líquido"
+              - option "Llanta"
+              - option "Pieza"
+              - option "Otro"
+            - combobox [ref=f3e131]:
+              - option "Todos los estados" [selected]
+              - option "Activos"
+              - option "Inactivos"
+          - table [ref=f3e134]:
+            - rowgroup [ref=f3e135]:
+              - row [ref=f3e136]:
+                - columnheader "Código" [ref=f3e137]
+                - columnheader "Artículo" [ref=f3e138]
+                - columnheader "Tipo" [ref=f3e139]
+                - columnheader "Categoría" [ref=f3e140]
+                - columnheader "Unidad" [ref=f3e141]
+                - columnheader "Stock" [ref=f3e142]
+                - columnheader "Mínimo" [ref=f3e143]
+                - columnheader "Estado" [ref=f3e144]
+                - columnheader [ref=f3e145]
+            - rowgroup [ref=f3e146]:
+              - row [ref=f3e344]:
+                - cell "KARDEX-ACEITE_10W40" [ref=f3e148]
+                - cell "Aceite 10W40" [ref=f3e149]
+                - cell "Líquido" [ref=f3e150]
+                - cell "Lubricante" [ref=f3e151]
+                - cell "galón" [ref=f3e152]
+                - cell "5" [ref=f3e345]
+                - cell "0" [ref=f3e154]
+                - cell "Disponible" [ref=f3e155]
+                - cell [ref=f3e158]:
+                  - generic [ref=f3e159]:
+                    - button "Ver" [ref=f3e160]
+                    - button "Editar" [ref=f3e161]
+                    - button "Dar de baja" [ref=f3e162]
+              - row [ref=f3e163]:
+                - cell "KARDEX-ACEITE_15W40" [ref=f3e164]
+                - cell "Aceite 15W40" [ref=f3e165]
+                - cell "Líquido" [ref=f3e166]
+                - cell "Lubricante" [ref=f3e167]
+                - cell "galón" [ref=f3e168]
+                - cell "0" [ref=f3e169]
+                - cell "0" [ref=f3e170]
+                - cell "Disponible" [ref=f3e171]
+                - cell [ref=f3e174]:
+                  - generic [ref=f3e175]:
+                    - button "Ver" [ref=f3e176]
+                    - button "Editar" [ref=f3e177]
+                    - button "Dar de baja" [ref=f3e178]
+              - row [ref=f3e179]:
+                - cell "KARDEX-ACEITE_20W50" [ref=f3e180]
+                - cell "Aceite 20W50" [ref=f3e181]
+                - cell "Líquido" [ref=f3e182]
+                - cell "Lubricante" [ref=f3e183]
+                - cell "galón" [ref=f3e184]
+                - cell "0" [ref=f3e185]
+                - cell "0" [ref=f3e186]
+                - cell "Disponible" [ref=f3e187]
+                - cell [ref=f3e190]:
+                  - generic [ref=f3e191]:
+                    - button "Ver" [ref=f3e192]
+                    - button "Editar" [ref=f3e193]
+                    - button "Dar de baja" [ref=f3e194]
+              - row [ref=f3e195]:
+                - cell "KARDEX-ACEITE_5W30" [ref=f3e196]
+                - cell "Aceite 5W30" [ref=f3e197]
+                - cell "Líquido" [ref=f3e198]
+                - cell "Lubricante" [ref=f3e199]
+                - cell "galón" [ref=f3e200]
+                - cell "0" [ref=f3e201]
+                - cell "0" [ref=f3e202]
+                - cell "Disponible" [ref=f3e203]
+                - cell [ref=f3e206]:
+                  - generic [ref=f3e207]:
+                    - button "Ver" [ref=f3e208]
+                    - button "Editar" [ref=f3e209]
+                    - button "Dar de baja" [ref=f3e210]
+              - row [ref=f3e211]:
+                - cell "KARDEX-ACEITE_CAJA" [ref=f3e212]
+                - cell "Aceite de caja/transmisión" [ref=f3e213]
+                - cell "Líquido" [ref=f3e214]
+                - cell "Lubricante" [ref=f3e215]
+                - cell "galón" [ref=f3e216]
+                - cell "0" [ref=f3e217]
+                - cell "0" [ref=f3e218]
+                - cell "Disponible" [ref=f3e219]
+                - cell [ref=f3e222]:
+                  - generic [ref=f3e223]:
+                    - button "Ver" [ref=f3e224]
+                    - button "Editar" [ref=f3e225]
+                    - button "Dar de baja" [ref=f3e226]
+              - row [ref=f3e227]:
+                - cell "KARDEX-ANTICONGELANTE" [ref=f3e228]
+                - cell "Anticongelante" [ref=f3e229]
+                - cell "Líquido" [ref=f3e230]
+                - cell "Fluido" [ref=f3e231]
+                - cell "galón" [ref=f3e232]
+                - cell "0" [ref=f3e233]
+                - cell "0" [ref=f3e234]
+                - cell "Disponible" [ref=f3e235]
+                - cell [ref=f3e238]:
+                  - generic [ref=f3e239]:
+                    - button "Ver" [ref=f3e240]
+                    - button "Editar" [ref=f3e241]
+                    - button "Dar de baja" [ref=f3e242]
+              - row [ref=f3e243]:
+                - cell "KARDEX-LIQUIDO_FRENOS" [ref=f3e244]
+                - cell "Líquido de frenos" [ref=f3e245]
+                - cell "Líquido" [ref=f3e246]
+                - cell "Fluido" [ref=f3e247]
+                - cell "galón" [ref=f3e248]
+                - cell "0" [ref=f3e249]
+                - cell "0" [ref=f3e250]
+                - cell "Disponible" [ref=f3e251]
+                - cell [ref=f3e254]:
+                  - generic [ref=f3e255]:
+                    - button "Ver" [ref=f3e256]
+                    - button "Editar" [ref=f3e257]
+                    - button "Dar de baja" [ref=f3e258]
+              - row [ref=f3e259]:
+                - cell "KARDEX-LIQUIDO_HIDRAULICO" [ref=f3e260]
+                - cell "Líquido hidráulico" [ref=f3e261]
+                - cell "Líquido" [ref=f3e262]
+                - cell "Fluido" [ref=f3e263]
+                - cell "galón" [ref=f3e264]
+                - cell "0" [ref=f3e265]
+                - cell "0" [ref=f3e266]
+                - cell "Disponible" [ref=f3e267]
+                - cell [ref=f3e270]:
+                  - generic [ref=f3e271]:
+                    - button "Ver" [ref=f3e272]
+                    - button "Editar" [ref=f3e273]
+                    - button "Dar de baja" [ref=f3e274]
+              - row [ref=f3e275]:
+                - cell "LLA-001" [ref=f3e276]
+                - cell "Llanta 195/65 R15" [ref=f3e277]
+                - cell "Llanta" [ref=f3e278]
+                - cell "Repuesto" [ref=f3e279]
+                - cell "unidad" [ref=f3e280]
+                - cell "10" [ref=f3e281]
+                - cell "2" [ref=f3e282]
+                - cell "Disponible" [ref=f3e283]
+                - cell [ref=f3e286]:
+                  - generic [ref=f3e287]:
+                    - button "Ver" [ref=f3e288]
+                    - button "Editar" [ref=f3e289]
+                    - button "Dar de baja" [ref=f3e290]
+          - paragraph [ref=f3e293]: 9 artículo(s) en total.
+        - generic:
+          - generic "Movimiento de inventario":
+            - generic [ref=f3e402]:
+              - button "Cerrar" [ref=f3e403]
+              - dialog "Movimiento de inventario" [active] [ref=f3e404]:
+                - generic [ref=f3e406]:
+                  - heading "Movimiento de inventario" [level=3] [ref=f3e408]
+                  - button "Cerrar" [ref=f3e409]: ✕
+                - generic [ref=f3e410]:
+                  - generic [ref=f3e412]:
+                    - generic [ref=f3e413]: Tipo *
+                    - combobox "Tipo *" [ref=f3e414]:
+                      - option "Entrada"
+                      - option "Salida"
+                      - option "Ajuste" [selected]
+                  - generic [ref=f3e416]:
+                    - generic [ref=f3e417]: Artículo *
+                    - combobox "Artículo *" [ref=f3e418]:
+                      - option "Seleccionar..."
+                      - option "Aceite 10W40 (5 galón)" [selected]
+                      - option "Aceite 15W40 (0 galón)"
+                      - option "Aceite 20W50 (0 galón)"
+                      - option "Aceite 5W30 (0 galón)"
+                      - option "Aceite de caja/transmisión (0 galón)"
+                      - option "Anticongelante (0 galón)"
+                      - option "Líquido de frenos (0 galón)"
+                      - option "Líquido hidráulico (0 galón)"
+                      - option "Llanta 195/65 R15 (10 unidad)"
+                  - generic [ref=f3e420]:
+                    - generic [ref=f3e421]: Cantidad * (use negativo para bajar el stock)
+                    - spinbutton "Cantidad * (use negativo para bajar el stock)" [ref=f3e447]
+                  - generic [ref=f3e449]:
+                    - generic [ref=f3e450]: Motivo *
+                    - textbox "Motivo *" [ref=f3e451]:
+                      - /placeholder: Conteo físico mensual
+                  - generic [ref=f3e440]:
+                    - generic [ref=f3e441]: Documento / referencia
+                    - textbox "Documento / referencia" [ref=f3e442]
+                - generic [ref=f3e444]:
+                  - button "Cancelar" [ref=f3e445]
+                  - button "Guardar movimiento" [ref=f3e446]

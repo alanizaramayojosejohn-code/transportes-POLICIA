@@ -1,0 +1,111 @@
+<app-card>
+  <app-filter-bar>
+    <select
+      appFilterControl
+      [value]="sparePartId()"
+      (change)="sparePartId.set($any($event.target).value)"
+    >
+      <option value="">Todos los artículos</option>
+      @for (part of sparePartOptions().items; track part.id) {
+        <option [value]="part.id">{{ part.code }} · {{ part.name }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="vehicleId()"
+      (change)="vehicleId.set($any($event.target).value)"
+    >
+      <option value="">Todos los vehículos</option>
+      @for (vehicle of vehicleOptions(); track vehicle.id) {
+        <option [value]="vehicle.id">{{ vehicle.plate }}</option>
+      }
+    </select>
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
+      <option value="">Todos los tipos</option>
+      @for (opt of typeOptions; track opt) {
+        <option [value]="opt">{{ typeLabel[opt] }}</option>
+      }
+    </select>
+    <input
+      appFilterControl
+      type="date"
+      title="Fecha desde"
+      [value]="fromDate()"
+      (input)="fromDate.set($any($event.target).value)"
+    />
+    <input
+      appFilterControl
+      type="date"
+      title="Fecha hasta"
+      [value]="toDate()"
+      (input)="toDate.set($any($event.target).value)"
+    />
+    <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
+  </app-filter-bar>
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-12-5 text-ink-muted">
+      Entradas, salidas y ajustes de repuestos, materiales y lubricantes, con el saldo que dejó cada
+      movimiento.
+    </p>
+    <app-export-buttons
+      title="Movimientos de almacén"
+      filenameBase="movimientos-de-almacen"
+      [columns]="exportColumns"
+      [filtersSummary]="filtersSummary()"
+      [fetchRows]="fetchAllForExport"
+    />
+  </div>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Artículo</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Cantidad</th>
+        <th appTableHeadCell>Saldo</th>
+        <th appTableHeadCell>Vehículo / Motivo</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (movement of page().items; track movement.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(movement.createdAt) }}</td>
+          <td appTableCell class="font-medium">
+            {{ movement.sparePart.code }} · {{ movement.sparePart.name }}
+          </td>
+          <td appTableCell>
+            <app-badge [tone]="movement.type === 'OUT' ? 'red' : 'green'">
+              {{ typeLabel[movement.type] }}
+            </app-badge>
+          </td>
+          <td appTableCell>{{ movement.quantity }} {{ movement.sparePart.unit }}</td>
+          <td appTableCell>{{ movement.balanceAfter }} {{ movement.sparePart.unit }}</td>
+          <td appTableCell>
+            @if (movement.vehicle) {
+              {{ movement.vehicle.plate }}
+            }
+            @if (movement.reason) {
+              <span class="text-ink-faint"> · {{ movement.reason }}</span>
+            }
+            @if (!movement.vehicle && !movement.reason) {
+              —
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
+          Sin movimientos para los filtros seleccionados.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="movimiento(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>

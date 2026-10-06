@@ -1,0 +1,24 @@
+<app-page-head
+  title="Reportes"
+  description="Consultas consolidadas que no existen en ningún otro módulo, con filtros y rango de fechas."
+></app-page-head>
+
+@if (tabs().length > 0) {
+  <!-- Envuelve en vez de desplazarse: con cinco pestañas, una barra con scroll horizontal esconde
+       reportes detrás de un gesto que nadie descubre. -->
+  <nav class="mb-4 flex flex-wrap gap-1 border-b border-edge" aria-label="Reportes">
+    @for (tab of tabs(); track tab.path) {
+      <a
+        [routerLink]="['/reportes', tab.path]"
+        routerLinkActive="bg-green-bg text-green-700 dark:text-green-300"
+        class="whitespace-nowrap rounded-t-sm px-3 py-2 text-13 font-semibold text-ink-muted transition-colors hover:text-ink"
+      >
+        {{ tab.label }}
+      </a>
+    }
+  </nav>
+
+  <router-outlet />
+} @else {
+  <app-notice>No hay reportes disponibles para su rol.</app-notice>
+}

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { queryData } from '../../core/graphql/query-data';
 import {
   AssignTransportManagerInput,
   CloseTransportManagerAssignmentInput,
@@ -163,18 +164,20 @@ export class UnitsService {
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        map((result) => (result.data?.units as UnitPage) ?? { items: [], total: 0 }),
+        queryData((data: UnitsQueryResult) => data.units, { items: [], total: 0 }),
       );
   }
 
-  get(id: string): Observable<Unit> {
+  get(id: string): Observable<Unit | null> {
     return this.apollo
       .watchQuery<UnitQueryResult>({
         query: UNIT_QUERY,
         variables: { id },
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => result.data?.unit as Unit));
+      .valueChanges.pipe(
+        queryData<UnitQueryResult, Unit | null>((data) => data.unit as Unit, null),
+      );
   }
 
   /// Lista plana para selects (unidad superior, unidad actual del personal).
@@ -184,7 +187,7 @@ export class UnitsService {
         query: ALL_ACTIVE_UNITS_QUERY,
         fetchPolicy: 'cache-and-network',
       })
-      .valueChanges.pipe(map((result) => (result.data?.units?.items as UnitOption[]) ?? []));
+      .valueChanges.pipe(queryData((data: AllActiveUnitsResult) => data.units?.items, []));
   }
 
   async create(input: CreateUnitInput): Promise<Unit> {

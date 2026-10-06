@@ -1,0 +1,122 @@
+<app-page-head
+  title="Bitácora de conductores"
+  description="Recorridos y cargas de combustible combinados, por conductor, unidad y fecha."
+>
+  <a
+    routerLink="/combustible"
+    class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+    >← Volver a Combustible</a
+  >
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <select
+      appFilterControl
+      [value]="driverId()"
+      (change)="driverId.set($any($event.target).value)"
+    >
+      <option value="">Todos los conductores</option>
+      @for (driver of driverOptions(); track driver.id) {
+        <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
+      }
+    </select>
+    <select appFilterControl [value]="unitId()" (change)="unitId.set($any($event.target).value)">
+      <option value="">Todas las unidades</option>
+      @for (unit of unitOptions(); track unit.id) {
+        <option [value]="unit.id">{{ unit.name }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="vehicleType()"
+      (change)="vehicleType.set($any($event.target).value)"
+    >
+      <option value="">Todos los tipos de vehículo</option>
+      @for (type of vehicleTypeOptions; track type) {
+        <option [value]="type">{{ vehicleTypeLabel[type] }}</option>
+      }
+    </select>
+    <input
+      appFilterControl
+      type="date"
+      title="Fecha desde"
+      [value]="fromDate()"
+      (input)="fromDate.set($any($event.target).value)"
+    />
+    <input
+      appFilterControl
+      type="date"
+      title="Fecha hasta"
+      [value]="toDate()"
+      (input)="toDate.set($any($event.target).value)"
+    />
+    <button type="button" appButton size="sm" (click)="clearFilters()">Limpiar filtros</button>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Conductor</th>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Detalle</th>
+        <th appTableHeadCell>KM</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of page().items; track entry.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(entry.occurredAt) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="entry.type === 'TRIP' ? 'blue' : 'amber'">
+              {{ entryTypeLabel[entry.type] }}
+            </app-badge>
+          </td>
+          <td appTableCell>
+            {{ entry.driver ? entry.driver.firstName + ' ' + entry.driver.lastName : '—' }}
+          </td>
+          <td appTableCell class="font-medium">{{ entry.vehicle.plate }}</td>
+          <td appTableCell>{{ entry.vehicle.currentUnit?.name || 'Sin unidad asignada' }}</td>
+          <td appTableCell>
+            @if (entry.type === 'TRIP') {
+              {{ entry.destination }}
+              @if (entry.returnAt) {
+                <span class="text-ink-faint"> · retorno {{ formatDateTime(entry.returnAt) }}</span>
+              } @else {
+                <span class="text-ink-faint"> · en curso</span>
+              }
+            } @else {
+              {{ entry.fuelType ? fuelTypeLabel[entry.fuelType] : '—' }} · {{ entry.quantity }} L ·
+              Bs. {{ entry.totalCost?.toFixed(2) }}
+              @if (entry.station) {
+                <span class="text-ink-faint"> · {{ entry.station }}</span>
+              }
+            }
+          </td>
+          <td appTableCell>
+            @if (entry.type === 'TRIP') {
+              {{ entry.departureOdometer
+              }}{{ entry.returnOdometer ? ' → ' + entry.returnOdometer : '' }}
+            } @else {
+              {{ entry.odometer ?? '—' }}
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin registros para los filtros seleccionados.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="registro(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>

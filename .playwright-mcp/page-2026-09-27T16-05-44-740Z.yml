@@ -1,0 +1,249 @@
+- generic [ref=f1e4]:
+  - complementary [ref=f1e5]:
+    - generic [ref=f1e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f1e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f1e14]:
+      - link [ref=f1e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f1e22]
+      - generic [ref=f1e33]:
+        - link "Vehículos" [ref=f1e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f1e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f1e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f1e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f1e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f1e39]
+      - button [ref=f1e49]
+      - link [ref=f1e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f1e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f1e70]
+    - generic [ref=f1e81]: Sistema de información vehicular
+  - generic [ref=f1e82]:
+    - banner [ref=f1e83]:
+      - generic [ref=f1e84]:
+        - generic [ref=f1e85]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f1e149]
+      - generic [ref=f1e86]:
+        - generic [ref=f1e87]: En línea
+        - generic [ref=f1e89]:
+          - button "Tema claro" [ref=f1e90]
+          - button "Tema oscuro" [ref=f1e95]
+        - button "Instalar PWA" [ref=f1e99]
+        - generic [ref=f1e100]:
+          - generic [ref=f1e101]: AD
+          - generic [ref=f1e102]:
+            - strong [ref=f1e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f1e104]
+    - main [ref=f1e105]:
+      - generic [ref=f1e106]:
+        - generic "Vehículos" [ref=f1e107]:
+          - generic [ref=f1e108]:
+            - generic [ref=f1e109]:
+              - heading "Vehículos" [level=2] [ref=f1e110]
+              - paragraph [ref=f1e111]: Registro y consulta centralizada del parque automotor.
+            - button "+ Nuevo vehículo" [ref=f1e113]
+        - generic [ref=f1e115]:
+          - generic [ref=f1e117]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f1e118]
+            - combobox [ref=f1e119]:
+              - option "Todas las condiciones" [selected]
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+            - combobox [ref=f1e120]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Ambulancia"
+              - option "Otro"
+          - generic [ref=f1e121]:
+            - table [ref=f1e123]:
+              - rowgroup [ref=f1e124]:
+                - row [ref=f1e125]:
+                  - columnheader "Placa" [ref=f1e126]
+                  - columnheader "Marca" [ref=f1e127]
+                  - columnheader "Modelo" [ref=f1e128]
+                  - columnheader "Unidad" [ref=f1e129]
+                  - columnheader "Condición" [ref=f1e130]
+                  - columnheader "Último KM" [ref=f1e131]
+                  - columnheader [ref=f1e132]
+              - rowgroup [ref=f1e133]:
+                - row [ref=f1e134]:
+                  - cell "PRUEBA" [ref=f1e135]
+                  - cell "prueba" [ref=f1e136]
+                  - cell "prueba" [ref=f1e137]
+                  - cell "Sin unidad asignada" [ref=f1e138]
+                  - cell "Sin evaluar" [ref=f1e139]
+                  - cell "—" [ref=f1e142]
+                  - cell [ref=f1e143]:
+                    - generic [ref=f1e144]:
+                      - button "Ver" [ref=f1e145]
+                      - button "Editar" [ref=f1e146]
+                      - button "Eliminar" [ref=f1e147]
+            - paragraph [ref=f1e148]: 1 vehículo(s) en total.
+        - generic [ref=f1e150]:
+          - button "Cerrar" [ref=f1e151]
+          - dialog "Editar vehículo" [active] [ref=f1e152]:
+            - generic [ref=f1e153]:
+              - generic [ref=f1e154]:
+                - generic [ref=f1e155]:
+                  - generic [ref=f1e156]: GESTIÓN VEHICULAR
+                  - heading "Editar vehículo" [level=3] [ref=f1e157]
+                - button "Cerrar" [ref=f1e158]: ✕
+              - paragraph [ref=f1e159]: Complete los datos técnicos y el registro fotográfico de la movilidad.
+            - generic [ref=f1e160]:
+              - generic [ref=f1e161]:
+                - generic [ref=f1e162]:
+                  - generic [ref=f1e163]: "01"
+                  - generic [ref=f1e164]:
+                    - heading "Datos de identificación" [level=4] [ref=f1e165]
+                    - paragraph [ref=f1e166]: Información técnica y administrativa principal.
+                - generic [ref=f1e167]: "* Campos obligatorios"
+              - generic [ref=f1e168]:
+                - generic [ref=f1e170]:
+                  - generic [ref=f1e171]: Placa *
+                  - textbox "Placa *" [ref=f1e172]: PRUEBA
+                - generic [ref=f1e174]:
+                  - generic [ref=f1e175]: Placa DNFR
+                  - textbox "Placa DNFR" [ref=f1e176]: prueba
+                - generic [ref=f1e178]:
+                  - generic [ref=f1e179]: Tipo de vehículo *
+                  - combobox "Tipo de vehículo *" [ref=f1e180]:
+                    - option "Camioneta"
+                    - option "Automóvil" [selected]
+                    - option "Motocicleta"
+                    - option "Minibús"
+                    - option "Camión"
+                    - option "Ambulancia"
+                    - option "Otro"
+                - generic [ref=f1e182]:
+                  - generic [ref=f1e183]: Marca
+                  - textbox "Marca" [ref=f1e184]: prueba
+                - generic [ref=f1e186]:
+                  - generic [ref=f1e187]: Modelo
+                  - textbox "Modelo" [ref=f1e188]: prueba
+                - generic [ref=f1e190]:
+                  - generic [ref=f1e191]: Año
+                  - spinbutton "Año" [ref=f1e192]: "2000"
+                - generic [ref=f1e194]:
+                  - generic [ref=f1e195]: Número de chasis
+                  - textbox "Número de chasis" [ref=f1e196]: prueba
+                - generic [ref=f1e198]:
+                  - generic [ref=f1e199]: Número de motor
+                  - textbox "Número de motor" [ref=f1e200]: prueba
+                - generic [ref=f1e202]:
+                  - generic [ref=f1e203]: Color
+                  - textbox "Color" [ref=f1e204]: "`rueba"
+                - generic [ref=f1e206]:
+                  - generic [ref=f1e207]: País de origen
+                  - textbox "País de origen" [ref=f1e208]: "`rueba"
+                - generic [ref=f1e210]:
+                  - generic [ref=f1e211]: Fuente de recepción
+                  - textbox "Fuente de recepción" [ref=f1e212]: prueba
+                - generic [ref=f1e214]:
+                  - generic [ref=f1e215]: Observaciones
+                  - textbox "Observaciones" [ref=f1e216]
+            - generic [ref=f1e217]:
+              - generic [ref=f1e218]:
+                - generic [ref=f1e219]:
+                  - generic [ref=f1e220]: "02"
+                  - generic [ref=f1e221]:
+                    - heading "Registro fotográfico" [level=4] [ref=f1e222]
+                    - paragraph [ref=f1e223]: "Vehículo: 7 fotografías obligatorias — frontal, trasero, ambos laterales, interior, motor y chasis."
+                - generic [ref=f1e224]:
+                  - generic [ref=f1e225]: "0"
+                  - generic [ref=f1e226]: /
+                  - generic [ref=f1e227]: "7"
+                  - generic [ref=f1e228]: fotografías
+              - generic [ref=f1e229]:
+                - article [ref=f1e230]:
+                  - generic [ref=f1e231]:
+                    - generic [ref=f1e232]: Sin fotografía
+                    - generic [ref=f1e238]: "01"
+                  - generic [ref=f1e239]:
+                    - strong [ref=f1e240]: Frontal *
+                    - generic [ref=f1e241]: Vista completa desde el frente
+                    - generic [ref=f1e243] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e244]
+                      - text: Agregar foto
+                - article [ref=f1e245]:
+                  - generic [ref=f1e246]:
+                    - generic [ref=f1e247]: Sin fotografía
+                    - generic [ref=f1e253]: "02"
+                  - generic [ref=f1e254]:
+                    - strong [ref=f1e255]: Trasero *
+                    - generic [ref=f1e256]: Vista completa desde atrás
+                    - generic [ref=f1e258] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e259]
+                      - text: Agregar foto
+                - article [ref=f1e260]:
+                  - generic [ref=f1e261]:
+                    - generic [ref=f1e262]: Sin fotografía
+                    - generic [ref=f1e268]: "03"
+                  - generic [ref=f1e269]:
+                    - strong [ref=f1e270]: Lateral izquierdo *
+                    - generic [ref=f1e271]: Perfil completo del lado izquierdo
+                    - generic [ref=f1e273] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e274]
+                      - text: Agregar foto
+                - article [ref=f1e275]:
+                  - generic [ref=f1e276]:
+                    - generic [ref=f1e277]: Sin fotografía
+                    - generic [ref=f1e283]: "04"
+                  - generic [ref=f1e284]:
+                    - strong [ref=f1e285]: Lateral derecho *
+                    - generic [ref=f1e286]: Perfil completo del lado derecho
+                    - generic [ref=f1e288] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e289]
+                      - text: Agregar foto
+                - article [ref=f1e290]:
+                  - generic [ref=f1e291]:
+                    - generic [ref=f1e292]: Sin fotografía
+                    - generic [ref=f1e298]: "05"
+                  - generic [ref=f1e299]:
+                    - strong [ref=f1e300]: Interior *
+                    - generic [ref=f1e301]: Cabina, tablero y asientos
+                    - generic [ref=f1e303] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e304]
+                      - text: Agregar foto
+                - article [ref=f1e305]:
+                  - generic [ref=f1e306]:
+                    - generic [ref=f1e307]: Sin fotografía
+                    - generic [ref=f1e313]: "06"
+                  - generic [ref=f1e314]:
+                    - strong [ref=f1e315]: Motor *
+                    - generic [ref=f1e316]: Compartimiento del motor visible
+                    - generic [ref=f1e318] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e319]
+                      - text: Agregar foto
+                - article [ref=f1e320]:
+                  - generic [ref=f1e321]:
+                    - generic [ref=f1e322]: Sin fotografía
+                    - generic [ref=f1e328]: "07"
+                  - generic [ref=f1e329]:
+                    - strong [ref=f1e330]: Chasis *
+                    - generic [ref=f1e331]: Número o zona identificable del chasis
+                    - generic [ref=f1e333] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f1e334]
+                      - text: Agregar foto
+              - generic [ref=f1e335]: "Las fotografías se optimizan en el navegador antes de subirse. Se guardan recién al pulsar «Guardar»: si cancela este formulario, los cambios de fotos no se aplican."
+            - generic [ref=f1e342]:
+              - button "Cancelar" [ref=f1e343]
+              - button "Guardar cambios" [ref=f1e344]

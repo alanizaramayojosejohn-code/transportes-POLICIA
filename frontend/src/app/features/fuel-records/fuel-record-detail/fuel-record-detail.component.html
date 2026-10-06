@@ -1,0 +1,48 @@
+@if (record(); as r) {
+  <app-modal title="Detalle del abastecimiento" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header initials="CB" [title]="r.vehicle.plate" [subtitle]="subtitle()" />
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Conductor">{{ driverName() }}</app-data-cell>
+        <app-data-cell label="Unidad">{{
+          r.vehicle.currentUnit?.name || 'Sin asignar'
+        }}</app-data-cell>
+        <app-data-cell label="Fecha y hora">{{ formatDateTime(r.suppliedAt) }}</app-data-cell>
+        <app-data-cell label="Kilometraje">{{ r.odometer }}</app-data-cell>
+        <app-data-cell label="Tipo">{{ fuelTypeLabel[r.fuelType] }}</app-data-cell>
+        <app-data-cell label="Litros">{{ r.quantity }}</app-data-cell>
+        <app-data-cell label="Precio unitario">Bs. {{ r.unitPrice.toFixed(2) }}</app-data-cell>
+        <app-data-cell label="Importe total">Bs. {{ r.totalCost.toFixed(2) }}</app-data-cell>
+        <app-data-cell label="Rendimiento">
+          {{ r.efficiencyKmPerUnit !== null ? r.efficiencyKmPerUnit.toFixed(1) + ' km/l' : '—' }}
+        </app-data-cell>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <app-detail-section label="Estación de servicio">{{
+          r.station || 'Sin estación registrada.'
+        }}</app-detail-section>
+        <app-detail-section label="Documentación">{{ documentLabel() }}</app-detail-section>
+        <app-detail-section label="Observaciones">{{
+          r.notes || 'Sin observaciones.'
+        }}</app-detail-section>
+      </div>
+
+      @if (r.procedureChecklistItems.length > 0) {
+        <h4 class="mb-2.5 mt-4 font-serif text-14-5 font-semibold">Trámites</h4>
+        <div class="flex flex-wrap gap-2">
+          @for (item of r.procedureChecklistItems; track item.id) {
+            <app-badge [tone]="item.completed ? 'green' : 'gray'">
+              {{ item.procedureType.name }}
+            </app-badge>
+          }
+        </div>
+      }
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

@@ -1,0 +1,345 @@
+- generic [ref=f2e4]:
+  - complementary [ref=f2e5]:
+    - generic [ref=f2e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f2e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f2e14]:
+      - link [ref=f2e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f2e22]
+      - generic [ref=f2e33]:
+        - link "Vehículos" [ref=f2e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f2e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f2e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f2e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f2e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f2e39]
+      - button [ref=f2e49]
+      - link [ref=f2e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f2e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f2e70]
+    - generic [ref=f2e81]: Sistema de información vehicular
+  - generic [ref=f2e82]:
+    - banner [ref=f2e83]:
+      - generic [ref=f2e84]:
+        - generic [ref=f2e85]: ⌕
+        - textbox "Buscar vehículos" [ref=f2e86]:
+          - /placeholder: Buscar vehículo por placa, marca, modelo o chasis...
+      - generic [ref=f2e87]:
+        - generic [ref=f2e88]: En línea
+        - generic [ref=f2e90]:
+          - button "Tema claro" [ref=f2e91]
+          - button "Tema oscuro" [ref=f2e96]
+        - generic [ref=f2e100]:
+          - generic [ref=f2e101]: AD
+          - generic [ref=f2e102]:
+            - strong [ref=f2e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f2e104]
+    - main [ref=f2e105]:
+      - generic [ref=f2e106]:
+        - generic "Vehículos" [ref=f2e107]:
+          - generic [ref=f2e108]:
+            - generic [ref=f2e109]:
+              - heading "Vehículos" [level=2] [ref=f2e110]
+              - paragraph [ref=f2e111]: Registro y consulta centralizada del parque automotor.
+            - generic [ref=f2e112]:
+              - generic "Vehículos por unidad" [ref=f2e113]:
+                - generic [ref=f2e114]:
+                  - button [ref=f2e115]
+                  - button [ref=f2e120]
+              - button "+ Nuevo vehículo" [ref=f2e125]
+        - generic [ref=f2e127]:
+          - generic [ref=f2e129]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f2e130]
+            - combobox [ref=f2e131]:
+              - option "Todas las condiciones"
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+              - option "Siniestrado" [selected]
+            - combobox [ref=f2e132]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Camión cisterna"
+              - option "Camión grúa"
+              - option "Camión de bomberos"
+              - option "Camión de rescate"
+              - option "Cuadratrack"
+              - option "Furgón"
+              - option "Ambulancia"
+              - option "Otro"
+          - generic [ref=f2e134]:
+            - status "Cargando"
+            - table [ref=f2e135]:
+              - rowgroup [ref=f2e136]:
+                - row [ref=f2e137]:
+                  - columnheader "Placa" [ref=f2e138]
+                  - columnheader "Marca" [ref=f2e139]
+                  - columnheader "Modelo" [ref=f2e140]
+                  - columnheader "Unidad" [ref=f2e141]
+                  - columnheader "Condición" [ref=f2e142]
+                  - columnheader "Último KM" [ref=f2e143]
+                  - columnheader [ref=f2e144]
+              - rowgroup [ref=f2e145]:
+                - row [ref=f2e146]:
+                  - cell "SIN-PLACA-0107" [ref=f2e147]
+                  - cell "Honda" [ref=f2e148]
+                  - cell "CTX-200" [ref=f2e149]
+                  - cell "VILLA COPACABANITA" [ref=f2e150]
+                  - cell "Regular" [ref=f2e151]
+                  - cell "—" [ref=f2e154]
+                  - cell [ref=f2e155]:
+                    - generic [ref=f2e156]:
+                      - button "Ver" [ref=f2e157]
+                      - button "Editar" [ref=f2e158]
+                      - button "Eliminar" [ref=f2e159]
+                - row [ref=f2e160]:
+                  - cell "2781XPD" [ref=f2e161]
+                  - cell "Honda" [ref=f2e162]
+                  - cell "CTX" [ref=f2e163]
+                  - cell "VILLA CHUQUIÑA" [ref=f2e164]
+                  - cell "Deteriorado" [ref=f2e165]
+                  - cell "—" [ref=f2e168]
+                  - cell [ref=f2e169]:
+                    - generic [ref=f2e170]:
+                      - button "Ver" [ref=f2e171]
+                      - button "Editar" [ref=f2e172]
+                      - button "Eliminar" [ref=f2e173]
+                - row [ref=f2e174]:
+                  - cell "SIN-PLACA-0106" [ref=f2e175]
+                  - cell "Honda" [ref=f2e176]
+                  - cell "Tornado" [ref=f2e177]
+                  - cell "VENTA Y MEDIA" [ref=f2e178]
+                  - cell "Deteriorado" [ref=f2e179]
+                  - cell "—" [ref=f2e182]
+                  - cell [ref=f2e183]:
+                    - generic [ref=f2e184]:
+                      - button "Ver" [ref=f2e185]
+                      - button "Editar" [ref=f2e186]
+                      - button "Eliminar" [ref=f2e187]
+                - row [ref=f2e188]:
+                  - cell "1678-ACN" [ref=f2e189]
+                  - cell "Honda" [ref=f2e190]
+                  - cell "Tornado" [ref=f2e191]
+                  - cell "VENTA Y MEDIA" [ref=f2e192]
+                  - cell "Extraviado" [ref=f2e193]
+                  - cell "—" [ref=f2e196]
+                  - cell [ref=f2e197]:
+                    - generic [ref=f2e198]:
+                      - button "Ver" [ref=f2e199]
+                      - button "Editar" [ref=f2e200]
+                      - button "Eliminar" [ref=f2e201]
+                - row [ref=f2e202]:
+                  - cell "2638-SCK" [ref=f2e203]
+                  - cell "Honda" [ref=f2e204]
+                  - cell "CGL125" [ref=f2e205]
+                  - cell "VENTA Y MEDIA" [ref=f2e206]
+                  - cell "Deteriorado" [ref=f2e207]
+                  - cell "—" [ref=f2e210]
+                  - cell [ref=f2e211]:
+                    - generic [ref=f2e212]:
+                      - button "Ver" [ref=f2e213]
+                      - button "Editar" [ref=f2e214]
+                      - button "Eliminar" [ref=f2e215]
+                - row [ref=f2e216]:
+                  - cell "4697-NZN" [ref=f2e217]
+                  - cell "Toyota" [ref=f2e218]
+                  - cell "Hilux" [ref=f2e219]
+                  - cell "UCUMASI" [ref=f2e220]
+                  - cell "Deteriorado" [ref=f2e221]
+                  - cell "—" [ref=f2e224]
+                  - cell [ref=f2e225]:
+                    - generic [ref=f2e226]:
+                      - button "Ver" [ref=f2e227]
+                      - button "Editar" [ref=f2e228]
+                      - button "Eliminar" [ref=f2e229]
+                - row [ref=f2e230]:
+                  - cell "1954-DXD" [ref=f2e231]
+                  - cell "Honda" [ref=f2e232]
+                  - cell "CTX200" [ref=f2e233]
+                  - cell "TURCO" [ref=f2e234]
+                  - cell "Deteriorado" [ref=f2e235]
+                  - cell "—" [ref=f2e238]
+                  - cell [ref=f2e239]:
+                    - generic [ref=f2e240]:
+                      - button "Ver" [ref=f2e241]
+                      - button "Editar" [ref=f2e242]
+                      - button "Eliminar" [ref=f2e243]
+                - row [ref=f2e244]:
+                  - cell "3501-RSE" [ref=f2e245]
+                  - cell "Honda" [ref=f2e246]
+                  - cell "XR250 Tornado" [ref=f2e247]
+                  - cell "TURCO" [ref=f2e248]
+                  - cell "Deteriorado" [ref=f2e249]
+                  - cell "—" [ref=f2e252]
+                  - cell [ref=f2e253]:
+                    - generic [ref=f2e254]:
+                      - button "Ver" [ref=f2e255]
+                      - button "Editar" [ref=f2e256]
+                      - button "Eliminar" [ref=f2e257]
+                - row [ref=f2e258]:
+                  - cell "3590-DSN" [ref=f2e259]
+                  - cell "CHTC" [ref=f2e260]
+                  - cell "T2" [ref=f2e261]
+                  - cell "TURCO" [ref=f2e262]
+                  - cell "Fuera de uso" [ref=f2e263]
+                  - cell "—" [ref=f2e266]
+                  - cell [ref=f2e267]:
+                    - generic [ref=f2e268]:
+                      - button "Ver" [ref=f2e269]
+                      - button "Editar" [ref=f2e270]
+                      - button "Eliminar" [ref=f2e271]
+                - row [ref=f2e272]:
+                  - cell "3414-YCA" [ref=f2e273]
+                  - cell "Honda" [ref=f2e274]
+                  - cell "CTX200" [ref=f2e275]
+                  - cell "TOTORAL" [ref=f2e276]
+                  - cell "Deteriorado" [ref=f2e277]
+                  - cell "—" [ref=f2e280]
+                  - cell [ref=f2e281]:
+                    - generic [ref=f2e282]:
+                      - button "Ver" [ref=f2e283]
+                      - button "Editar" [ref=f2e284]
+                      - button "Eliminar" [ref=f2e285]
+                - row [ref=f2e286]:
+                  - cell "754-BGY" [ref=f2e287]
+                  - cell "Honda" [ref=f2e288]
+                  - cell "CTX" [ref=f2e289]
+                  - cell "TOTORAL" [ref=f2e290]
+                  - cell "Deteriorado" [ref=f2e291]
+                  - cell "—" [ref=f2e294]
+                  - cell [ref=f2e295]:
+                    - generic [ref=f2e296]:
+                      - button "Ver" [ref=f2e297]
+                      - button "Editar" [ref=f2e298]
+                      - button "Eliminar" [ref=f2e299]
+                - row [ref=f2e300]:
+                  - cell "4194-ZAC" [ref=f2e301]
+                  - cell "Honda" [ref=f2e302]
+                  - cell "CTX-200" [ref=f2e303]
+                  - cell "TOLEDO" [ref=f2e304]
+                  - cell "Regular" [ref=f2e305]
+                  - cell "—" [ref=f2e308]
+                  - cell [ref=f2e309]:
+                    - generic [ref=f2e310]:
+                      - button "Ver" [ref=f2e311]
+                      - button "Editar" [ref=f2e312]
+                      - button "Eliminar" [ref=f2e313]
+                - row [ref=f2e314]:
+                  - cell "1980-LPR" [ref=f2e315]
+                  - cell "Honda" [ref=f2e316]
+                  - cell "CTX200" [ref=f2e317]
+                  - cell "TOLEDO" [ref=f2e318]
+                  - cell "Regular" [ref=f2e319]
+                  - cell "—" [ref=f2e322]
+                  - cell [ref=f2e323]:
+                    - generic [ref=f2e324]:
+                      - button "Ver" [ref=f2e325]
+                      - button "Editar" [ref=f2e326]
+                      - button "Eliminar" [ref=f2e327]
+                - row [ref=f2e328]:
+                  - cell "3590-CCP" [ref=f2e329]
+                  - cell "CHTC" [ref=f2e330]
+                  - cell "T2" [ref=f2e331]
+                  - cell "TOLEDO" [ref=f2e332]
+                  - cell "Fuera de uso" [ref=f2e333]
+                  - cell "—" [ref=f2e336]
+                  - cell [ref=f2e337]:
+                    - generic [ref=f2e338]:
+                      - button "Ver" [ref=f2e339]
+                      - button "Editar" [ref=f2e340]
+                      - button "Eliminar" [ref=f2e341]
+                - row [ref=f2e342]:
+                  - cell "3590-DGG" [ref=f2e343]
+                  - cell "CHTC" [ref=f2e344]
+                  - cell "T2" [ref=f2e345]
+                  - cell "TAMBO QUEMADO" [ref=f2e346]
+                  - cell "Deteriorado" [ref=f2e347]
+                  - cell "—" [ref=f2e350]
+                  - cell [ref=f2e351]:
+                    - generic [ref=f2e352]:
+                      - button "Ver" [ref=f2e353]
+                      - button "Editar" [ref=f2e354]
+                      - button "Eliminar" [ref=f2e355]
+                - row [ref=f2e356]:
+                  - cell "4177-CAH" [ref=f2e357]
+                  - cell "Honda" [ref=f2e358]
+                  - cell "Tornado" [ref=f2e359]
+                  - cell "SORACACHI" [ref=f2e360]
+                  - cell "Regular" [ref=f2e361]
+                  - cell "—" [ref=f2e364]
+                  - cell [ref=f2e365]:
+                    - generic [ref=f2e366]:
+                      - button "Ver" [ref=f2e367]
+                      - button "Editar" [ref=f2e368]
+                      - button "Eliminar" [ref=f2e369]
+                - row [ref=f2e370]:
+                  - cell "3590-CHI" [ref=f2e371]
+                  - cell "CHTC" [ref=f2e372]
+                  - cell "T2" [ref=f2e373]
+                  - cell "SORACACHI" [ref=f2e374]
+                  - cell "Deteriorado" [ref=f2e375]
+                  - cell "—" [ref=f2e378]
+                  - cell [ref=f2e379]:
+                    - generic [ref=f2e380]:
+                      - button "Ver" [ref=f2e381]
+                      - button "Editar" [ref=f2e382]
+                      - button "Eliminar" [ref=f2e383]
+                - row [ref=f2e384]:
+                  - cell "3098-AKT" [ref=f2e385]
+                  - cell "Toyota" [ref=f2e386]
+                  - cell "Corolla" [ref=f2e387]
+                  - cell "SEPULTURAS" [ref=f2e388]
+                  - cell "Regular" [ref=f2e389]
+                  - cell "—" [ref=f2e392]
+                  - cell [ref=f2e393]:
+                    - generic [ref=f2e394]:
+                      - button "Ver" [ref=f2e395]
+                      - button "Editar" [ref=f2e396]
+                      - button "Eliminar" [ref=f2e397]
+                - row [ref=f2e398]:
+                  - cell "3739-SEH" [ref=f2e399]
+                  - cell "Honda" [ref=f2e400]
+                  - cell "CTX200" [ref=f2e401]
+                  - cell "SEPULTURAS" [ref=f2e402]
+                  - cell "Deteriorado" [ref=f2e403]
+                  - cell "—" [ref=f2e406]
+                  - cell [ref=f2e407]:
+                    - generic [ref=f2e408]:
+                      - button "Ver" [ref=f2e409]
+                      - button "Editar" [ref=f2e410]
+                      - button "Eliminar" [ref=f2e411]
+                - row [ref=f2e412]:
+                  - cell "3590-DIP" [ref=f2e413]
+                  - cell "CHTC" [ref=f2e414]
+                  - cell "T2" [ref=f2e415]
+                  - cell "SEPULTURAS" [ref=f2e416]
+                  - cell "Deteriorado" [ref=f2e417]
+                  - cell "—" [ref=f2e420]
+                  - cell [ref=f2e421]:
+                    - generic [ref=f2e422]:
+                      - button "Ver" [ref=f2e423]
+                      - button "Editar" [ref=f2e424]
+                      - button "Eliminar" [ref=f2e425]
+          - generic [ref=f2e427]:
+            - paragraph [ref=f2e428]: 512 vehículo(s) en total. · Página 1 de 26
+            - generic [ref=f2e429]:
+              - button "← Anterior" [disabled] [ref=f2e430]
+              - button "Siguiente →" [ref=f2e431]

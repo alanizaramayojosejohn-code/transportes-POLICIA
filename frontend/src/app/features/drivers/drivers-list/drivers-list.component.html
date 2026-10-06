@@ -1,0 +1,130 @@
+<app-page-head
+  title="Conductores"
+  description="Padrón de conductores habilitados y relación con los vehículos institucionales."
+>
+  <app-export-buttons
+    title="Conductores"
+    filenameBase="conductores"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWrite()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Nuevo conductor
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por CI, nombre o licencia..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="unitId()" (change)="unitId.set($any($event.target).value)">
+      <option value="">Todas las unidades</option>
+      @for (unit of units(); track unit.id) {
+        <option [value]="unit.id">{{ unit.name }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="isActive()"
+      (change)="isActive.set($any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>CI</th>
+        <th appTableHeadCell>Nombre</th>
+        <th appTableHeadCell>Grado</th>
+        <th appTableHeadCell>Licencia</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Vehículo a cargo</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (driver of page().items; track driver.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ driver.ci }}</td>
+          <td appTableCell>{{ driver.firstName }} {{ driver.lastName }}</td>
+          <td appTableCell>{{ driver.rank || '—' }}</td>
+          <td appTableCell>
+            <div>{{ driver.licenseNumber || '—' }}</div>
+            <div class="mt-0.5 flex items-center gap-1.5 text-11-5 text-ink-faint">
+              {{ formatDate(driver.licenseExpiresAt) }}
+              @if (isLicenseExpired(driver.licenseExpiresAt)) {
+                <app-badge tone="red">Vencida</app-badge>
+              }
+            </div>
+          </td>
+          <td appTableCell>{{ driver.unit?.name || 'Sin asignar' }}</td>
+          <td appTableCell>{{ driver.currentVehicle?.plate || 'Sin asignar' }}</td>
+          <td appTableCell>
+            <app-badge [tone]="driver.isActive ? 'green' : 'gray'">
+              {{ driver.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="openDetail(driver.id)"
+              >
+                Ver
+              </button>
+              @if (currentRole.canWrite()) {
+                <button type="button" appButton size="sm" (click)="edit(driver.id)">Editar</button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="toggleActive(driver.id, driver.isActive)"
+                >
+                  {{ driver.isActive ? 'Dar de baja' : 'Reactivar' }}
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="8" [loading]="loading()">
+          Sin conductores registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="conductor(es)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-driver-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingDriverId()) {
+  <app-driver-form [driver]="editingDriver" (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailDriverId(); as id) {
+  <app-driver-detail [driverId]="id" (closed)="closeDetail()" />
+}

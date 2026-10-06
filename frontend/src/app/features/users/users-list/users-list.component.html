@@ -1,0 +1,220 @@
+<app-page-head
+  title="Usuarios y roles"
+  description="Cuentas de acceso al sistema y su rol asignado."
+>
+  <button type="button" appButton variant="primary" (click)="showForm.set(true)">+ Usuario</button>
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por usuario, nombre o correo..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select appFilterControl [value]="roleId()" (change)="roleId.set($any($event.target).value)">
+      <option value="">Todos los roles</option>
+      @for (role of roles(); track role.id) {
+        <option [value]="role.id">{{ role.name }}</option>
+      }
+    </select>
+    <select
+      appFilterControl
+      [value]="isActive()"
+      (change)="isActive.set($any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </app-filter-bar>
+
+  <h3 class="mb-2.5 mt-2 font-serif text-14-5 font-semibold">Administrativos</h3>
+  <app-table [loading]="loading()" [footer]="administrativeUsers().length + ' cuenta(s).'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Usuario</th>
+        <th appTableHeadCell>Nombre completo</th>
+        <th appTableHeadCell>Rol</th>
+        <th appTableHeadCell>Personal</th>
+        <th appTableHeadCell>Último acceso</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of administrativeUsers(); track user.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ user.username }}</td>
+          <td appTableCell>{{ user.fullName }}</td>
+          <td appTableCell>{{ user.role.name }}</td>
+          <td appTableCell>{{ user.personnel ? user.personnel.ci : '—' }}</td>
+          <td appTableCell>{{ formatDate(user.lastLoginAt) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="user.isActive ? 'green' : 'gray'">
+              {{ user.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
+              </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
+              <button
+                type="button"
+                appButton
+                size="sm"
+                (click)="toggleActive(user.id, user.isActive)"
+              >
+                {{ user.isActive ? 'Dar de baja' : 'Reactivar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin resultados.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <h3 class="mb-2.5 mt-6 font-serif text-14-5 font-semibold">Encargados</h3>
+  <app-table [loading]="loading()" [footer]="managerUsers().length + ' cuenta(s).'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Usuario</th>
+        <th appTableHeadCell>Nombre completo</th>
+        <th appTableHeadCell>Personal</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Último acceso</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of managerUsers(); track user.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ user.username }}</td>
+          <td appTableCell>{{ user.fullName }}</td>
+          <td appTableCell>{{ user.personnel ? user.personnel.ci : '—' }}</td>
+          <td appTableCell>{{ user.personnel?.unit?.name || 'Sin asignar' }}</td>
+          <td appTableCell>{{ formatDate(user.lastLoginAt) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="user.isActive ? 'green' : 'gray'">
+              {{ user.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
+              </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
+              <button
+                type="button"
+                appButton
+                size="sm"
+                (click)="toggleActive(user.id, user.isActive)"
+              >
+                {{ user.isActive ? 'Dar de baja' : 'Reactivar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin resultados.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <h3 class="mb-2.5 mt-6 font-serif text-14-5 font-semibold">Conductores</h3>
+  <app-table [loading]="loading()" [footer]="driverUsers().length + ' cuenta(s).'">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Usuario</th>
+        <th appTableHeadCell>Nombre completo</th>
+        <th appTableHeadCell>Personal</th>
+        <th appTableHeadCell>Último acceso</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of driverUsers(); track user.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ user.username }}</td>
+          <td appTableCell>{{ user.fullName }}</td>
+          <td appTableCell>{{ user.personnel ? user.personnel.ci : '—' }}</td>
+          <td appTableCell>{{ formatDate(user.lastLoginAt) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="user.isActive ? 'green' : 'gray'">
+              {{ user.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailUserId.set(user.id)"
+              >
+                Ver
+              </button>
+              <button type="button" appButton size="sm" (click)="edit(user.id)">Editar</button>
+              <button
+                type="button"
+                appButton
+                size="sm"
+                (click)="toggleActive(user.id, user.isActive)"
+              >
+                {{ user.isActive ? 'Dar de baja' : 'Reactivar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="6" [loading]="loading()">
+          Sin resultados.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="cuenta(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-user-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingUserId()) {
+  <app-user-form [user]="editingUser" (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (detailUser(); as user) {
+  <app-user-detail [user]="user" (closed)="detailUserId.set(null)" />
+}

@@ -42,7 +42,7 @@ model User {
   departmentId String?     @map("department_id")
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  driver               Driver?
+  personnel            Personnel?
   auditLogs            AuditLog[]
   requestsMade         VehicleRequest[]   @relation("RequestRequester")
   requestsReviewed     VehicleRequest[]   @relation("RequestReviewer")
@@ -62,7 +62,8 @@ model User {
 
 model Role {
   id          String   @id @default(uuid(7))
-  /// Código estable para comparar en guards: ADMIN, SUPERVISOR, OPERADOR, CONDUCTOR.
+  /// Código estable para comparar en guards: ADMINISTRADOR, TRANSPORTES, COMBUSTIBLE,
+  /// MANTENIMIENTO, ALMACEN, CONSULTA, CONDUCTOR.
   code        String   @unique
   name        String
   description String?
@@ -103,20 +104,31 @@ model RolePermission {
   @@map("role_permission")
 }
 
-/// Bitácora de auditoría (RF-13). Guarda el antes y el después como JSON
-/// porque el valor de la bitácora es poder reconstruir qué cambió, no sólo que
-/// alguien tocó el registro.
+/// Bitácora de auditoría (spec 019). La escribe un único interceptor global
+/// (`AuditInterceptor`) después de cada mutation exitosa; ninguna mutation la
+/// toca, así que nadie puede crear, editar ni borrar filas desde la API
+/// (spec 019, RF-12).
 model AuditLog {
-  id        String      @id @default(uuid(7))
-  action    AuditAction
-  /// Nombre del modelo afectado: Vehicle, FuelRecord, ...
-  entity    String
-  entityId  String?     @map("entity_id")
-  before    Json?
+  id     String      @id @default(uuid(7))
+  action AuditAction
+  /// Nombre del modelo afectado: Vehicle, FuelRecord, ... El módulo de la
+  /// interfaz se deriva de aquí, no se almacena (spec 019, RF-6).
+  entity String
+  entityId String? @map("entity_id")
+  /// Identificador de negocio del registro al momento del evento (placa,
+  /// código, usuario). Se guarda denormalizado a propósito: el rastro debe
+  /// sobrevivir a que el registro se renombre o se borre, y `entityId` no
+  /// tiene clave foránea (spec 019, RF-5).
+  entityLabel String? @map("entity_label")
+  /// Estado previo: el interceptor corre después de la escritura y no lo
+  /// conoce. Queda para llenarlo por módulo si algún día se necesita el diff
+  /// campo por campo (spec 019, «Fuera de alcance»).
+  before Json?
+  /// Payload de la operación, sin los campos sensibles (spec 019, RF-8).
   after     Json?
-  ipAddress String?     @map("ip_address")
-  userAgent String?     @map("user_agent")
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -130,9 +142,16 @@ model AuditLog {
 enum AuditAction {
   CREATE
   UPDATE
+  /// Baja y reactivación (`deactivate*`/`reactivate*`): la maqueta las filtra
+  /// aparte de una edición normal (spec 019, RF-2).
+  STATUS_CHANGE
   DELETE
   LOGIN
+  /// Sin usar: la sesión es un JWT sin estado y no hay mutation de logout que
+  /// interceptar (spec 019, «Fuera de alcance»).
   LOGOUT
+  /// Sin usar: pertenecen al flujo de aprobación de `VehicleRequest`, que el
+  /// spec 006 dejó fuera de alcance.
   APPROVE
   REJECT
 
@@ -156,7 +175,6 @@ model Department {
   children Department[] @relation("DepartmentTree")
 
   users    User[]
-  drivers  Driver[]
   vehicles Vehicle[]
 
   @@index([parentId])
@@ -191,15 +209,19 @@ model Vehicle {
   departmentId String?     @map("department_id")
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  conditions        VehicleCondition[]
-  unitAssignments   UnitAssignment[]
-  assignments       Assignment[]
-  odometerReadings  OdometerReading[]
-  maintenanceOrders MaintenanceOrder[]
-  maintenancePlans  MaintenancePlan[]
-  fuelRecords       FuelRecord[]
-  documents         VehicleDocument[]
-  incidents         Incident[]
+  conditions              VehicleCondition[]
+  unitAssignments         UnitAssignment[]
+  driverAssignments       VehicleDriverAssignment[]
+  assignments             Assignment[]
+  odometerReadings        OdometerReading[]
+  maintenanceOrders       MaintenanceOrder[]
+  maintenancePlans        MaintenancePlan[]
+  fuelRecords             FuelRecord[]
+  documents               VehicleDocument[]
+  photos                  VehiclePhoto[]
+  incidents               Incident[]
+  stockMovements          StockMovement[]
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([departmentId])
   @@index([plate])
@@ -210,10 +232,14 @@ model Vehicle {
 // Spec 001 (revisión 2) — Historial de condición del vehículo
 // =============================================================================
 
-/// Valores que este módulo puede escribir (RF-06 del spec 001). "En
-/// mantenimiento" y "Separado por incidente" se agregan en una migración
-/// futura, cuando existan los specs de Mantenimiento e Incidentes: al no
-/// existir hoy en el enum, este módulo no puede escribirlos aunque quisiera.
+/// Valores que este módulo puede escribir (RF-06 del spec 001).
+/// `SEPARADO_POR_INCIDENTE` se agregó con el spec 011 (Incidentes): antes no
+/// existía en el enum y ese módulo no podía escribirlo aunque quisiera. El
+/// spec 008 (Mantenimiento) no llegó a necesitar un valor "en mantenimiento"
+/// aquí: usa `MaintenanceOrder.status` en su lugar, no este historial.
+/// `SINIESTRADO` se agregó durante la importación del censo 2025 (vehículo
+/// destruido en un siniestro, distinto de `INOPERABLE` por falla mecánica y
+/// de `BAJA`, que es la baja administrativa formal del inventario).
 enum VehicleConditionCode {
   BUENO
   REGULAR
@@ -223,6 +249,8 @@ enum VehicleConditionCode {
   EXTRAVIADO
   DEVUELTO
   BAJA
+  SEPARADO_POR_INCIDENTE
+  SINIESTRADO
 
   @@map("vehicle_condition_code")
 }
@@ -234,7 +262,7 @@ model VehicleCondition {
   id               String               @id @default(uuid(7))
   code             VehicleConditionCode
   reason           String?
-  /// Rol simulado de quien lo registró (no hay autenticación real todavía).
+  /// Código del rol de quien lo registró (usuario autenticado, spec 013).
   registeredByRole String?              @map("registered_by_role")
   changedAt        DateTime             @default(now()) @map("changed_at") @db.Timestamptz(3)
 
@@ -245,12 +273,21 @@ model VehicleCondition {
   @@map("vehicle_condition")
 }
 
+/// `CAMION` se mantiene para camiones genéricos; los cuatro valores
+/// `CAMION_*` cubren los vehículos especializados del censo 2025 que antes
+/// colapsaban ahí sin poder distinguirse (cisterna, grúa, bomberos, rescate).
 enum VehicleType {
   AUTOMOVIL
   CAMIONETA
   MOTOCICLETA
   MINIBUS
   CAMION
+  CAMION_CISTERNA
+  CAMION_GRUA
+  CAMION_BOMBERO
+  CAMION_RESCATE
+  CUADRATRACK
+  FURGON
   AMBULANCIA
   OTRO
 
@@ -267,38 +304,66 @@ enum FuelType {
 }
 
 // =============================================================================
-// RF-02  Padrón de conductores
+// Personal — fusión de RF-02 (padrón de conductores, spec 005) y de la
+// sección "personal policial" del spec 002. `Driver` y `Officer` modelaban
+// la misma realidad (una persona del Comando) en dos tablas sin relación;
+// se fusionan en `Personnel` con banderas de rol independientes
+// (`isDriver`/`isOfficer`/`isAdmin`) porque una misma persona puede
+// conducir, estar a cargo de una unidad, tener cuenta de sistema, o
+// cualquier combinación de las tres, y puede ganar o perder un rol con el
+// tiempo sin dejar de ser la misma ficha.
 // =============================================================================
 
-model Driver {
-  id               String   @id @default(uuid(7))
-  firstName        String   @map("first_name")
-  lastName         String   @map("last_name")
-  /// Cédula de identidad, con extensión incluida: "1234567 OR".
-  ci               String   @unique
-  rank             String?
-  licenseNumber    String   @unique @map("license_number")
+model Personnel {
+  id           String  @id @default(uuid(7))
+  /// Cédula de identidad, sin extensión (va aparte en `ciComplement`).
+  ci           String
+  /// Normalizado a cadena vacía (nunca null) cuando no hay complemento, para
+  /// que el índice único (ci, ciComplement) trate "sin complemento" y
+  /// "complemento vacío" como la misma persona.
+  ciComplement String  @default("") @map("ci_complement")
+  firstName    String  @map("first_name")
+  lastName     String  @map("last_name")
+  rank         String?
+  phone        String?
+  email        String?
+  isActive     Boolean @default(true) @map("is_active")
+
+  /// Puede manejar vehículos institucionales; exige licencia (RF-1 spec 005).
+  isDriver  Boolean @default(false) @map("is_driver")
+  /// Elegible como encargado de transportes de una unidad (spec 002).
+  isOfficer Boolean @default(false) @map("is_officer")
+  /// Tiene (o puede tener) una cuenta de sistema vinculada (spec 004).
+  isAdmin   Boolean @default(false) @map("is_admin")
+
+  /// Sólo se exigen cuando `isDriver` es verdadero; nulos para quien no conduce.
+  licenseNumber    String?   @map("license_number")
   /// Categoría de la licencia boliviana: A, B, C, P, T.
-  licenseCategory  String   @map("license_category")
-  licenseExpiresAt DateTime @map("license_expires_at") @db.Date
-  phone            String?
-  isActive         Boolean  @default(true) @map("is_active")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  licenseCategory  String?   @map("license_category")
+  licenseExpiresAt DateTime? @map("license_expires_at") @db.Date
+  observations     String?
 
-  /// Un conductor puede tener cuenta en el sistema, o no tenerla.
-  userId       String?     @unique @map("user_id")
-  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  departmentId String?     @map("department_id")
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  assignments Assignment[]
-  fuelRecords FuelRecord[]
-  incidents   Incident[]
+  /// Unidad operativa (spec 002/Unit) a la que pertenece hoy. Puede no tener
+  /// unidad asignada todavía.
+  unitId String? @map("unit_id")
+  unit   Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  /// Cuenta de sistema vinculada, si la tiene.
+  userId String? @unique @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@index([departmentId])
+  managerAssignments TransportManagerAssignment[]
+  vehicleCharges     VehicleDriverAssignment[]
+  assignments        Assignment[]
+  fuelRecords        FuelRecord[]
+  incidents          Incident[]
+
+  @@unique([ci, ciComplement])
+  @@index([unitId])
   @@index([isActive])
-  @@map("driver")
+  @@map("personnel")
 }
 
 // =============================================================================
@@ -356,7 +421,7 @@ model Assignment {
   vehicleId    String         @map("vehicle_id")
   vehicle      Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   driverId     String         @map("driver_id")
-  driver       Driver         @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  driver       Personnel      @relation(fields: [driverId], references: [id], onDelete: Restrict)
   assignedById String         @map("assigned_by_id")
   assignedBy   User           @relation("AssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
 
@@ -480,7 +545,12 @@ model MaintenanceOrder {
   registeredById String  @map("registered_by_id")
   registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
 
-  items MaintenanceItem[]
+  items                   MaintenanceItem[]
+  /// Salidas de repuestos registradas con esta orden como destino (spec 016,
+  /// RF-11): sólo se llena cuando la entrega de refacciones indica esta
+  /// orden como relacionada; no reemplaza `MaintenanceItem`.
+  relatedStockMovements   StockMovement[]
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([vehicleId, finishedAt])
   @@index([status])
@@ -570,14 +640,16 @@ model FuelRecord {
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  vehicleId      String  @map("vehicle_id")
-  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  driverId       String? @map("driver_id")
-  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  tripId         String? @map("trip_id")
-  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  registeredById String  @map("registered_by_id")
-  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  vehicleId      String     @map("vehicle_id")
+  vehicle        Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String?    @map("driver_id")
+  driver         Personnel? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String?    @map("trip_id")
+  trip           Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String     @map("registered_by_id")
+  registeredBy   User       @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([vehicleId, suppliedAt])
   @@index([suppliedAt])
@@ -605,6 +677,30 @@ model VehicleDocument {
   @@index([vehicleId])
   @@index([expiresAt])
   @@map("vehicle_document")
+}
+
+// =============================================================================
+// RF-01  Registro fotográfico del vehículo
+// =============================================================================
+
+/// Una fila por vista obligatoria (frontal, trasero, motor, etc.). `slotKey`
+/// es el identificador de esa vista, definido en el frontend
+/// (`vehicle-form.component.ts`); el backend no valida contra una lista fija
+/// para no duplicar esa definición en dos lugares.
+model VehiclePhoto {
+  id        String   @id @default(uuid(7))
+  slotKey   String   @map("slot_key")
+  /// Data URL completa (`data:image/jpeg;base64,...`), ya optimizada en el
+  /// navegador (máx. 900px, calidad 0.72) antes de llegar acá.
+  dataUrl   String   @map("data_url") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, slotKey])
+  @@map("vehicle_photo")
 }
 
 enum DocumentType {
@@ -639,14 +735,14 @@ model Incident {
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  vehicleId      String  @map("vehicle_id")
-  vehicle        Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  driverId       String? @map("driver_id")
-  driver         Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  tripId         String? @map("trip_id")
-  trip           Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  registeredById String  @map("registered_by_id")
-  registeredBy   User    @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  vehicleId      String     @map("vehicle_id")
+  vehicle        Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId       String?    @map("driver_id")
+  driver         Personnel? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  tripId         String?    @map("trip_id")
+  trip           Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  registeredById String     @map("registered_by_id")
+  registeredBy   User       @relation(fields: [registeredById], references: [id], onDelete: Restrict)
 
   attachments IncidentAttachment[]
 
@@ -692,6 +788,15 @@ model IncidentAttachment {
 // RF-14 / RF-15  Inventario de repuestos y movimientos de stock
 // =============================================================================
 
+enum SparePartType {
+  LIQUIDO
+  LLANTA
+  PIEZA
+  OTRO
+
+  @@map("spare_part_type")
+}
+
 model SparePartCategory {
   id          String   @id @default(uuid(7))
   name        String   @unique
@@ -704,24 +809,33 @@ model SparePartCategory {
 }
 
 model SparePart {
-  id           String   @id @default(uuid(7))
-  code         String   @unique
+  id           String        @id @default(uuid(7))
+  code         String        @unique
   name         String
   description  String?
+  /// Tipo de artículo (spec 017): determina qué campos pide el formulario.
+  /// A diferencia de `SparePartCategory` no es un catálogo editable.
+  type         SparePartType @default(OTRO)
+  /// Medida de la llanta (ej. "195/65 R15"). Sólo tiene sentido cuando
+  /// `type = LLANTA`, pero se guarda como columna libre, igual que los
+  /// campos de `Vehicle` que sólo aplican a algunos tipos (spec 017).
+  tireSize     String?       @map("tire_size")
+  /// Peso unitario en kilogramos, para logística y reportes de carga.
+  weight       Decimal?      @db.Decimal(10, 3)
   /// Unidad de medida: unidad, litro, juego, metro.
-  unit         String   @default("unidad")
+  unit         String        @default("unidad")
   /// Umbral que dispara la alerta de stock mínimo (RF-14, RF-15).
-  minStock     Decimal  @default(0) @map("min_stock") @db.Decimal(10, 2)
+  minStock     Decimal       @default(0) @map("min_stock") @db.Decimal(10, 2)
   /// Existencia actual. La escribe únicamente InventoryService, dentro de la
   /// misma transacción que inserta el StockMovement, para que no puedan
   /// separarse el movimiento y el saldo.
-  currentStock Decimal  @default(0) @map("current_stock") @db.Decimal(10, 2)
+  currentStock Decimal       @default(0) @map("current_stock") @db.Decimal(10, 2)
   /// Costo unitario de la última entrada, para valorizar el inventario.
-  lastUnitCost Decimal? @map("last_unit_cost") @db.Decimal(12, 2)
+  lastUnitCost Decimal?      @map("last_unit_cost") @db.Decimal(12, 2)
   location     String?
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   categoryId String?            @map("category_id")
   category   SparePartCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -731,6 +845,7 @@ model SparePart {
 
   @@index([categoryId])
   @@index([isActive])
+  @@index([type])
   @@map("spare_part")
 }
 
@@ -746,15 +861,34 @@ model StockMovement {
   supplier     String?
   /// Documento de respaldo: factura, nota de entrega, orden de mantenimiento.
   reference    String?
+  /// Lote de la entrada, dato descriptivo del movimiento (spec 017): no crea
+  /// una entidad de lote propia ni fracciona el stock del artículo.
+  lotNumber    String?           @map("lot_number")
+  lotExpiresAt DateTime?         @map("lot_expires_at") @db.Timestamptz(3)
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  sparePartId    String    @map("spare_part_id")
-  sparePart      SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
-  registeredById String    @map("registered_by_id")
-  registeredBy   User      @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  sparePartId        String            @map("spare_part_id")
+  sparePart          SparePart         @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
+  registeredById     String            @map("registered_by_id")
+  registeredBy       User              @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  /// Vehículo destino de una salida, trazabilidad a nivel de movimiento, no
+  /// de unidad física serializada (spec 017).
+  vehicleId          String?           @map("vehicle_id")
+  vehicle            Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  /// Orden de mantenimiento relacionada de una salida (spec 016, RF-11):
+  /// permite que el checklist de trámites de Entrega de refacciones se
+  /// vincule tanto al movimiento como a la orden. Opcional y sólo tiene
+  /// sentido en una salida; el servicio la ignora en una entrada, igual que
+  /// `vehicleId`.
+  maintenanceOrderId String?           @map("maintenance_order_id")
+  maintenanceOrder   MaintenanceOrder? @relation(fields: [maintenanceOrderId], references: [id], onDelete: SetNull)
+
+  procedureChecklistItems ProcedureChecklistItem[]
 
   @@index([sparePartId, createdAt])
   @@index([createdAt])
+  @@index([vehicleId])
+  @@index([maintenanceOrderId])
   @@map("stock_movement")
 }
 
@@ -833,40 +967,12 @@ model Unit {
   parent   Unit?   @relation("UnitTree", fields: [parentId], references: [id], onDelete: SetNull)
   children Unit[]  @relation("UnitTree")
 
-  officers           Officer[]
   managerAssignments TransportManagerAssignment[]
   vehicleAssignments UnitAssignment[]
+  personnel          Personnel[]
 
   @@index([parentId])
   @@map("unit")
-}
-
-/// Personal policial mínimo para poder designarlo encargado de transportes
-/// (spec 002). No es el padrón de conductores: eso es un módulo aparte.
-model Officer {
-  id           String   @id @default(uuid(7))
-  ci           String
-  /// Normalizado a cadena vacía (nunca null) cuando no hay complemento, para
-  /// que el índice único (ci, ciComplement) trate "sin complemento" y
-  /// "complemento vacío" como la misma persona.
-  ciComplement String   @default("") @map("ci_complement")
-  firstName    String   @map("first_name")
-  lastName     String   @map("last_name")
-  rank         String?
-  phone        String?
-  email        String?
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-
-  currentUnitId String? @map("current_unit_id")
-  currentUnit   Unit?   @relation(fields: [currentUnitId], references: [id], onDelete: SetNull)
-
-  managerAssignments TransportManagerAssignment[]
-
-  @@unique([ci, ciComplement])
-  @@index([currentUnitId])
-  @@map("officer")
 }
 
 /// Historial de encargados de transportes por unidad (RF-18 a RF-25). Una
@@ -881,10 +987,12 @@ model TransportManagerAssignment {
   notes             String?
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  unitId    String  @map("unit_id")
-  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  officerId String  @map("officer_id")
-  officer   Officer @relation(fields: [officerId], references: [id], onDelete: Restrict)
+  unitId    String    @map("unit_id")
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  /// Nombre de columna heredado de `Officer`; apunta a `Personnel` desde la
+  /// fusión (ver bloque `Personnel` más arriba).
+  officerId String    @map("officer_id")
+  officer   Personnel @relation(fields: [officerId], references: [id], onDelete: Restrict)
 
   @@index([unitId, startDate])
   @@map("transport_manager_assignment")
@@ -914,4 +1022,104 @@ model UnitAssignment {
   @@index([vehicleId, startDate])
   @@index([unitId])
   @@map("unit_assignment")
+}
+
+// =============================================================================
+// Spec 014 — Conductor encargado de vehículo
+// =============================================================================
+
+/// Historial de qué conductor está a cargo de cada vehículo. Mismo patrón que
+/// `UnitAssignment`: una fila con `endDate` nulo es la vigente. La unicidad "un
+/// conductor, un vehículo a la vez" en ambos sentidos se garantiza con dos
+/// índices únicos parciales agregados a mano en la migración (Prisma no los
+/// expresa en el DSL): uno por `vehicle_id` y otro por `driver_id`, los dos con
+/// `WHERE end_date IS NULL`.
+model VehicleDriverAssignment {
+  id                String    @id @default(uuid(7))
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  referenceDocument String?   @map("reference_document")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  vehicleId String    @map("vehicle_id")
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driverId  String    @map("driver_id")
+  driver    Personnel @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, startDate])
+  @@index([driverId])
+  @@map("vehicle_driver_assignment")
+}
+
+// =============================================================================
+// Spec 016 — Trámites administrativos por proceso
+// =============================================================================
+
+/// Acción del sistema a la que se asocia un tipo de trámite. Fija por tipo
+/// desde su creación (RF-4): cambiarla invalidaría los checklists ya
+/// guardados con esa definición.
+enum ProcedureAction {
+  VEHICLE_REGISTRATION
+  FUEL_VOUCHER
+  SPARE_PART_DELIVERY
+  MAINTENANCE_ORDER
+
+  @@map("procedure_action")
+}
+
+/// Catálogo configurable de tipos de trámite (RF-1 a RF-8). La unicidad de
+/// nombre es por acción, no global: el mismo nombre puede repetirse en dos
+/// acciones distintas.
+model ProcedureType {
+  id          String          @id @default(uuid(7))
+  name        String
+  description String?
+  action      ProcedureAction
+  isActive    Boolean         @default(true) @map("is_active")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  checklistItems ProcedureChecklistItem[]
+
+  @@unique([name, action])
+  @@index([action, isActive])
+  @@map("procedure_type")
+}
+
+/// Ítem de checklist guardado junto con el registro de una acción (RF-7 a
+/// RF-16). Exactamente uno de los cuatro vínculos aplica según la acción del
+/// tipo de trámite, salvo Entrega de refacciones con orden relacionada
+/// (RF-11), donde `stockMovementId` y `maintenanceOrderId` van juntos en la
+/// misma fila. `procedureTypeId` es `Restrict`: es la garantía a nivel de
+/// base de que un tipo con ítems asociados no puede borrarse (RF-8), sólo
+/// desactivarse.
+model ProcedureChecklistItem {
+  id           String   @id @default(uuid(7))
+  completed    Boolean  @default(false)
+  documentCode String?  @map("document_code")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  procedureTypeId String        @map("procedure_type_id")
+  procedureType   ProcedureType @relation(fields: [procedureTypeId], references: [id], onDelete: Restrict)
+
+  vehicleId String?  @map("vehicle_id")
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  fuelRecordId String?     @map("fuel_record_id")
+  fuelRecord   FuelRecord? @relation(fields: [fuelRecordId], references: [id], onDelete: Cascade)
+
+  stockMovementId String?        @map("stock_movement_id")
+  stockMovement   StockMovement? @relation(fields: [stockMovementId], references: [id], onDelete: Cascade)
+
+  maintenanceOrderId String?           @map("maintenance_order_id")
+  maintenanceOrder   MaintenanceOrder? @relation(fields: [maintenanceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([procedureTypeId])
+  @@index([vehicleId])
+  @@index([fuelRecordId])
+  @@index([stockMovementId])
+  @@index([maintenanceOrderId])
+  @@map("procedure_checklist_item")
 }

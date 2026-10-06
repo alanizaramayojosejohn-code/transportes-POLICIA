@@ -1,0 +1,31 @@
+@if (user(); as u) {
+  <app-modal title="Detalle del usuario" small (closed)="closed.emit()">
+    <div class="px-[22px] py-5">
+      <app-detail-header [initials]="initials()" [title]="u.fullName" [subtitle]="u.username">
+        <app-badge [tone]="u.isActive ? 'green' : 'gray'">
+          {{ u.isActive ? 'Activo' : 'Inactivo' }}
+        </app-badge>
+      </app-detail-header>
+
+      <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+        <app-data-cell label="Rol">{{ u.role.name }}</app-data-cell>
+        <app-data-cell label="Estado">{{ u.isActive ? 'Activo' : 'Inactivo' }}</app-data-cell>
+        <app-data-cell label="Último acceso">{{
+          u.lastLoginAt ? formatDateTime(u.lastLoginAt) : 'Nunca ingresó'
+        }}</app-data-cell>
+        <app-data-cell label="Fecha de registro">{{ formatDateTime(u.createdAt) }}</app-data-cell>
+        <app-data-cell label="Grado">{{ u.rank || '—' }}</app-data-cell>
+        <app-data-cell label="Correo">{{ u.email || '—' }}</app-data-cell>
+        <app-data-cell label="Teléfono">{{ u.phone || '—' }}</app-data-cell>
+      </div>
+
+      <div class="mt-4">
+        <app-detail-section label="Personal vinculado">{{ personnelLabel() }}</app-detail-section>
+      </div>
+    </div>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="closed.emit()">Cerrar</button>
+    </app-form-actions>
+  </app-modal>
+}

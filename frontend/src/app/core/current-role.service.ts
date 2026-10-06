@@ -1,10 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable } from '@angular/core';
+import { AuthService } from './auth.service';
 
-/**
- * Catálogo de roles del sistema (base_datos_transportes_postgresql_final.sql,
- * sección 2). Sólo ADMINISTRADOR y TRANSPORTES pueden escribir; el resto son
- * de sólo consulta.
- */
+/** Catálogo de roles del sistema (base_datos_transportes_postgresql_final.sql, sección 2). */
 export const ROLES = [
   'ADMINISTRADOR',
   'TRANSPORTES',
@@ -12,6 +9,7 @@ export const ROLES = [
   'MANTENIMIENTO',
   'ALMACEN',
   'CONSULTA',
+  'CONDUCTOR',
 ] as const;
 
 export type Role = (typeof ROLES)[number];
@@ -23,33 +21,42 @@ export const ROLE_LABEL: Record<Role, string> = {
   MANTENIMIENTO: 'Mantenimiento',
   ALMACEN: 'Almacén',
   CONSULTA: 'Consulta',
+  CONDUCTOR: 'Conductor',
 };
 
-const STORAGE_KEY = 'transportes.currentRole';
-
 /**
- * Reemplazo temporal de la sesión real mientras no exista autenticación: el
- * rol activo se elige a mano en el topbar y viaja como header `x-user-role`
- * en cada petición GraphQL (ver `role.interceptor.ts`). El backend lo valida
- * con RolesGuard. Se reemplaza por el rol del usuario autenticado cuando
- * exista un spec de autenticación.
+ * Rol del usuario autenticado (spec 013). Antes era un selector simulado en
+ * el topbar que el usuario elegía a mano (`x-user-role`); ahora se deriva de
+ * `AuthService.currentUser()`. Conserva la misma API pública (`role`,
+ * `canWrite*`) para no tocar los componentes que ya la consumían.
  */
 @Injectable({ providedIn: 'root' })
 export class CurrentRoleService {
-  private readonly stored = (typeof localStorage !== 'undefined'
-    ? localStorage.getItem(STORAGE_KEY)
-    : null) as Role | null;
+  constructor(private readonly auth: AuthService) {}
 
-  readonly role = signal<Role>(
-    this.stored && ROLES.includes(this.stored) ? this.stored : 'ADMINISTRADOR',
-  );
+  readonly role = computed<Role | null>(() => {
+    const role = this.auth.currentUser()?.role;
+    return role && (ROLES as readonly string[]).includes(role) ? (role as Role) : null;
+  });
 
   readonly canWrite = () => this.role() === 'ADMINISTRADOR' || this.role() === 'TRANSPORTES';
 
-  setRole(role: Role): void {
-    this.role.set(role);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, role);
-    }
-  }
+  /// Un CONDUCTOR también registra sus propios recorridos (spec 014,
+  /// RF-13/RF-14), acotado a su vehículo a cargo — la pantalla que consume
+  /// esto se encarga de ese acotamiento, aquí sólo se habilita el botón.
+  readonly canWriteTrips = () => this.canWrite() || this.role() === 'CONDUCTOR';
+
+  /// Combustible, además de ADMINISTRADOR/TRANSPORTES, puede registrar
+  /// abastecimientos (spec 007); un CONDUCTOR también, del vehículo del que
+  /// es encargado (spec 014). Mismo patrón para Mantenimiento/Almacén.
+  readonly canWriteFuel = () =>
+    this.canWrite() || this.role() === 'COMBUSTIBLE' || this.role() === 'CONDUCTOR';
+
+  /// Mantenimiento, además de ADMINISTRADOR/TRANSPORTES, puede registrar y
+  /// finalizar órdenes de mantenimiento (spec 008).
+  readonly canWriteMaintenance = () => this.canWrite() || this.role() === 'MANTENIMIENTO';
+
+  /// Almacén, además de ADMINISTRADOR/TRANSPORTES, puede administrar el
+  /// catálogo de repuestos y registrar movimientos de inventario (spec 009).
+  readonly canWriteInventory = () => this.canWrite() || this.role() === 'ALMACEN';
 }

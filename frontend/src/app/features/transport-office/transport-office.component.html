@@ -1,0 +1,80 @@
+<app-page-head
+  title="Área de Transportes"
+  description="Personal administrativo central (administrador, combustible, almacén) y su cuenta."
+>
+  <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+    + Personal administrativo
+  </button>
+</app-page-head>
+
+<app-card>
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>CI</th>
+        <th appTableHeadCell>Nombre</th>
+        <th appTableHeadCell>Grado</th>
+        <th appTableHeadCell>Teléfono</th>
+        <th appTableHeadCell>Cuenta</th>
+        <th appTableHeadCell>Estado</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (person of page().items; track person.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ person.ci }}</td>
+          <td appTableCell>{{ person.firstName }} {{ person.lastName }}</td>
+          <td appTableCell>{{ person.rank || '—' }}</td>
+          <td appTableCell>{{ person.phone || '—' }}</td>
+          <td appTableCell>
+            <app-badge [tone]="person.userId ? 'green' : 'gray'">
+              {{ person.userId ? 'Con cuenta' : 'Sin cuenta' }}
+            </app-badge>
+          </td>
+          <td appTableCell>
+            <app-badge [tone]="person.isActive ? 'green' : 'gray'">
+              {{ person.isActive ? 'Activo' : 'Inactivo' }}
+            </app-badge>
+          </td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button type="button" appButton size="sm" (click)="edit(person.id)">Editar</button>
+              <button
+                type="button"
+                appButton
+                size="sm"
+                (click)="toggleActive(person.id, person.isActive)"
+              >
+                {{ person.isActive ? 'Dar de baja' : 'Reactivar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin personal administrativo registrado todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="persona(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-transport-office-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (editingPersonId()) {
+  <app-transport-office-form
+    [person]="editingPerson"
+    (saved)="closeForm()"
+    (cancelled)="closeForm()"
+  />
+}

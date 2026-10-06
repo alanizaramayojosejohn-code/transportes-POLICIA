@@ -1,16 +1,53 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
-import { DrawerComponent } from '../../../shared/drawer/drawer.component';
+import { ModalComponent } from '../../../shared/modal/modal.component';
+import { TabsComponent } from '../../../shared/tabs/tabs.component';
+import { TabItem } from '../../../shared/tabs/tab-item';
 import { BadgeComponent } from '../../../shared/badge/badge.component';
+import { ButtonDirective } from '../../../shared/button/button.directive';
+import { DataCellComponent } from '../../../shared/data-cell/data-cell.component';
+import { TimelineItemComponent } from '../../../shared/timeline-item/timeline-item.component';
+import { FieldComponent } from '../../../shared/field/field.component';
+import { FieldControlDirective } from '../../../shared/field/field-control.directive';
+import { IconComponent } from '../../../shared/icon/icon.component';
+import { TableComponent } from '../../../shared/table/table.component';
+import {
+  TableCellDirective,
+  TableHeadCellDirective,
+  TableHeadRowDirective,
+  TableRowDirective,
+} from '../../../shared/table/table-parts.directive';
+import { TableEmptyRowComponent } from '../../../shared/table/table-empty-row.component';
+import { SpinnerComponent } from '../../../shared/spinner/spinner.component';
+import { loadable } from '../../../shared/loadable';
+import { errorMessage } from '../../../shared/error-message';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { VehiclesService } from '../vehicles.service';
+import { VehiclePhotosService } from '../vehicle-photos.service';
 import {
   VEHICLE_CONDITION_BADGE,
   VEHICLE_CONDITION_LABEL,
   VEHICLE_TYPE_LABEL,
   VehicleConditionCode,
+  VehiclePhoto,
 } from '../vehicle.model';
-import { formatDateEs } from '../../../shared/date-format';
+import { formatDateEs, formatDateTimeEs } from '../../../shared/date-format';
+import { TripsService } from '../../trips/trips.service';
+import { FuelRecordsService } from '../../fuel-records/fuel-records.service';
+import { FUEL_TYPE_LABEL } from '../../fuel-records/fuel-record.model';
+import { MaintenanceOrdersService } from '../../maintenance-orders/maintenance-orders.service';
+import {
+  MAINTENANCE_STATUS_LABEL,
+  MAINTENANCE_TYPE_LABEL,
+} from '../../maintenance-orders/maintenance-order.model';
+import { VehicleDocumentsService } from '../../vehicle-documents/vehicle-documents.service';
+import { DOCUMENT_TYPE_LABEL } from '../../vehicle-documents/vehicle-document.model';
+import { IncidentsService } from '../../incidents/incidents.service';
+import { INCIDENT_TYPE_LABEL } from '../../incidents/incident.model';
+import { ProcedureTypesService } from '../../procedure-types/procedure-types.service';
+import { UpdateProcedureChecklistItemInput } from '../../procedure-types/procedure-type.model';
+import { ProcedureChecklistModalComponent } from '../../../shared/procedure-checklist/procedure-checklist-modal.component';
 
 const CONDITION_CODES: VehicleConditionCode[] = [
   'BUENO',
@@ -21,11 +58,87 @@ const CONDITION_CODES: VehicleConditionCode[] = [
   'EXTRAVIADO',
   'DEVUELTO',
   'BAJA',
+  'SINIESTRADO',
 ];
 
-/** Ficha del vehículo (spec 001, RF-10): datos, condición vigente e historial. */
+/** Orden y etiquetas de `prototipo/index.html:9557-9565` (`.drawer-tab`). */
+const TABS: readonly TabItem[] = [
+  { value: 'general', label: 'General' },
+  { value: 'asignaciones', label: 'Asignaciones' },
+  { value: 'conductores', label: 'Conductores' },
+  { value: 'recorridos', label: 'Recorridos' },
+  { value: 'combustible', label: 'Combustible' },
+  { value: 'mantenimiento', label: 'Mantenimiento' },
+  { value: 'documentos', label: 'Documentos' },
+  { value: 'incidentes', label: 'Incidentes' },
+];
+
+const RELATED_TAKE = 20;
+
+/// Mismo orden y etiquetas que los slots de `vehicle-form.component.ts`
+/// (01 a 07); el backend no impone orden (`vehiclePhotos` llega alfabético
+/// por `slotKey`), así que el carrusel lo reordena acá.
+const PHOTO_SLOT_ORDER = [
+  'frontal',
+  'trasero',
+  'lateralIzquierdo',
+  'lateralDerecho',
+  'interior',
+  'motor',
+  'chasis',
+];
+
+const PHOTO_SLOT_LABEL: Record<string, string> = {
+  frontal: 'Frontal',
+  trasero: 'Trasero',
+  lateralIzquierdo: 'Lateral izquierdo',
+  lateralDerecho: 'Lateral derecho',
+  interior: 'Interior',
+  motor: 'Motor',
+  chasis: 'Chasis',
+};
+
+interface DriverSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly tripCount: number;
+  readonly lastTripAt: string;
+}
+
+/**
+ * Ficha del vehículo (spec 001, RF-10): datos, condición vigente e historial. El prototipo la
+ * muestra en un drawer lateral (`prototipo/index.html:9549-9568`, `vehicleDrawer` + `drawerData`
+ * en `js/app.js:1339-1575`); aquí usa `app-modal`, igual que el resto de las fichas de detalle
+ * (unidad, conductor) y que los formularios, para que todo componente de detalle sea la misma
+ * ventana en vez de mezclar drawer lateral y modal centrado.
+ *
+ * En el prototipo sólo la pestaña "General" tiene contenido real; las otras 7 son un `<h4>` +
+ * una frase genérica sin datos. Aquí sí están conectadas: mismas consultas que usan las listas
+ * de Recorridos, Combustible, Mantenimiento, Documentación e Incidentes, filtradas por
+ * `vehicleId` (todas ya lo soportan). "Asignaciones" reutiliza el historial que ya trae el
+ * vehículo; "Conductores" no tiene consulta propia (spec 001 deja la asignación de conductores
+ * fuera de este módulo) y se deriva de los conductores con recorridos registrados.
+ */
 @Component({
-  imports: [DrawerComponent, BadgeComponent],
+  imports: [
+    ModalComponent,
+    TabsComponent,
+    BadgeComponent,
+    ButtonDirective,
+    DataCellComponent,
+    TimelineItemComponent,
+    FieldComponent,
+    FieldControlDirective,
+    IconComponent,
+    TableComponent,
+    TableHeadRowDirective,
+    TableHeadCellDirective,
+    TableRowDirective,
+    TableCellDirective,
+    TableEmptyRowComponent,
+    SpinnerComponent,
+    ProcedureChecklistModalComponent,
+  ],
   selector: 'app-vehicle-detail',
   templateUrl: './vehicle-detail.component.html',
 })
@@ -33,37 +146,175 @@ export class VehicleDetailComponent {
   readonly vehicleId = input.required<string>();
   readonly canWrite = input(false);
   readonly closed = output<void>();
-  readonly editRequested = output<void>();
+
+  protected readonly tabs = TABS;
+  protected readonly activeTab = signal('general');
 
   protected readonly conditionLabels = VEHICLE_CONDITION_LABEL;
   protected readonly conditionBadge = VEHICLE_CONDITION_BADGE;
   protected readonly typeLabels = VEHICLE_TYPE_LABEL;
   protected readonly conditionCodes = CONDITION_CODES;
+  protected readonly fuelTypeLabel = FUEL_TYPE_LABEL;
+  protected readonly maintenanceTypeLabel = MAINTENANCE_TYPE_LABEL;
+  protected readonly maintenanceStatusLabel = MAINTENANCE_STATUS_LABEL;
+  protected readonly documentTypeLabel = DOCUMENT_TYPE_LABEL;
+  protected readonly incidentTypeLabel = INCIDENT_TYPE_LABEL;
   protected readonly formatDate = formatDateEs;
+  protected readonly formatDateTime = formatDateTimeEs;
 
   protected readonly showConditionForm = signal(false);
   protected readonly newCode = signal<VehicleConditionCode>('BUENO');
   protected readonly newReason = signal('');
   protected readonly submitting = signal(false);
 
+  /// Spec 016 RF-15/RF-17: completar el checklist de trámites después del alta.
+  protected readonly showChecklist = signal(false);
+  protected readonly saveChecklist = (items: UpdateProcedureChecklistItemInput[]) =>
+    this.procedureTypesService.updateVehicleChecklist(this.vehicleId(), items);
+
   private readonly vehicleId$ = toObservable(this.vehicleId);
 
-  protected readonly vehicle = toSignal(
-    this.vehicleId$.pipe(switchMap((id) => this.vehiclesService.get(id))),
-    { initialValue: null },
+  private readonly vehicleResult = loadable(
+    this.vehicleId,
+    (id) => this.vehiclesService.get(id),
+    null,
+  );
+  protected readonly vehicle = this.vehicleResult.value;
+  protected readonly loading = this.vehicleResult.loading;
+
+  protected readonly photoSlotLabel = PHOTO_SLOT_LABEL;
+  private readonly photos = toSignal(
+    this.vehicleId$.pipe(switchMap((id) => this.vehiclePhotosService.list(id))),
+    { initialValue: [] as VehiclePhoto[] },
+  );
+  protected readonly orderedPhotos = computed(() =>
+    [...this.photos()].sort(
+      (a, b) => PHOTO_SLOT_ORDER.indexOf(a.slotKey) - PHOTO_SLOT_ORDER.indexOf(b.slotKey),
+    ),
+  );
+  protected readonly activePhotoIndex = signal(0);
+  protected readonly activePhoto = computed(
+    () => this.orderedPhotos()[this.activePhotoIndex()] ?? null,
   );
 
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  /// "{{plate}} · {{marca}} {{modelo}}" (`js/app.js:1607-1611`); a diferencia del resto de la
+  /// ficha, el prototipo omite marca/modelo si faltan en vez de mostrar un guion.
+  protected readonly title = computed(() => {
+    const v = this.vehicle();
+    if (!v) return '';
+    const brandModel = [v.brand, v.model].filter(Boolean).join(' ');
+    return brandModel ? `${v.plate} · ${brandModel}` : v.plate;
+  });
+
+  protected readonly trips = toSignal(
+    this.vehicleId$.pipe(
+      switchMap((id) => this.tripsService.list({ vehicleId: id, take: RELATED_TAKE })),
+    ),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  protected readonly fuelRecords = toSignal(
+    this.vehicleId$.pipe(
+      switchMap((id) => this.fuelRecordsService.list({ vehicleId: id, take: RELATED_TAKE })),
+    ),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  protected readonly maintenanceOrders = toSignal(
+    this.vehicleId$.pipe(
+      switchMap((id) => this.maintenanceOrdersService.list({ vehicleId: id, take: RELATED_TAKE })),
+    ),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  protected readonly documents = toSignal(
+    this.vehicleId$.pipe(
+      switchMap((id) => this.vehicleDocumentsService.list({ vehicleId: id, take: RELATED_TAKE })),
+    ),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  protected readonly incidents = toSignal(
+    this.vehicleId$.pipe(
+      switchMap((id) => this.incidentsService.list({ vehicleId: id, take: RELATED_TAKE })),
+    ),
+    { initialValue: { items: [], total: 0 } },
+  );
+
+  /// Sin consulta propia (spec 001, "Fuera de alcance": asignación de conductores a vehículos es
+  /// otro módulo): se deriva de qué conductores registraron recorridos con este vehículo.
+  protected readonly drivers = computed<DriverSummary[]>(() => {
+    const byDriver = new Map<string, DriverSummary>();
+    for (const trip of this.trips().items) {
+      const existing = byDriver.get(trip.driver.id);
+      if (existing) {
+        byDriver.set(trip.driver.id, {
+          ...existing,
+          tripCount: existing.tripCount + 1,
+          lastTripAt:
+            trip.departureAt > existing.lastTripAt ? trip.departureAt : existing.lastTripAt,
+        });
+      } else {
+        byDriver.set(trip.driver.id, {
+          id: trip.driver.id,
+          name: `${trip.driver.firstName} ${trip.driver.lastName}`,
+          tripCount: 1,
+          lastTripAt: trip.departureAt,
+        });
+      }
+    }
+    return Array.from(byDriver.values()).sort((a, b) => b.lastTripAt.localeCompare(a.lastTripAt));
+  });
+
+  private readonly toast = inject(ToastService);
+
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly vehiclePhotosService: VehiclePhotosService,
+    private readonly tripsService: TripsService,
+    private readonly fuelRecordsService: FuelRecordsService,
+    private readonly maintenanceOrdersService: MaintenanceOrdersService,
+    private readonly vehicleDocumentsService: VehicleDocumentsService,
+    private readonly incidentsService: IncidentsService,
+    private readonly procedureTypesService: ProcedureTypesService,
+  ) {
+    // Cambiar de vehículo (o recargar sus fotos) no debe dejar el carrusel
+    // apuntando a un índice que ya no existe.
+    effect(() => {
+      this.vehicleId();
+      this.activePhotoIndex.set(0);
+    });
+  }
+
+  protected previousPhoto(): void {
+    const total = this.orderedPhotos().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i - 1 + total) % total);
+  }
+
+  protected nextPhoto(): void {
+    const total = this.orderedPhotos().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i + 1) % total);
+  }
+
+  protected isExpired(expiresAt: string): boolean {
+    return new Date(expiresAt).getTime() < Date.now();
+  }
 
   protected async registerCondition(): Promise<void> {
     this.submitting.set(true);
     try {
+      const code = this.newCode();
       await this.vehiclesService.registerCondition(this.vehicleId(), {
-        code: this.newCode(),
+        code,
         reason: this.newReason() || undefined,
       });
       this.showConditionForm.set(false);
       this.newReason.set('');
+      this.toast.success(`Condición registrada: ${this.conditionLabels[code]}.`);
+    } catch (error) {
+      this.toast.error(errorMessage(error, 'No se pudo registrar la condición.'));
     } finally {
       this.submitting.set(false);
     }

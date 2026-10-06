@@ -1,0 +1,140 @@
+<app-page-head
+  title="Mi unidad"
+  description="Resumen operativo de la unidad a su cargo."
+></app-page-head>
+
+@if (units().items.length > 0) {
+  <app-card class="mb-4">
+    <div class="grid grid-cols-1 gap-4 min-[720px]:grid-cols-2">
+      @for (unit of units().items; track unit.id) {
+        <div class="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2">
+          <app-data-cell label="Unidad">{{ unit.name }}</app-data-cell>
+          <app-data-cell label="Código">{{ unit.code || '—' }}</app-data-cell>
+          <app-data-cell label="Ubicación">{{ unit.location || '—' }}</app-data-cell>
+          <app-data-cell label="Vehículos actuales">{{ unit.activeVehicleCount }}</app-data-cell>
+        </div>
+      }
+    </div>
+  </app-card>
+} @else {
+  <app-card class="mb-4">
+    <p class="text-13 text-ink-muted">No es encargado vigente de ninguna unidad todavía.</p>
+  </app-card>
+}
+
+<div class="mb-4 grid grid-cols-2 gap-4 min-[1080px]:grid-cols-3">
+  <app-stat-card icon="V" [value]="vehicles().total" label="Vehículos de la unidad" />
+  <app-stat-card icon="C" [value]="drivers().total" label="Conductores activos" />
+  <app-stat-card icon="KM" [value]="openTrips().total" label="Recorridos abiertos" />
+</div>
+
+<div class="mb-4 grid grid-cols-1 gap-4 min-[1080px]:grid-cols-2">
+  <app-card>
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos recorridos</h2>
+      <a
+        routerLink="/recorridos"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a recorridos</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Vehículo</th>
+          <th appTableHeadCell>Destino</th>
+          <th appTableHeadCell>Salida</th>
+          <th appTableHeadCell>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trip of recentTrips().items; track trip.id) {
+          <tr appTableRow>
+            <td appTableCell class="font-medium">{{ trip.vehicle.plate }}</td>
+            <td appTableCell>{{ trip.destination }}</td>
+            <td appTableCell>{{ formatDateTime(trip.departureAt) }}</td>
+            <td appTableCell>
+              <app-badge [tone]="trip.returnAt ? 'gray' : 'green'">
+                {{ trip.returnAt ? 'Cerrado' : 'Abierto' }}
+              </app-badge>
+            </td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="4" [loading]="recentTripsLoading()">
+            Sin recorridos registrados todavía.
+          </tr>
+        }
+      </tbody>
+    </app-table>
+  </app-card>
+
+  <app-card>
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-14-5 font-semibold">Últimos cargos de combustible</h2>
+      <a
+        routerLink="/combustible"
+        class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+        >Ir a combustible</a
+      >
+    </div>
+    <app-table>
+      <thead>
+        <tr appTableHeadRow>
+          <th appTableHeadCell>Vehículo</th>
+          <th appTableHeadCell>Fecha</th>
+          <th appTableHeadCell>Litros</th>
+          <th appTableHeadCell>Vale</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of recentFuelRecords().items; track record.id) {
+          <tr appTableRow>
+            <td appTableCell class="font-medium">{{ record.vehicle.plate }}</td>
+            <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+            <td appTableCell>{{ record.quantity }}</td>
+            <td appTableCell>{{ record.ticketNumber || '—' }}</td>
+          </tr>
+        } @empty {
+          <tr appTableEmpty [colspan]="4" [loading]="recentFuelRecordsLoading()">
+            Sin cargas de combustible registradas todavía.
+          </tr>
+        }
+      </tbody>
+    </app-table>
+  </app-card>
+</div>
+
+<app-card>
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-14-5 font-semibold">Últimos incidentes</h2>
+    <a
+      routerLink="/incidentes"
+      class="text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+      >Ir a incidentes</a
+    >
+  </div>
+  <app-table>
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Lugar</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (incident of recentIncidents().items; track incident.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ incident.vehicle.plate }}</td>
+          <td appTableCell>{{ incidentTypeLabel[incident.type] }}</td>
+          <td appTableCell>{{ formatDate(incident.occurredAt) }}</td>
+          <td appTableCell>{{ incident.place }}</td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="4" [loading]="recentIncidentsLoading()">
+          Sin incidentes registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+</app-card>

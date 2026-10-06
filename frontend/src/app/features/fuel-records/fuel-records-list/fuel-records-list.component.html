@@ -1,0 +1,130 @@
+<app-page-head
+  title="Combustible"
+  description="Abastecimientos relacionados con vehículo y kilometraje."
+>
+  <a
+    routerLink="/combustible/bitacora"
+    class="self-center text-12-5 font-semibold text-green-700 hover:underline dark:text-green-300"
+    >Ver bitácora de conductores</a
+  >
+  <app-export-buttons
+    title="Consumo de combustible"
+    filenameBase="consumo-de-combustible"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
+  @if (currentRole.canWriteFuel()) {
+    <button type="button" appButton variant="primary" (click)="showForm.set(true)">
+      + Registrar abastecimiento
+    </button>
+  }
+</app-page-head>
+
+<app-card>
+  <app-filter-bar>
+    <input
+      appFilterControl
+      placeholder="Buscar por vehículo, estación o vale..."
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <select
+      appFilterControl
+      [value]="fuelType()"
+      (change)="fuelType.set($any($event.target).value)"
+    >
+      <option value="">Todos los tipos</option>
+      @for (type of fuelTypes; track type) {
+        <option [value]="type">{{ fuelTypeLabel[type] }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Fecha</th>
+        <th appTableHeadCell>Vehículo</th>
+        <th appTableHeadCell>KM</th>
+        <th appTableHeadCell>Tipo</th>
+        <th appTableHeadCell>Litros</th>
+        <th appTableHeadCell>Costo total</th>
+        <th appTableHeadCell>Estación</th>
+        <th appTableHeadCell>Rendimiento</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (record of page().items; track record.id) {
+        <tr appTableRow>
+          <td appTableCell>{{ formatDateTime(record.suppliedAt) }}</td>
+          <td appTableCell class="font-medium">{{ record.vehicle.plate }}</td>
+          <td appTableCell>{{ record.odometer }}</td>
+          <td appTableCell>{{ fuelTypeLabel[record.fuelType] }}</td>
+          <td appTableCell>{{ record.quantity }}</td>
+          <td appTableCell>Bs. {{ record.totalCost.toFixed(2) }}</td>
+          <td appTableCell>{{ record.station || '—' }}</td>
+          <td appTableCell>
+            {{
+              record.efficiencyKmPerUnit !== null
+                ? record.efficiencyKmPerUnit.toFixed(1) + ' km/l'
+                : '—'
+            }}
+          </td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                type="button"
+                appButton
+                size="sm"
+                variant="soft"
+                (click)="detailRecordId.set(record.id)"
+              >
+                Ver
+              </button>
+              @if (record.procedureChecklistItems.length > 0) {
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="checklistRecordId.set(record.id)"
+                >
+                  Trámites
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="9" [loading]="loading()">
+          Sin abastecimientos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
+
+  <app-pagination
+    noun="abastecimiento(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
+
+@if (showForm()) {
+  <app-fuel-record-form (saved)="closeForm()" (cancelled)="closeForm()" />
+}
+
+@if (checklistRecordId()) {
+  <app-procedure-checklist-modal
+    [items]="checklistItems()"
+    [editable]="currentRole.canWriteFuel()"
+    [onSave]="saveChecklist"
+    (closed)="checklistRecordId.set(null)"
+  />
+}
+
+@if (detailRecord(); as record) {
+  <app-fuel-record-detail [record]="record" (closed)="detailRecordId.set(null)" />
+}

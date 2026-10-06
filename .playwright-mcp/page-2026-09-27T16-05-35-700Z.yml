@@ -1,0 +1,119 @@
+- generic [ref=e222]:
+  - complementary [ref=e223]:
+    - generic [ref=e230]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=e231]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=e232]:
+      - link [ref=e233] [cursor=pointer]:
+        - /url: /
+      - button [ref=e241]
+      - button [ref=e252]
+      - button [ref=e262]
+      - link [ref=e271] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=e275] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=e283]
+    - generic [ref=e294]: Sistema de información vehicular
+  - generic [ref=e295]:
+    - banner [ref=e296]:
+      - generic [ref=e297]:
+        - generic [ref=e298]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=e299]
+      - generic [ref=e300]:
+        - generic [ref=e301]: En línea
+        - generic [ref=e303]:
+          - button "Tema claro" [ref=e304]
+          - button "Tema oscuro" [ref=e309]
+        - generic [ref=e313]:
+          - generic [ref=e314]: AD
+          - generic [ref=e315]:
+            - strong [ref=e316]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=e317]
+    - main [ref=e318]:
+      - generic [ref=e319]:
+        - generic "Panel principal" [ref=e320]:
+          - generic [ref=e322]:
+            - heading "Panel principal" [level=2] [ref=e323]
+            - paragraph [ref=e324]: Vista general de la información vehicular.
+        - generic [ref=e325]:
+          - generic [ref=e327]:
+            - generic [ref=e328]: V
+            - generic [ref=e329]:
+              - generic [ref=e330]: "1"
+              - generic [ref=e331]: Vehículos registrados
+          - generic [ref=e333]:
+            - generic [ref=e334]: ✓
+            - generic [ref=e335]:
+              - generic [ref=e336]: "1"
+              - generic [ref=e337]: Vehículos operativos
+          - generic [ref=e339]:
+            - generic [ref=e340]: C
+            - generic [ref=e341]:
+              - generic [ref=e342]: "0"
+              - generic [ref=e343]: Conductores activos
+          - generic [ref=e345]:
+            - generic [ref=e346]: KM
+            - generic [ref=e347]:
+              - generic [ref=e348]: "0"
+              - generic [ref=e349]: Recorridos este mes
+        - generic [ref=e350]:
+          - generic [ref=e352]:
+            - heading "Recorridos por mes" [level=3] [ref=e353]
+            - generic [ref=e354]:
+              - generic [ref=e355]:
+                - 'generic "Oct: 0"'
+                - generic [ref=e356]: Oct
+              - generic [ref=e357]:
+                - 'generic "Nov: 0"'
+                - generic [ref=e358]: Nov
+              - generic [ref=e359]:
+                - 'generic "Dic: 0"'
+                - generic [ref=e360]: Dic
+              - generic [ref=e361]:
+                - 'generic "Ene: 0"'
+                - generic [ref=e362]: Ene
+              - generic [ref=e363]:
+                - 'generic "Feb: 0"'
+                - generic [ref=e364]: Feb
+              - generic [ref=e365]:
+                - 'generic "Mar: 0"'
+                - generic [ref=e366]: Mar
+              - generic [ref=e367]:
+                - 'generic "Abr: 0"'
+                - generic [ref=e368]: Abr
+              - generic [ref=e369]:
+                - 'generic "May: 0"'
+                - generic [ref=e370]: May
+              - generic [ref=e371]:
+                - 'generic "Jun: 0"'
+                - generic [ref=e372]: Jun
+              - generic [ref=e373]:
+                - 'generic "Jul: 0"'
+                - generic [ref=e374]: Jul
+              - generic [ref=e375]:
+                - 'generic "Ago: 0"'
+                - generic [ref=e376]: Ago
+              - generic [ref=e377]:
+                - 'generic "Sep: 0"'
+                - generic [ref=e378]: Sep
+          - generic [ref=e380]:
+            - heading "Estado del parque automotor" [level=3] [ref=e381]
+            - generic [ref=e385]:
+              - generic [ref=e386]: Operativos 100%
+              - generic [ref=e388]: Mantenimiento 0%
+              - generic [ref=e390]: Inoperables 0%
+              - generic [ref=e392]: Otros 0%
+        - generic [ref=e395]:
+          - heading "Seguimiento" [level=3] [ref=e396]
+          - generic [ref=e397]:
+            - generic [ref=e398]:
+              - strong [ref=e399]: "0"
+              - text: artículos bajo stock mínimo
+            - generic [ref=e400]:
+              - strong [ref=e401]: "0"
+              - text: mantenimientos en proceso
+            - generic [ref=e402]:
+              - strong [ref=e403]: "0"
+              - text: recorridos abiertos

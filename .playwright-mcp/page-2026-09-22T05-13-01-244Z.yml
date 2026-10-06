@@ -1,0 +1,238 @@
+- generic [ref=f69e4]:
+  - complementary [ref=f69e5]:
+    - generic [ref=f69e12]:
+      - heading "Sistema de Información Vehicular" [level=1] [ref=f69e13]
+      - text: Comando Departamental · Oruro
+    - navigation [ref=f69e14]:
+      - link [ref=f69e15] [cursor=pointer]:
+        - /url: /
+      - button [ref=f69e22]
+      - generic [ref=f69e33]:
+        - link "Vehículos" [ref=f69e34] [cursor=pointer]:
+          - /url: /vehiculos
+        - link "Asignaciones" [ref=f69e35] [cursor=pointer]:
+          - /url: /asignaciones
+        - link "Conductores" [ref=f69e36] [cursor=pointer]:
+          - /url: /conductores
+        - link "Unidades" [ref=f69e37] [cursor=pointer]:
+          - /url: /unidades
+        - link "Documentación" [ref=f69e38] [cursor=pointer]:
+          - /url: /documentacion
+      - button [ref=f69e39]
+      - button [ref=f69e49]
+      - link [ref=f69e58] [cursor=pointer]:
+        - /url: /reportes
+      - link [ref=f69e62] [cursor=pointer]:
+        - /url: /tramites
+      - button [ref=f69e70]
+    - generic [ref=f69e81]: Sistema de información vehicular
+  - generic [ref=f69e82]:
+    - banner [ref=f69e83]:
+      - generic [ref=f69e84]:
+        - generic [ref=f69e85]: ⌕
+        - textbox "Buscar por placa, vehículo, conductor o unidad..." [ref=f69e86]
+      - generic [ref=f69e87]:
+        - generic [ref=f69e88]: En línea
+        - generic [ref=f69e90]:
+          - button "Tema claro" [ref=f69e91]
+          - button "Tema oscuro" [ref=f69e96]
+        - generic [ref=f69e100]:
+          - generic [ref=f69e101]: AD
+          - generic [ref=f69e102]:
+            - strong [ref=f69e103]: Administrador del Sistema
+            - text: Administrador
+        - button "Cerrar sesión" [ref=f69e104]
+    - main [ref=f69e105]:
+      - generic [ref=f69e106]:
+        - generic "Vehículos" [ref=f69e107]:
+          - generic [ref=f69e108]:
+            - generic [ref=f69e109]:
+              - heading "Vehículos" [level=2] [ref=f69e110]
+              - paragraph [ref=f69e111]: Registro y consulta centralizada del parque automotor.
+            - button "+ Nuevo vehículo" [ref=f69e113]
+        - generic [ref=f69e115]:
+          - generic [ref=f69e117]:
+            - textbox "Buscar por placa, marca, modelo, chasis..." [ref=f69e118]
+            - combobox [ref=f69e119]:
+              - option "Todas las condiciones" [selected]
+              - option "Bueno"
+              - option "Regular"
+              - option "Deteriorado"
+              - option "Fuera de uso"
+              - option "Inoperable"
+              - option "Extraviado"
+              - option "Devuelto"
+              - option "Dado de baja"
+            - combobox [ref=f69e120]:
+              - option "Todos los tipos" [selected]
+              - option "Camioneta"
+              - option "Automóvil"
+              - option "Motocicleta"
+              - option "Minibús"
+              - option "Camión"
+              - option "Ambulancia"
+              - option "Otro"
+          - generic [ref=f69e121]:
+            - table [ref=f69e123]:
+              - rowgroup [ref=f69e124]:
+                - row [ref=f69e125]:
+                  - columnheader "Placa" [ref=f69e126]
+                  - columnheader "Marca" [ref=f69e127]
+                  - columnheader "Modelo" [ref=f69e128]
+                  - columnheader "Unidad" [ref=f69e129]
+                  - columnheader "Condición" [ref=f69e130]
+                  - columnheader "Último KM" [ref=f69e131]
+                  - columnheader [ref=f69e132]
+              - rowgroup [ref=f69e133]:
+                - row [ref=f69e134]:
+                  - cell "Sin vehículos registrados todavía." [ref=f69e135]
+            - paragraph [ref=f69e136]: 0 vehículo(s) en total.
+        - generic [ref=f69e137]:
+          - button "Cerrar" [ref=f69e138]
+          - dialog "Registrar vehículo" [ref=f69e139]:
+            - generic [ref=f69e140]:
+              - generic [ref=f69e141]:
+                - generic [ref=f69e142]:
+                  - generic [ref=f69e143]: GESTIÓN VEHICULAR
+                  - heading "Registrar vehículo" [level=3] [ref=f69e144]
+                - button "Cerrar" [ref=f69e145]: ✕
+              - paragraph [ref=f69e146]: Complete los datos técnicos y el registro fotográfico de la movilidad.
+            - generic [ref=f69e147]:
+              - generic [ref=f69e148]:
+                - generic [ref=f69e149]:
+                  - generic [ref=f69e150]: "01"
+                  - generic [ref=f69e151]:
+                    - heading "Datos de identificación" [level=4] [ref=f69e152]
+                    - paragraph [ref=f69e153]: Información técnica y administrativa principal.
+                - generic [ref=f69e154]: "* Campos obligatorios"
+              - generic [ref=f69e155]:
+                - generic [ref=f69e157]:
+                  - generic [ref=f69e158]: Placa *
+                  - textbox "Placa *" [active] [ref=f69e159]
+                - generic [ref=f69e161]:
+                  - generic [ref=f69e162]: Placa DNFR
+                  - textbox "Placa DNFR" [ref=f69e163]
+                - generic [ref=f69e165]:
+                  - generic [ref=f69e166]: Tipo de vehículo *
+                  - combobox "Tipo de vehículo *" [ref=f69e167]:
+                    - option "Camioneta" [selected]
+                    - option "Automóvil"
+                    - option "Motocicleta"
+                    - option "Minibús"
+                    - option "Camión"
+                    - option "Ambulancia"
+                    - option "Otro"
+                - generic [ref=f69e169]:
+                  - generic [ref=f69e170]: Marca
+                  - textbox "Marca" [ref=f69e171]
+                - generic [ref=f69e173]:
+                  - generic [ref=f69e174]: Modelo
+                  - textbox "Modelo" [ref=f69e175]
+                - generic [ref=f69e177]:
+                  - generic [ref=f69e178]: Año
+                  - spinbutton "Año" [ref=f69e179]
+                - generic [ref=f69e181]:
+                  - generic [ref=f69e182]: Número de chasis
+                  - textbox "Número de chasis" [ref=f69e183]
+                - generic [ref=f69e185]:
+                  - generic [ref=f69e186]: Número de motor
+                  - textbox "Número de motor" [ref=f69e187]
+                - generic [ref=f69e189]:
+                  - generic [ref=f69e190]: Color
+                  - textbox "Color" [ref=f69e191]
+                - generic [ref=f69e193]:
+                  - generic [ref=f69e194]: País de origen
+                  - textbox "País de origen" [ref=f69e195]
+                - generic [ref=f69e197]:
+                  - generic [ref=f69e198]: Fuente de recepción
+                  - textbox "Fuente de recepción" [ref=f69e199]
+                - generic [ref=f69e201]:
+                  - generic [ref=f69e202]: Observaciones
+                  - textbox "Observaciones" [ref=f69e203]
+            - generic [ref=f69e204]:
+              - generic [ref=f69e205]:
+                - generic [ref=f69e206]:
+                  - generic [ref=f69e207]: "02"
+                  - generic [ref=f69e208]:
+                    - heading "Registro fotográfico" [level=4] [ref=f69e209]
+                    - paragraph [ref=f69e210]: "Vehículo: 7 fotografías obligatorias — frontal, trasero, ambos laterales, interior, motor y chasis."
+                - generic [ref=f69e211]:
+                  - generic [ref=f69e212]: "0"
+                  - generic [ref=f69e213]: /
+                  - generic [ref=f69e214]: "7"
+                  - generic [ref=f69e215]: fotografías
+              - generic [ref=f69e216]:
+                - article [ref=f69e217]:
+                  - generic [ref=f69e218]:
+                    - generic [ref=f69e219]: Sin fotografía
+                    - generic [ref=f69e225]: "01"
+                  - generic [ref=f69e226]:
+                    - strong [ref=f69e227]: Frontal *
+                    - generic [ref=f69e228]: Vista completa desde el frente
+                    - generic [ref=f69e230] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e231]
+                      - text: Agregar foto
+                - article [ref=f69e232]:
+                  - generic [ref=f69e233]:
+                    - generic [ref=f69e234]: Sin fotografía
+                    - generic [ref=f69e240]: "02"
+                  - generic [ref=f69e241]:
+                    - strong [ref=f69e242]: Trasero *
+                    - generic [ref=f69e243]: Vista completa desde atrás
+                    - generic [ref=f69e245] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e246]
+                      - text: Agregar foto
+                - article [ref=f69e247]:
+                  - generic [ref=f69e248]:
+                    - generic [ref=f69e249]: Sin fotografía
+                    - generic [ref=f69e255]: "03"
+                  - generic [ref=f69e256]:
+                    - strong [ref=f69e257]: Lateral izquierdo *
+                    - generic [ref=f69e258]: Perfil completo del lado izquierdo
+                    - generic [ref=f69e260] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e261]
+                      - text: Agregar foto
+                - article [ref=f69e262]:
+                  - generic [ref=f69e263]:
+                    - generic [ref=f69e264]: Sin fotografía
+                    - generic [ref=f69e270]: "04"
+                  - generic [ref=f69e271]:
+                    - strong [ref=f69e272]: Lateral derecho *
+                    - generic [ref=f69e273]: Perfil completo del lado derecho
+                    - generic [ref=f69e275] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e276]
+                      - text: Agregar foto
+                - article [ref=f69e277]:
+                  - generic [ref=f69e278]:
+                    - generic [ref=f69e279]: Sin fotografía
+                    - generic [ref=f69e285]: "05"
+                  - generic [ref=f69e286]:
+                    - strong [ref=f69e287]: Interior *
+                    - generic [ref=f69e288]: Cabina, tablero y asientos
+                    - generic [ref=f69e290] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e291]
+                      - text: Agregar foto
+                - article [ref=f69e292]:
+                  - generic [ref=f69e293]:
+                    - generic [ref=f69e294]: Sin fotografía
+                    - generic [ref=f69e300]: "06"
+                  - generic [ref=f69e301]:
+                    - strong [ref=f69e302]: Motor *
+                    - generic [ref=f69e303]: Compartimiento del motor visible
+                    - generic [ref=f69e305] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e306]
+                      - text: Agregar foto
+                - article [ref=f69e307]:
+                  - generic [ref=f69e308]:
+                    - generic [ref=f69e309]: Sin fotografía
+                    - generic [ref=f69e315]: "07"
+                  - generic [ref=f69e316]:
+                    - strong [ref=f69e317]: Chasis *
+                    - generic [ref=f69e318]: Número o zona identificable del chasis
+                    - generic [ref=f69e320] [cursor=pointer]:
+                      - button "Agregar foto" [ref=f69e321]
+                      - text: Agregar foto
+              - generic [ref=f69e322]: "Las fotografías se optimizan en el navegador y sólo viven mientras este formulario está abierto: la subida al backend todavía no está disponible."
+            - generic [ref=f69e329]:
+              - button "Cancelar" [ref=f69e330]
+              - button "Guardar vehículo" [ref=f69e331]

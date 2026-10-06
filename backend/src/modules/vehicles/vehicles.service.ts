@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, VehicleConditionCode } from '../../generated/prisma/client.js';
 import { withUniqueConstraintHandling } from '../../common/prisma-errors.js';
+import { type UnitScope } from '../../common/unit-scope.js';
+import { saveChecklistItems } from '../procedures/checklist.helpers.js';
 import { CreateVehicleInput } from './dto/create-vehicle.input.js';
 import { UpdateVehicleInput } from './dto/update-vehicle.input.js';
 import { VehicleFilterArgs } from './dto/vehicle-filter.args.js';
@@ -18,7 +20,7 @@ import { RegisterVehicleConditionInput } from './dto/register-vehicle-condition.
 export class VehiclesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(filters: VehicleFilterArgs) {
+  async findAll(filters: VehicleFilterArgs, scope: UnitScope = null) {
     let idsWithCondition: string[] | undefined;
     if (filters.condition) {
       idsWithCondition = await this.findVehicleIdsWithCurrentCondition(
@@ -34,6 +36,13 @@ export class VehiclesService {
             unitAssignments: {
               some: { unitId: filters.unitId, endDate: null },
             },
+          }
+        : {}),
+      /// Alcance por unidad (spec 015, RF-12): sólo vehículos con asignación
+      /// vigente en alguna unidad del alcance.
+      ...(scope !== null
+        ? {
+            unitAssignments: { some: { unitId: { in: scope }, endDate: null } },
           }
         : {}),
       ...(filters.search
@@ -74,14 +83,23 @@ export class VehiclesService {
     return vehicle;
   }
 
+  /// Spec 016 RF-9/RF-10: el alta y el checklist de trámites de la acción
+  /// «Registrar vehículo» se guardan en una sola transacción.
   async create(input: CreateVehicleInput) {
+    const { checklistItems, ...data } = input;
     return withUniqueConstraintHandling(
       () =>
-        this.prisma.vehicle.create({
-          data: {
-            ...input,
-            plate: this.normalizePlate(input.plate),
-          },
+        this.prisma.$transaction(async (tx) => {
+          const vehicle = await tx.vehicle.create({
+            data: {
+              ...data,
+              plate: this.normalizePlate(input.plate),
+            },
+          });
+          await saveChecklistItems(tx, checklistItems, {
+            vehicleId: vehicle.id,
+          });
+          return vehicle;
         }),
       'Ya existe un vehículo con ese',
     );
@@ -132,6 +150,12 @@ export class VehiclesService {
         // unit-assignments; `unit_assignment` es una tabla del esquema
         // compartido, no un detalle interno de ese módulo.
         await tx.unitAssignment.updateMany({
+          where: { vehicleId, endDate: null },
+          data: { endDate: condition.changedAt },
+        });
+        // Spec 014: mismo gancho para el conductor encargado vigente, si lo
+        // tiene.
+        await tx.vehicleDriverAssignment.updateMany({
           where: { vehicleId, endDate: null },
           data: { endDate: condition.changedAt },
         });

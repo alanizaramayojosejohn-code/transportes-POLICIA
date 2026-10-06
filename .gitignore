@@ -12,6 +12,7 @@ dist-ssr/
 build/
 out/
 *.tsbuildinfo
+.playwright-mcp
 
 # ─── Logs ─────────────────────────────────────────────────────────────────────
 logs/

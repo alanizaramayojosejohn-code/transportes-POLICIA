@@ -1,0 +1,11 @@
+<div class="mb-[19px] flex flex-wrap items-end justify-between gap-4 max-[560px]:items-stretch">
+  <div>
+    <h2 class="font-serif text-23 font-semibold tracking-[-0.022em] text-ink">{{ title() }}</h2>
+    @if (description(); as d) {
+      <p class="text-13-5 text-ink-muted">{{ d }}</p>
+    }
+  </div>
+  <div class="flex flex-wrap gap-2.5 [&>*]:max-[560px]:flex-1">
+    <ng-content />
+  </div>
+</div>

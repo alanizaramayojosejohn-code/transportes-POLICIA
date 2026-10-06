@@ -1,31 +1,31 @@
-<div class="mb-5 flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <h2 class="font-serif text-[23px] font-semibold text-ink">Vehículos</h2>
-    <p class="text-[13.5px] text-ink-muted">
-      Registro y consulta centralizada del parque automotor.
-    </p>
-  </div>
+<app-page-head
+  title="Vehículos"
+  description="Registro y consulta centralizada del parque automotor."
+>
+  <app-export-buttons
+    title="Vehículos por unidad"
+    filenameBase="vehiculos-por-unidad"
+    [columns]="exportColumns"
+    [filtersSummary]="filtersSummary()"
+    [fetchRows]="fetchAllForExport"
+  />
   @if (currentRole.canWrite()) {
-    <button
-      type="button"
-      class="rounded-md bg-accent-strong px-4 py-2 text-[13px] font-semibold text-on-accent"
-      (click)="showCreateForm.set(true)"
-    >
+    <button type="button" appButton variant="primary" (click)="showCreateForm.set(true)">
       + Nuevo vehículo
     </button>
   }
-</div>
+</app-page-head>
 
-<div class="rounded-2xl border border-edge bg-surface p-5 shadow-sm">
-  <div class="mb-4 flex flex-wrap gap-2.5">
+<app-card>
+  <app-filter-bar>
     <input
-      class="min-w-56 flex-[2] rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      appFilterControl
       placeholder="Buscar por placa, marca, modelo, chasis..."
       [value]="search()"
       (input)="search.set($any($event.target).value)"
     />
     <select
-      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
+      appFilterControl
       [value]="condition()"
       (change)="condition.set($any($event.target).value)"
     >
@@ -34,67 +34,89 @@
         <option [value]="code">{{ conditionLabels[code] }}</option>
       }
     </select>
-    <select
-      class="min-w-40 flex-1 rounded-md border border-edge bg-surface-2 px-3 py-2 text-[13px]"
-      [value]="type()"
-      (change)="type.set($any($event.target).value)"
-    >
+    <select appFilterControl [value]="type()" (change)="type.set($any($event.target).value)">
       <option value="">Todos los tipos</option>
       @for (opt of typeOptions; track opt) {
         <option [value]="opt">{{ typeLabels[opt] }}</option>
       }
     </select>
-  </div>
+  </app-filter-bar>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-[13px]">
-      <thead>
-        <tr
-          class="border-b border-edge text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
-        >
-          <th class="pb-2.5">Placa</th>
-          <th class="pb-2.5">Marca / Modelo</th>
-          <th class="pb-2.5">Unidad</th>
-          <th class="pb-2.5">Condición</th>
-          <th class="pb-2.5"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (vehicle of page().items; track vehicle.id) {
-          <tr class="border-b border-edge hover:bg-surface-2">
-            <td class="py-3 font-medium">{{ vehicle.plate }}</td>
-            <td class="py-3">{{ vehicle.brand || '—' }} {{ vehicle.model || '' }}</td>
-            <td class="py-3">{{ vehicle.currentUnit?.name || 'Sin unidad asignada' }}</td>
-            <td class="py-3">
-              @if (vehicle.currentCondition; as c) {
-                <app-badge [tone]="conditionBadge[c.code]">{{ conditionLabels[c.code] }}</app-badge>
-              } @else {
-                <app-badge tone="gray">Sin evaluar</app-badge>
-              }
-            </td>
-            <td class="py-3 text-right">
+  <app-table [loading]="loading()">
+    <thead>
+      <tr appTableHeadRow>
+        <th appTableHeadCell>Placa</th>
+        <th appTableHeadCell>Marca</th>
+        <th appTableHeadCell>Modelo</th>
+        <th appTableHeadCell>Unidad</th>
+        <th appTableHeadCell>Condición</th>
+        <th appTableHeadCell>Último KM</th>
+        <th appTableHeadCell></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (vehicle of page().items; track vehicle.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">{{ vehicle.plate }}</td>
+          <td appTableCell>{{ vehicle.brand || '—' }}</td>
+          <td appTableCell>{{ vehicle.model || '—' }}</td>
+          <td appTableCell>{{ vehicle.currentUnit?.name || 'Sin unidad asignada' }}</td>
+          <td appTableCell>
+            @if (vehicle.currentCondition; as c) {
+              <app-badge [tone]="conditionBadge[c.code]">{{ conditionLabels[c.code] }}</app-badge>
+            } @else {
+              <app-badge tone="gray">Sin evaluar</app-badge>
+            }
+          </td>
+          <td appTableCell>—</td>
+          <td appTableCell class="text-right">
+            <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
               <button
                 type="button"
-                class="rounded-md bg-green-bg px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
+                appButton
+                size="sm"
+                variant="soft"
                 (click)="openDetail(vehicle.id)"
               >
-                Ver ficha
+                Ver
               </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="py-8 text-center text-ink-muted">
-              Sin vehículos registrados todavía.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+              @if (currentRole.canWrite()) {
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  (click)="editingVehicleId.set(vehicle.id)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  appButton
+                  size="sm"
+                  variant="danger"
+                  (click)="deleteVehicle()"
+                >
+                  Eliminar
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr appTableEmpty [colspan]="7" [loading]="loading()">
+          Sin vehículos registrados todavía.
+        </tr>
+      }
+    </tbody>
+  </app-table>
 
-  <p class="mt-3 text-[12px] text-ink-faint">{{ page().total }} vehículo(s) en total.</p>
-</div>
+  <app-pagination
+    noun="vehículo(s)"
+    [total]="page().total"
+    [skip]="skip()"
+    (skipChange)="skip.set($event)"
+  />
+</app-card>
 
 @if (showCreateForm()) {
   <app-vehicle-form (saved)="closeForm()" (cancelled)="closeForm()" />
@@ -109,6 +131,5 @@
     [vehicleId]="id"
     [canWrite]="currentRole.canWrite()"
     (closed)="closeDetail()"
-    (editRequested)="editFromDetail()"
   />
 }

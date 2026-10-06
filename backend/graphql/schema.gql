@@ -10,9 +10,83 @@ input AssignTransportManagerInput {
   unitId: String!
 }
 
+input AssignVehicleDriverInput {
+  driverId: String!
+  notes: String
+  referenceDocument: String
+  startDate: String!
+  vehicleId: String!
+}
+
+"""Tipo de operación registrada en la bitácora de auditoría."""
+enum AuditAction {
+  APPROVE
+  CREATE
+  DELETE
+  LOGIN
+  LOGOUT
+  REJECT
+  STATUS_CHANGE
+  UPDATE
+}
+
+type AuditLog {
+  action: AuditAction!
+  after: String
+  createdAt: DateTime!
+  description: String!
+  entity: String!
+  entityId: String
+  entityLabel: String
+  id: String!
+  ipAddress: String
+  module: String!
+  user: AuditLogUser
+  userAgent: String
+}
+
+type AuditLogPage {
+  items: [AuditLog!]!
+  total: Int!
+}
+
+type AuditLogUser {
+  fullName: String!
+  id: String!
+  username: String!
+}
+
+type AuditSummary {
+  created: Int!
+  today: Int!
+  total: Int!
+  updated: Int!
+}
+
+type AuthPayload {
+  accessToken: String!
+  user: AuthUser!
+}
+
+type AuthUser {
+  fullName: String!
+  id: String!
+  role: String!
+  username: String!
+}
+
 input CloseTransportManagerAssignmentInput {
   endDate: String!
   unitId: String!
+}
+
+input CloseTripInput {
+  damagesFound: String
+  incidentNotes: String
+  returnAt: String
+  returnConditionNotes: String
+  returnFuelLevel: Int
+  returnOdometer: Int!
 }
 
 input CloseUnitAssignmentInput {
@@ -20,15 +94,108 @@ input CloseUnitAssignmentInput {
   vehicleId: String!
 }
 
-input CreateOfficerInput {
+input CloseVehicleDriverAssignmentInput {
+  endDate: String!
+  vehicleId: String!
+}
+
+input CreateFuelRecordInput {
+  checklistItems: [ProcedureChecklistItemInput!]
+  driverId: String
+  fuelType: FuelType!
+  notes: String
+  odometer: Int!
+  quantity: Float!
+  station: String
+  suppliedAt: String!
+  ticketNumber: String
+  unitPrice: Float!
+  vehicleId: String!
+}
+
+input CreateIncidentInput {
+  damages: String
+  description: String!
+  driverId: String
+  occurredAt: String!
+  place: String!
+  policeReportNumber: String
+  postCondition: VehicleConditionCode
+  type: IncidentType!
+  vehicleId: String!
+}
+
+input CreateMaintenanceOrderInput {
+  checklistItems: [ProcedureChecklistItemInput!]
+  description: String!
+  invoiceNumber: String
+  odometer: Int!
+  startedAt: String
+  type: MaintenanceType!
+  vehicleId: String!
+  workshopName: String
+}
+
+input CreatePersonnelInput {
   ci: String!
   ciComplement: String
-  currentUnitId: String
   email: String
   firstName: String!
+  isAdmin: Boolean = false
+  isDriver: Boolean = false
+  isOfficer: Boolean = false
   lastName: String!
+  licenseCategory: String
+  licenseExpiresAt: String
+  licenseNumber: String
+  observations: String
   phone: String
   rank: String
+  unitId: String
+}
+
+input CreateProcedureTypeInput {
+  action: ProcedureAction!
+  description: String
+  name: String!
+}
+
+input CreateSparePartInput {
+  categoryId: String!
+  code: String!
+  description: String
+  location: String
+  minStock: Float
+  name: String!
+  tireSize: String
+  type: SparePartType
+  unit: String!
+  weight: Float
+}
+
+input CreateStockMovementInput {
+  checklistItems: [ProcedureChecklistItemInput!]
+  lotExpiresAt: String
+  lotNumber: String
+  maintenanceOrderId: String
+  quantity: Float!
+  reason: String
+  reference: String
+  sparePartId: String!
+  supplier: String
+  type: StockMovementType!
+  unitCost: Float
+  vehicleId: String
+}
+
+input CreateTripInput {
+  departureAt: String!
+  departureConditionNotes: String
+  departureFuelLevel: Int
+  departureOdometer: Int!
+  destination: String!
+  driverId: String!
+  vehicleId: String!
 }
 
 input CreateUnitAssignmentInput {
@@ -48,9 +215,30 @@ input CreateUnitInput {
   type: String
 }
 
+input CreateUserInput {
+  email: String
+  fullName: String!
+  password: String!
+  personnelId: String
+  phone: String
+  rank: String
+  roleId: String!
+  username: String!
+}
+
+input CreateVehicleDocumentInput {
+  documentNumber: String
+  expiresAt: String!
+  issuedAt: String
+  notes: String
+  type: DocumentType!
+  vehicleId: String!
+}
+
 input CreateVehicleInput {
   brand: String
   chassisNumber: String
+  checklistItems: [ProcedureChecklistItemInput!]
   color: String
   engineNumber: String
   model: String
@@ -63,58 +251,448 @@ input CreateVehicleInput {
   year: Int
 }
 
+type DashboardSummary {
+  activeDriverCount: Int!
+  fleetStatus: FleetStatusBreakdown!
+  inProgressMaintenanceCount: Int!
+  lowStockCount: Int!
+  openTripsCount: Int!
+  operationalVehicleCount: Int!
+  tripsByMonth: [MonthlyTripCount!]!
+  tripsThisMonthCount: Int!
+  vehicleCount: Int!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
 
-type Mutation {
-  assignTransportManager(input: AssignTransportManagerInput!): TransportManagerAssignment!
-  closeTransportManagerAssignment(input: CloseTransportManagerAssignmentInput!): TransportManagerAssignment!
-  closeUnitAssignment(input: CloseUnitAssignmentInput!): UnitAssignment!
-  createOfficer(input: CreateOfficerInput!): Officer!
-  createUnit(input: CreateUnitInput!): Unit!
-  createUnitAssignment(input: CreateUnitAssignmentInput!): UnitAssignment!
-  createVehicle(input: CreateVehicleInput!): Vehicle!
-  deactivateOfficer(id: String!): Officer!
-  deactivateUnit(id: String!): Unit!
-  reactivateUnit(id: String!): Unit!
-  registerVehicleCondition(input: RegisterVehicleConditionInput!, vehicleId: String!): VehicleCondition!
-  updateOfficer(id: String!, input: UpdateOfficerInput!): Officer!
-  updateUnit(id: String!, input: UpdateUnitInput!): Unit!
-  updateUnitAssignmentNotes(input: UpdateUnitAssignmentNotesInput!): UnitAssignment!
-  updateVehicle(id: String!, input: UpdateVehicleInput!): Vehicle!
+"""Tipo de documento vehicular."""
+enum DocumentType {
+  CERTIFICADO_GNV
+  INSPECCION_TECNICA
+  OTRO
+  POLIZA_SEGURO
+  RUAT
+  SOAT
 }
 
-type Officer {
+input FinishMaintenanceOrderInput {
+  finishedAt: String
+  invoiceNumber: String
+  totalCost: Float!
+}
+
+type FleetStatusBreakdown {
+  inoperable: Int!
+  maintenance: Int!
+  operational: Int!
+  other: Int!
+}
+
+type FuelConsumptionReport {
+  items: [FuelConsumptionRow!]!
+  total: Int!
+  totalCost: Float!
+  totalDistanceKm: Int!
+  totalEfficiencyKmPerLiter: Float
+  totalLiters: Float!
+  totalRecords: Int!
+}
+
+type FuelConsumptionRow {
+  avgUnitPrice: Float
+  distanceKm: Int!
+  efficiencyKmPerLiter: Float
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  liters: Float!
+  records: Int!
+  totalCost: Float!
+  vehicleCount: Int!
+}
+
+type FuelRecord {
+  createdAt: DateTime!
+  driver: Personnel
+  driverId: String
+  efficiencyKmPerUnit: Float
+  fuelType: FuelType!
+  id: String!
+  notes: String
+  odometer: Int!
+  procedureChecklistItems: [ProcedureChecklistItem!]!
+  quantity: Float!
+  station: String
+  suppliedAt: DateTime!
+  ticketNumber: String
+  totalCost: Float!
+  unitPrice: Float!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type FuelRecordPage {
+  items: [FuelRecord!]!
+  total: Int!
+}
+
+"""Tipo de combustible de un abastecimiento."""
+enum FuelType {
+  DIESEL
+  ELECTRICO
+  GASOLINA
+  GNV
+}
+
+type Incident {
+  code: String!
+  createdAt: DateTime!
+  damages: String
+  description: String!
+  driver: Personnel
+  driverId: String
+  id: String!
+  occurredAt: DateTime!
+  place: String!
+  policeReportNumber: String
+  severity: IncidentSeverity!
+  type: IncidentType!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type IncidentPage {
+  items: [Incident!]!
+  total: Int!
+}
+
+"""Gravedad de un incidente."""
+enum IncidentSeverity {
+  MINOR
+  MODERATE
+  SEVERE
+}
+
+"""Tipo de incidente vehicular."""
+enum IncidentType {
+  ACCIDENTE
+  AVERIA
+  INFRACCION
+  OTRO
+  ROBO
+}
+
+type LogbookEntry {
+  departureOdometer: Int
+  destination: String
+  distanceKm: Int
+  driver: Personnel
+  fuelType: FuelType
+  id: String!
+  occurredAt: DateTime!
+  odometer: Int
+  quantity: Float
+  returnAt: DateTime
+  returnOdometer: Int
+  station: String
+  totalCost: Float
+  type: LogbookEntryType!
+  vehicle: Vehicle!
+}
+
+"""
+Distingue un recorrido de una carga de combustible dentro de la bitácora.
+"""
+enum LogbookEntryType {
+  FUEL
+  TRIP
+}
+
+type LogbookPage {
+  items: [LogbookEntry!]!
+  total: Int!
+}
+
+input LoginInput {
+  password: String!
+  username: String!
+}
+
+type MaintenanceCostReport {
+  items: [MaintenanceCostRow!]!
+  total: Int!
+  totalCorrective: Int!
+  totalCost: Float!
+  totalOrders: Int!
+  totalPreventive: Int!
+}
+
+type MaintenanceCostRow {
+  avgCost: Float
+  corrective: Int!
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  orders: Int!
+  preventive: Int!
+  totalCost: Float!
+  vehicleCount: Int!
+}
+
+type MaintenanceOrder {
+  code: String!
+  createdAt: DateTime!
+  description: String!
+  finishedAt: DateTime
+  id: String!
+  invoiceNumber: String
+  odometer: Int!
+  procedureChecklistItems: [ProcedureChecklistItem!]!
+  startedAt: DateTime
+  status: MaintenanceStatus!
+  totalCost: Float!
+  type: MaintenanceType!
+  vehicle: Vehicle!
+  vehicleId: String!
+  workshopName: String
+}
+
+type MaintenanceOrderPage {
+  items: [MaintenanceOrder!]!
+  total: Int!
+}
+
+"""Estado de una orden de mantenimiento."""
+enum MaintenanceStatus {
+  CANCELLED
+  COMPLETED
+  IN_PROGRESS
+  SCHEDULED
+}
+
+"""Tipo de mantenimiento: preventivo o correctivo."""
+enum MaintenanceType {
+  CORRECTIVE
+  PREVENTIVE
+}
+
+type MileageReport {
+  items: [MileageRow!]!
+  total: Int!
+  totalClosedTrips: Int!
+  totalDistanceKm: Int!
+  totalTrips: Int!
+}
+
+type MileageRow {
+  avgDistanceKm: Float
+  closedTrips: Int!
+  distanceKm: Int!
+  groupDetail: String
+  groupId: String!
+  groupLabel: String!
+  trips: Int!
+  vehicleCount: Int!
+}
+
+type MonthlyTripCount {
+  count: Int!
+  month: String!
+}
+
+type Mutation {
+  assignTransportManager(input: AssignTransportManagerInput!): TransportManagerAssignment!
+  assignVehicleDriver(input: AssignVehicleDriverInput!): VehicleDriverAssignment!
+  closeTransportManagerAssignment(input: CloseTransportManagerAssignmentInput!): TransportManagerAssignment!
+  closeTrip(id: String!, input: CloseTripInput!): Trip!
+  closeUnitAssignment(input: CloseUnitAssignmentInput!): UnitAssignment!
+  closeVehicleDriverAssignment(input: CloseVehicleDriverAssignmentInput!): VehicleDriverAssignment!
+  createFuelRecord(input: CreateFuelRecordInput!): FuelRecord!
+  createIncident(input: CreateIncidentInput!): Incident!
+  createMaintenanceOrder(input: CreateMaintenanceOrderInput!): MaintenanceOrder!
+  createPersonnel(input: CreatePersonnelInput!): Personnel!
+  createProcedureType(input: CreateProcedureTypeInput!): ProcedureType!
+  createSparePart(input: CreateSparePartInput!): SparePart!
+  createTrip(input: CreateTripInput!): Trip!
+  createUnit(input: CreateUnitInput!): Unit!
+  createUnitAssignment(input: CreateUnitAssignmentInput!): UnitAssignment!
+  createUser(input: CreateUserInput!): User!
+  createVehicle(input: CreateVehicleInput!): Vehicle!
+  createVehicleDocument(input: CreateVehicleDocumentInput!): VehicleDocument!
+  deactivatePersonnel(id: String!): Personnel!
+  deactivateProcedureType(id: String!): ProcedureType!
+  deactivateSparePart(id: String!): SparePart!
+  deactivateUnit(id: String!): Unit!
+  deactivateUser(id: String!): User!
+  deleteProcedureType(id: String!): Boolean!
+  finishMaintenanceOrder(id: String!, input: FinishMaintenanceOrderInput!): MaintenanceOrder!
+  login(input: LoginInput!): AuthPayload!
+  reactivatePersonnel(id: String!): Personnel!
+  reactivateProcedureType(id: String!): ProcedureType!
+  reactivateSparePart(id: String!): SparePart!
+  reactivateUnit(id: String!): Unit!
+  reactivateUser(id: String!): User!
+  registerOdometerReading(input: RegisterOdometerReadingInput!): OdometerReading!
+  registerStockMovement(input: CreateStockMovementInput!): StockMovement!
+  registerVehicleCondition(input: RegisterVehicleConditionInput!, vehicleId: String!): VehicleCondition!
+  removeVehiclePhoto(slotKey: String!, vehicleId: String!): Boolean!
+  setVehiclePhoto(input: SetVehiclePhotoInput!): VehiclePhoto!
+  updateFuelRecordChecklist(fuelRecordId: String!, items: [UpdateProcedureChecklistItemInput!]!): [ProcedureChecklistItem!]!
+  updateMaintenanceOrderChecklist(items: [UpdateProcedureChecklistItemInput!]!, maintenanceOrderId: String!): [ProcedureChecklistItem!]!
+  updatePersonnel(id: String!, input: UpdatePersonnelInput!): Personnel!
+  updateProcedureType(id: String!, input: UpdateProcedureTypeInput!): ProcedureType!
+  updateSparePart(id: String!, input: UpdateSparePartInput!): SparePart!
+  updateStockMovementChecklist(items: [UpdateProcedureChecklistItemInput!]!, stockMovementId: String!): [ProcedureChecklistItem!]!
+  updateUnit(id: String!, input: UpdateUnitInput!): Unit!
+  updateUnitAssignmentNotes(input: UpdateUnitAssignmentNotesInput!): UnitAssignment!
+  updateUser(id: String!, input: UpdateUserInput!): User!
+  updateVehicle(id: String!, input: UpdateVehicleInput!): Vehicle!
+  updateVehicleChecklist(items: [UpdateProcedureChecklistItemInput!]!, vehicleId: String!): [ProcedureChecklistItem!]!
+}
+
+type OdometerReading {
+  createdAt: DateTime!
+  id: String!
+  notes: String
+  readingAt: DateTime!
+  registeredById: String!
+  source: OdometerSource!
+  value: Int!
+  vehicleId: String!
+}
+
+type OdometerReadingPage {
+  items: [OdometerReading!]!
+  total: Int!
+}
+
+"""Origen de una lectura de kilometraje."""
+enum OdometerSource {
+  FUEL
+  MAINTENANCE
+  MANUAL
+  TRIP_DEPARTURE
+  TRIP_RETURN
+}
+
+type Personnel {
   ci: String!
   ciComplement: String!
   createdAt: DateTime!
-  currentUnit: Unit
-  currentUnitId: String
+  currentVehicle: Vehicle
   email: String
   firstName: String!
   id: String!
   isActive: Boolean!
+  isAdmin: Boolean!
+  isDriver: Boolean!
+  isOfficer: Boolean!
   lastName: String!
+  licenseCategory: String
+  licenseExpiresAt: DateTime
+  licenseNumber: String
+  observations: String
   phone: String
   rank: String
+  unit: Unit
+  unitId: String
   updatedAt: DateTime!
+  userId: String
 }
 
-type OfficerPage {
-  items: [Officer!]!
+type PersonnelPage {
+  items: [Personnel!]!
+  total: Int!
+}
+
+"""Acción del sistema a la que se asocia un tipo de trámite (spec 016)."""
+enum ProcedureAction {
+  FUEL_VOUCHER
+  MAINTENANCE_ORDER
+  SPARE_PART_DELIVERY
+  VEHICLE_REGISTRATION
+}
+
+type ProcedureChecklistItem {
+  completed: Boolean!
+  createdAt: DateTime!
+  documentCode: String
+  fuelRecordId: String
+  id: String!
+  maintenanceOrderId: String
+  procedureType: ProcedureType!
+  procedureTypeId: String!
+  stockMovementId: String
+  vehicleId: String
+}
+
+input ProcedureChecklistItemInput {
+  completed: Boolean = false
+  documentCode: String
+  procedureTypeId: String!
+}
+
+type ProcedureType {
+  action: ProcedureAction!
+  createdAt: DateTime!
+  description: String
+  id: String!
+  isActive: Boolean!
+  name: String!
+}
+
+type ProcedureTypePage {
+  items: [ProcedureType!]!
   total: Int!
 }
 
 type Query {
-  officer(id: String!): Officer!
-  officers(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): OfficerPage!
+  auditLogs(action: AuditAction, date: String, module: String, search: String, skip: Int = 0, take: Int = 20): AuditLogPage!
+  auditSummary: AuditSummary!
+  dashboardSummary: DashboardSummary!
+  driverLogbook(driverId: String, fromDate: String, skip: Int = 0, take: Int = 50, toDate: String, unitId: String, vehicleType: VehicleType): LogbookPage!
+  fuelConsumptionReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): FuelConsumptionReport!
+  fuelRecord(id: String!): FuelRecord!
+  fuelRecords(fromDate: String, fuelType: FuelType, search: String, skip: Int = 0, take: Int = 20, toDate: String, vehicleId: String): FuelRecordPage!
+  incidents(search: String, skip: Int = 0, take: Int = 20, type: IncidentType, vehicleId: String): IncidentPage!
+  maintenanceCostReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): MaintenanceCostReport!
+  maintenanceOrder(id: String!): MaintenanceOrder!
+  maintenanceOrders(search: String, skip: Int = 0, status: MaintenanceStatus, take: Int = 20, type: MaintenanceType, vehicleId: String): MaintenanceOrderPage!
+  me: AuthUser!
+  mileageReport(fromDate: String, groupBy: ReportGroupBy = VEHICLE, skip: Int = 0, take: Int = 20, toDate: String, unitId: String, vehicleId: String, vehicleType: VehicleType): MileageReport!
+  myVehicleAssignment: VehicleDriverAssignment
+  odometerReadings(skip: Int = 0, take: Int = 20, vehicleId: String): OdometerReadingPage!
+  personnel(isActive: Boolean, isAdmin: Boolean, isDriver: Boolean, isOfficer: Boolean, search: String, skip: Int = 0, take: Int = 20, unitId: String): PersonnelPage!
+  personnelMember(id: String!): Personnel!
+  procedureType(id: String!): ProcedureType!
+  procedureTypes(action: ProcedureAction, isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): ProcedureTypePage!
+  roles: [Role!]!
+  sparePart(id: String!): SparePart!
+  sparePartCategories: [SparePartCategory!]!
+  spareParts(categoryId: String, isActive: Boolean, search: String, skip: Int = 0, take: Int = 20, type: SparePartType): SparePartPage!
+  stockMovements(fromDate: String, skip: Int = 0, sparePartId: String, take: Int = 20, toDate: String, type: StockMovementType, vehicleId: String): StockMovementPage!
+  trip(id: String!): Trip!
+  trips(driverId: String, open: Boolean, search: String, skip: Int = 0, take: Int = 20, vehicleId: String): TripPage!
   unit(id: String!): Unit!
   unitAssignments(current: Boolean, fromDate: String, search: String, skip: Int = 0, take: Int = 20, toDate: String, unitId: String): UnitAssignmentPage!
   units(isActive: Boolean, parentId: String, search: String, skip: Int = 0, take: Int = 20, type: String): UnitPage!
+  user(id: String!): User!
+  users(isActive: Boolean, roleId: String, search: String, skip: Int = 0, take: Int = 20): UserPage!
   vehicle(id: String!): Vehicle!
+  vehicleDocuments(search: String, skip: Int = 0, take: Int = 20, type: DocumentType, vehicleId: String): VehicleDocumentPage!
+  vehicleDriverAssignments(current: Boolean, driverId: String, skip: Int = 0, take: Int = 20, vehicleId: String): VehicleDriverAssignmentPage!
+  vehicleHistory(fromDate: String, skip: Int = 0, take: Int = 20, toDate: String, types: [VehicleHistoryEntryType!], vehicleId: String): VehicleHistoryPage!
+  vehiclePhotos(vehicleId: String!): [VehiclePhoto!]!
   vehicles(condition: VehicleConditionCode, search: String, skip: Int = 0, take: Int = 20, type: VehicleType, unitId: String): VehiclePage!
+}
+
+input RegisterOdometerReadingInput {
+  notes: String
+  value: Int!
+  vehicleId: String!
 }
 
 input RegisterVehicleConditionInput {
@@ -122,17 +700,134 @@ input RegisterVehicleConditionInput {
   reason: String
 }
 
+"""
+Cómo se consolidan las filas de un reporte: una por vehículo, o una por la unidad a la que el vehículo está asignado hoy (spec 018).
+"""
+enum ReportGroupBy {
+  UNIT
+  VEHICLE
+}
+
+type Role {
+  code: String!
+  id: String!
+  name: String!
+}
+
+input SetVehiclePhotoInput {
+  dataUrl: String!
+  slotKey: String!
+  vehicleId: String!
+}
+
+type SparePart {
+  category: SparePartCategory
+  categoryId: String
+  code: String!
+  createdAt: DateTime!
+  currentStock: Float!
+  description: String
+  id: String!
+  isActive: Boolean!
+  lastUnitCost: Float
+  location: String
+  minStock: Float!
+  name: String!
+  tireSize: String
+  type: SparePartType!
+  unit: String!
+  weight: Float
+}
+
+type SparePartCategory {
+  id: String!
+  name: String!
+}
+
+type SparePartPage {
+  items: [SparePart!]!
+  total: Int!
+}
+
+"""
+Tipo de artículo: determina qué campos aplica el formulario (spec 017).
+"""
+enum SparePartType {
+  LIQUIDO
+  LLANTA
+  OTRO
+  PIEZA
+}
+
+type StockMovement {
+  balanceAfter: Float!
+  createdAt: DateTime!
+  id: String!
+  lotExpiresAt: DateTime
+  lotNumber: String
+  maintenanceOrder: MaintenanceOrder
+  maintenanceOrderId: String
+  procedureChecklistItems: [ProcedureChecklistItem!]!
+  quantity: Float!
+  reason: String
+  reference: String
+  sparePart: SparePart!
+  sparePartId: String!
+  supplier: String
+  type: StockMovementType!
+  unitCost: Float
+  vehicle: Vehicle
+  vehicleId: String
+}
+
+type StockMovementPage {
+  items: [StockMovement!]!
+  total: Int!
+}
+
+"""Tipo de movimiento de inventario."""
+enum StockMovementType {
+  ADJUSTMENT
+  IN
+  OUT
+}
+
 type TransportManagerAssignment {
   createdAt: DateTime!
   endDate: DateTime
   id: String!
   notes: String
-  officer: Officer!
+  officer: Personnel!
   officerId: String!
   referenceDocument: String
   startDate: DateTime!
   unit: Unit!
   unitId: String!
+}
+
+type Trip {
+  assignmentId: String!
+  createdAt: DateTime!
+  damagesFound: String
+  departureAt: DateTime!
+  departureConditionNotes: String
+  departureFuelLevel: Int
+  departureOdometer: Int!
+  destination: String!
+  distanceKm: Int
+  driver: Personnel!
+  id: String!
+  incidentNotes: String
+  returnAt: DateTime
+  returnConditionNotes: String
+  returnFuelLevel: Int
+  returnOdometer: Int
+  vehicle: Vehicle!
+}
+
+type TripPage {
+  items: [Trip!]!
+  total: Int!
 }
 
 type Unit {
@@ -176,15 +871,46 @@ type UnitPage {
   total: Int!
 }
 
-input UpdateOfficerInput {
+input UpdatePersonnelInput {
   ci: String
   ciComplement: String
-  currentUnitId: String
   email: String
   firstName: String
+  isAdmin: Boolean = false
+  isDriver: Boolean = false
+  isOfficer: Boolean = false
   lastName: String
+  licenseCategory: String
+  licenseExpiresAt: String
+  licenseNumber: String
+  observations: String
   phone: String
   rank: String
+  unitId: String
+}
+
+input UpdateProcedureChecklistItemInput {
+  completed: Boolean!
+  documentCode: String
+  id: String!
+}
+
+input UpdateProcedureTypeInput {
+  description: String
+  name: String
+}
+
+input UpdateSparePartInput {
+  categoryId: String
+  code: String
+  description: String
+  location: String
+  minStock: Float
+  name: String
+  tireSize: String
+  type: SparePartType
+  unit: String
+  weight: Float
 }
 
 input UpdateUnitAssignmentNotesInput {
@@ -202,9 +928,21 @@ input UpdateUnitInput {
   type: String
 }
 
+input UpdateUserInput {
+  email: String
+  fullName: String
+  password: String
+  personnelId: String
+  phone: String
+  rank: String
+  roleId: String
+  username: String
+}
+
 input UpdateVehicleInput {
   brand: String
   chassisNumber: String
+  checklistItems: [ProcedureChecklistItemInput!]
   color: String
   engineNumber: String
   model: String
@@ -217,6 +955,27 @@ input UpdateVehicleInput {
   year: Int
 }
 
+type User {
+  createdAt: DateTime!
+  email: String
+  fullName: String!
+  id: String!
+  isActive: Boolean!
+  lastLoginAt: DateTime
+  personnel: Personnel
+  phone: String
+  rank: String
+  role: Role!
+  roleId: String!
+  updatedAt: DateTime!
+  username: String!
+}
+
+type UserPage {
+  items: [User!]!
+  total: Int!
+}
+
 type Vehicle {
   brand: String
   chassisNumber: String
@@ -224,16 +983,20 @@ type Vehicle {
   conditionHistory: [VehicleCondition!]!
   createdAt: DateTime!
   currentCondition: VehicleCondition
+  currentDriver: Personnel
   currentUnit: Unit
   departmentId: String
+  driverAssignmentHistory: [VehicleDriverAssignment!]!
   engineNumber: String
   id: String!
   isActive: Boolean!
+  lastOdometer: Int
   model: String
   observations: String
   origin: String
   plate: String!
   plateDnfr: String
+  procedureChecklistItems: [ProcedureChecklistItem!]!
   receptionSource: String
   type: VehicleType!
   unitAssignmentHistory: [UnitAssignment!]!
@@ -262,11 +1025,98 @@ enum VehicleConditionCode {
   FUERA_DE_USO
   INOPERABLE
   REGULAR
+  SEPARADO_POR_INCIDENTE
+  SINIESTRADO
+}
+
+type VehicleDocument {
+  createdAt: DateTime!
+  documentNumber: String
+  expiresAt: DateTime!
+  id: String!
+  issuedAt: DateTime
+  notes: String
+  type: DocumentType!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type VehicleDocumentPage {
+  items: [VehicleDocument!]!
+  total: Int!
+}
+
+type VehicleDriverAssignment {
+  createdAt: DateTime!
+  driver: Personnel!
+  driverId: String!
+  endDate: DateTime
+  id: String!
+  notes: String
+  referenceDocument: String
+  startDate: DateTime!
+  vehicle: Vehicle!
+  vehicleId: String!
+}
+
+type VehicleDriverAssignmentPage {
+  items: [VehicleDriverAssignment!]!
+  total: Int!
+}
+
+type VehicleHistoryEntry {
+  amount: Float
+  description: String
+  destination: String
+  distanceKm: Int
+  driver: Personnel
+  fuelType: FuelType
+  id: String!
+  incidentSeverity: IncidentSeverity
+  incidentType: IncidentType
+  maintenanceStatus: MaintenanceStatus
+  maintenanceType: MaintenanceType
+  occurredAt: DateTime!
+  place: String
+  quantity: Float
+  returnAt: DateTime
+  sparePartName: String
+  station: String
+  stockMovementType: StockMovementType
+  type: VehicleHistoryEntryType!
+  unitName: String
+  workshopName: String
+}
+
+"""
+Distingue de qué fuente sale cada fila del historial integral del vehículo (spec 018).
+"""
+enum VehicleHistoryEntryType {
+  DRIVER_ASSIGNMENT
+  FUEL
+  INCIDENT
+  MAINTENANCE
+  STOCK_MOVEMENT
+  TRIP
+  UNIT_ASSIGNMENT
+}
+
+type VehicleHistoryPage {
+  items: [VehicleHistoryEntry!]!
+  total: Int!
 }
 
 type VehiclePage {
   items: [Vehicle!]!
   total: Int!
+}
+
+type VehiclePhoto {
+  dataUrl: String!
+  id: String!
+  slotKey: String!
+  updatedAt: DateTime!
+  vehicleId: String!
 }
 
 """Categoría del vehículo dentro del parque automotor."""
@@ -275,6 +1125,12 @@ enum VehicleType {
   AUTOMOVIL
   CAMION
   CAMIONETA
+  CAMION_BOMBERO
+  CAMION_CISTERNA
+  CAMION_GRUA
+  CAMION_RESCATE
+  CUADRATRACK
+  FURGON
   MINIBUS
   MOTOCICLETA
   OTRO

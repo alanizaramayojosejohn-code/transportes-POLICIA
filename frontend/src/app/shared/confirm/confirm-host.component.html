@@ -1,0 +1,17 @@
+@if (confirmService.pending(); as request) {
+  <app-modal small [title]="request.title" (closed)="confirmService.answer(false)">
+    <p class="px-6 py-5 text-13-5 leading-relaxed text-ink-muted">{{ request.message }}</p>
+
+    <app-form-actions>
+      <button type="button" appButton (click)="confirmService.answer(false)">Cancelar</button>
+      <button
+        type="button"
+        appButton
+        [variant]="request.danger ? 'danger' : 'primary'"
+        (click)="confirmService.answer(true)"
+      >
+        {{ request.confirmLabel }}
+      </button>
+    </app-form-actions>
+  </app-modal>
+}
